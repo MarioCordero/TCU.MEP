@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 
 // Import page components
 import LandingPage from './pages/LandingPage'
@@ -12,9 +14,32 @@ import TablaPeriodicaScreen from './screens/tabla-periodica'
 import EstructuraAtomica from './screens/estructura-atomica'
 import ConfiguracionElectronica from './screens/configuracion-electronica'
 
+// Component to handle dynamic titles
+function DocumentTitle() {
+  const location = useLocation()
+  
+  useEffect(() => {
+    const titles: { [key: string]: string } = {
+      '/': 'ChemMaster - HOME',
+      '/info': 'ChemMaster - Información',
+      '/grade-10': 'ChemMaster - 10° Grado',
+      '/grade-11': 'ChemMaster - 11° Grado',
+      '/clasificacion-materia': 'ChemMaster - Clasificación de Materia',
+      '/tabla-periodica': 'ChemMaster - Tabla Periódica',
+      '/estructura-atomica': 'ChemMaster - Estructura Atómica',
+      '/configuracion-electronica': 'ChemMaster - Configuración Electrónica'
+    }
+    
+    document.title = titles[location.pathname] || 'ChemMaster'
+  }, [location.pathname])
+  
+  return null
+}
+
 export default function App() {
   return (
     <Router>
+      <DocumentTitle />
       <Routes>
         {/* Main pages */}
         <Route path="/" element={<LandingPage />} />
