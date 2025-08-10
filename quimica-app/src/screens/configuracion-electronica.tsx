@@ -1,17 +1,15 @@
 "use client"
 
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft, Orbit, Zap, Target, BookOpen, Play, CheckCircle, ArrowRight } from "lucide-react"
 
-interface ConfiguracionElectronicaProps {
-  onBack: () => void
-}
-
-export default function ConfiguracionElectronica({ onBack }: ConfiguracionElectronicaProps) {
+export default function ConfiguracionElectronica() {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState("numeros-atomicos")
 
   return (
@@ -20,7 +18,7 @@ export default function ConfiguracionElectronica({ onBack }: ConfiguracionElectr
       <nav className="bg-gradient-to-r from-purple-700 to-purple-800 text-white p-4 shadow-lg sticky top-0 z-10">
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="text-white hover:bg-purple-600" onClick={onBack}>
+            <Button variant="ghost" size="icon" className="text-white hover:bg-purple-600" onClick={() => navigate('/')}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-2">
@@ -460,7 +458,7 @@ export default function ConfiguracionElectronica({ onBack }: ConfiguracionElectr
 
         {/* Botones de navegación */}
         <div className="flex justify-between items-center mt-8">
-          <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => navigate('/')} className="flex items-center gap-2">
             <ArrowLeft className="h-4 w-4" />
             Volver al Menú
           </Button>

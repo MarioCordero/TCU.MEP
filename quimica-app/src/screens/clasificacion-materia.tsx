@@ -1,5 +1,6 @@
 "use client"
 
+import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -16,18 +17,15 @@ import {
   Waves,
 } from "lucide-react"
 
-interface ClasificacionMateriaProps {
-  onBack: () => void
-}
-
-export default function ClasificacionMateria({ onBack }: ClasificacionMateriaProps) {
+export default function ClasificacionMateria() {
+  const navigate = useNavigate()
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
       {/* Barra de navegación */}
       <nav className="bg-gradient-to-r from-blue-700 to-blue-800 text-white p-4 shadow-lg sticky top-0 z-10">
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="text-white hover:bg-blue-600" onClick={onBack}>
+            <Button variant="ghost" size="icon" className="text-white hover:bg-blue-600" onClick={() => navigate('/')}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-2">
@@ -330,7 +328,7 @@ export default function ClasificacionMateria({ onBack }: ClasificacionMateriaPro
 
         {/* Botones de navegación */}
         <div className="flex justify-between items-center mt-8">
-          <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => navigate('/')} className="flex items-center gap-2">
             <ArrowLeft className="h-4 w-4" />
             Volver al Menú
           </Button>
