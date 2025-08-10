@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Button } from "./components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card"
+import { Badge } from "./components/ui/badge"
 import {
   Atom,
   Play,
@@ -21,8 +21,8 @@ import {
 } from "lucide-react"
 
 // Import the grade pages
-import GradeTenPage from "./grade-10/page"
-import GradeElevenPage from "./grade-11/page"
+import GradeTenPage from "./pages/grade-10/page"
+import GradeElevenPage from "./pages/grade-11/page"
 
 // Import the screens
 import ClasificacionMateria from "./screens/clasificacion-materia"
