@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom'
 // Import page components
 import LandingPage from './pages/LandingPage'
 import InfoPage from './pages/InfoPage'
+import GradeSelector from './pages/GradeSelector'
 import GradeTenPage from './pages/grade-10/page'
 import GradeElevenPage from './pages/grade-11/page'
 
@@ -21,6 +22,7 @@ function DocumentTitle() {
   useEffect(() => {
     const titles: { [key: string]: string } = {
       '/': 'ChemMaster - HOME',
+      '/grade-selector': 'ChemMaster - Selección de Grado',
       '/info': 'ChemMaster - Información',
       '/grade-10': 'ChemMaster - 10° Grado',
       '/grade-11': 'ChemMaster - 11° Grado',
@@ -44,6 +46,7 @@ export default function App() {
         {/* Main pages */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/info" element={<InfoPage />} />
+        <Route path="/grade-selector" element={<GradeSelector />} />
         <Route path="/grade-10" element={<GradeTenPage />} />
         <Route path="/grade-11" element={<GradeElevenPage />} />
         

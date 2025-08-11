@@ -37,7 +37,7 @@ export default function LandingPage() {
           <Button
             size="lg"
             className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-            onClick={() => navigate('/grade-selector')}
+            onClick={() => navigate('/grade-10')}
           >
             <Play className="mr-3 h-6 w-6" />
             Comenzar
