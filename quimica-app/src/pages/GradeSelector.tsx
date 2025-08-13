@@ -1,59 +1,67 @@
 import { useNavigate } from 'react-router-dom'
+import { Highlight } from '@/components/ui/highlight'
 import { Button } from '@/components/ui/button'
-import { Atom, Play, Info } from 'lucide-react'
+import { Header } from '@/components/ui/header'
+import { SearchBar } from '@/components/ui/searchbar'
 
-export default function LandingPage() {
+// Import icons
+import { 
+  Atom, 
+  Play, 
+  Info,
+  TestTubeDiagonal
+} from 'lucide-react'
+
+export default function GradeSelector() {
   const navigate = useNavigate()
+  
+  const handleGradeSelection = (grade: number) => {
+    console.log("User selected grade:", grade)
+    console.log("Navigating to grade page...")
+    navigate(`/grade-${grade}`)
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full text-center">
-        {/* Logo/Icon */}
-        <div className="mb-8">
-          <div className="p-6 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full w-fit mx-auto mb-6 shadow-lg">
-            <Atom className="h-16 w-16 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+
+      {/* Header outside the centered container */}
+      <Header 
+        title="ChemMaster"
+      />
+      
+      {/* Main content - centered */}
+      <div className="flex justify-center p-4" style={{ minHeight: 'calc(100vh - 80px)' }}>
+        <div className="text-center p-6 bg-white w-screen max-w-1/2 rounded-lg shadow-lg">
+
+          {/* The Highlight element */}
+          <div className="text-left">
+            <Highlight 
+              title="¡Hola!" 
+              subtitle="Explora el fascinante mundo de la quimica"
+              icon={<TestTubeDiagonal className="w-6 h-6" />}
+              gradient="bg-gradient-to-r from-[#7322B8] to-[#4D296C]"
+              iconBg="bg-white/30"
+            />
           </div>
 
-          {/* Title */}
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-800 mb-4">
-            <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-              ChemMaster
-            </span>
-          </h1>
+          <SearchBar 
+          placeholder="Search for chemicals..." 
+          onSearch={(query) => console.log('Searching for:', query)} 
+          />
 
-          {/* Subtitle */}
-          <p className="text-xl text-gray-600 mb-8">Química Interactiva para Secundaria</p>
+          <div className="my-5 text-left">
+            <h1 className="text-2xl font-bold">Selecciona tu grado</h1>
+          </div>
+
+          <div className="mt-8 flex gap-4 justify-center">
+            <Button onClick={() => handleGradeSelection(10)}>
+              10° Grado
+            </Button>
+            <Button onClick={() => handleGradeSelection(11)}>
+              11° Grado
+            </Button>
+          </div>
         </div>
-
-        {/* Description */}
-        <div className="mb-12">
-          <p className="text-lg text-gray-700 leading-relaxed max-w-xl mx-auto">
-            Aprende química de forma divertida e interactiva con videos educativos, quices interactivos y laboratorios virtuales. Diseñado específicamente para estudiantes de 10° y 11° grado.
-          </p>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Button
-            size="lg"
-            className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-            onClick={() => navigate('/grade-10')}
-          >
-            <Play className="mr-3 h-6 w-6" />
-            Comenzar
-          </Button>
-
-          <Button
-            size="lg"
-            variant="outline"
-            className="border-2 border-purple-300 text-purple-700 hover:bg-purple-50 px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-300 hover:scale-105 bg-transparent"
-            onClick={() => navigate('/info')}
-          >
-            <Info className="mr-3 h-6 w-6" />
-            Más Información
-          </Button>
-        </div>
-        {/* Footer or quick stats if we want */}
       </div>
     </div>
   )
