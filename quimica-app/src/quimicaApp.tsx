@@ -59,3 +59,5 @@ export default function App() {
     </Router>
   )
 }
+
+// APLICACIÓN COMO TAL ESTA ES LA QUE VA AL SERVER DE PRODUCCIÓN

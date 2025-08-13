@@ -23,12 +23,14 @@ jobs:
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
 
-    - name: Copy only .tsx and .jsx files into target folder
+    - name: Clean quimicaApp folder in target repo
       run: |
-        # Ensure target src folder exists
+        rm -rf target-repo/SPECT-Website/src/quimicaApp/*
         mkdir -p target-repo/SPECT-Website/src/quimicaApp/src
 
-        # Copy only .tsx and .jsx files from src folder
+    - name: Copy only .tsx and .jsx files into target folder
+      run: |
+        # Copy .tsx and .jsx files from src folder, preserving structure
         rsync -av --include '*/' --include '*.tsx' --include '*.jsx' --exclude '*' quimica-app/src/ target-repo/SPECT-Website/src/quimicaApp/src/
 
         # Optional: copy root-level .tsx/.jsx files if present
