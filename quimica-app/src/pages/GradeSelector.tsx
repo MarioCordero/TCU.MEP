@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom'
 import { Highlight } from '@/components/ui/highlight'
-import { Button } from '@/components/ui/button'
 import { Header } from '@/components/ui/header'
 import { SearchBar } from '@/components/ui/searchbar'
 import { ButtonDescripted } from '@/components/ui/buttondescripted'
@@ -8,7 +7,6 @@ import { ButtonDescripted } from '@/components/ui/buttondescripted'
 // Import icons
 import { 
   TestTubeDiagonal,
-  ArrowBigRight
 } from 'lucide-react'
 
 export default function GradeSelector() {
