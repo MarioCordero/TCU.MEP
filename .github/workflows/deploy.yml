@@ -1,4 +1,4 @@
-name: Deploy Only React Source Files to webDevelopment
+name: Deploy React Source Structure to webDevelopment
 
 on:
   push:
@@ -26,19 +26,30 @@ jobs:
     - name: Clean quimicaApp folder in target repo
       run: |
         rm -rf target-repo/SPECT-Website/src/quimicaApp/*
-        mkdir -p target-repo/SPECT-Website/src/quimicaApp/src
+        mkdir -p target-repo/SPECT-Website/src/quimicaApp
 
-    - name: Copy only .tsx and .jsx files into target folder
+    - name: Copy required folders and files
       run: |
-        # Copy .tsx and .jsx files from src folder, preserving structure
-        rsync -av --include '*/' --include '*.tsx' --include '*.jsx' --exclude '*' quimica-app/src/ target-repo/SPECT-Website/src/quimicaApp/src/
+        # Define source and target
+        SRC_DIR="quimica-app/src"
+        DEST_DIR="target-repo/SPECT-Website/src/quimicaApp"
 
-        # Optional: copy root-level .tsx/.jsx files if present
-        rsync -av --include '*.tsx' --include '*.jsx' --exclude '*' quimica-app/ target-repo/SPECT-Website/src/quimicaApp/
+        # Copy folders if they exist
+        for folder in assets components lib pages screens; do
+          if [ -d "$SRC_DIR/$folder" ]; then
+            mkdir -p "$DEST_DIR/$folder"
+            cp -r "$SRC_DIR/$folder"/* "$DEST_DIR/$folder"/
+          fi
+        done
+
+        # Copy quimicaApp.tsx if exists
+        if [ -f "$SRC_DIR/quimicaApp.tsx" ]; then
+          cp "$SRC_DIR/quimicaApp.tsx" "$DEST_DIR/"
+        fi
 
     - name: Commit and push changes
       run: |
         cd target-repo
         git add SPECT-Website/src/quimicaApp
-        git commit -m "📦 Update React source files from MarioCordero/TCU.MEP@${{ github.sha }}" || echo "No changes to commit"
+        git commit -m "📦 Update ChemMaster source from MarioCordero/TCU.MEP@${{ github.sha }}" || echo "No changes to commit"
         git push origin webDevelopment
