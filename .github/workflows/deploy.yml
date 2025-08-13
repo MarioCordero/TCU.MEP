@@ -1,4 +1,4 @@
-name: Deploy Source Code to WebDevelop Branch
+name: Deploy Only React Source Files to webDevelopment
 
 on:
   push:
@@ -23,15 +23,20 @@ jobs:
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
 
-    - name: Copy source files into target folder
+    - name: Copy only .tsx and .jsx files into target folder
       run: |
-        rm -rf target-repo/SPECT-Website/src/quimicaApp/*
-        mkdir -p target-repo/SPECT-Website/src/quimicaApp
-        cp -r quimica-app/* target-repo/SPECT-Website/src/quimicaApp/
+        # Ensure target src folder exists
+        mkdir -p target-repo/SPECT-Website/src/quimicaApp/src
+
+        # Copy only .tsx and .jsx files from src folder
+        rsync -av --include '*/' --include '*.tsx' --include '*.jsx' --exclude '*' quimica-app/src/ target-repo/SPECT-Website/src/quimicaApp/src/
+
+        # Optional: copy root-level .tsx/.jsx files if present
+        rsync -av --include '*.tsx' --include '*.jsx' --exclude '*' quimica-app/ target-repo/SPECT-Website/src/quimicaApp/
 
     - name: Commit and push changes
       run: |
         cd target-repo
         git add SPECT-Website/src/quimicaApp
-        git commit -m "📦 Update ChemMaster source from MarioCordero/TCU.MEP@${{ github.sha }}" || echo "No changes to commit"
+        git commit -m "📦 Update React source files from MarioCordero/TCU.MEP@${{ github.sha }}" || echo "No changes to commit"
         git push origin webDevelopment
