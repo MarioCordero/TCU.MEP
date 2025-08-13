@@ -21,7 +21,7 @@ const Highlight = React.forwardRef<HTMLDivElement, HighlightProps>(
         )} 
         {...props}
       >
-        <div className="flex items-start justify-between h-full">
+        <div className="flex items-center justify-between h-full">
           <div className="flex-1">
             <h2 className="text-2xl font-bold mb-2">
               {title}

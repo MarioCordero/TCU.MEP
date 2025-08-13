@@ -3,13 +3,12 @@ import { Highlight } from '@/components/ui/highlight'
 import { Button } from '@/components/ui/button'
 import { Header } from '@/components/ui/header'
 import { SearchBar } from '@/components/ui/searchbar'
+import { ButtonDescripted } from '@/components/ui/buttondescripted'
 
 // Import icons
 import { 
-  Atom, 
-  Play, 
-  Info,
-  TestTubeDiagonal
+  TestTubeDiagonal,
+  ArrowBigRight
 } from 'lucide-react'
 
 export default function GradeSelector() {
@@ -49,18 +48,75 @@ export default function GradeSelector() {
           onSearch={(query) => console.log('Searching for:', query)} 
           />
 
+          {/* Year selection title */}
           <div className="my-5 text-left">
             <h1 className="text-2xl font-bold">Selecciona tu grado</h1>
           </div>
 
-          <div className="mt-8 flex gap-4 justify-center">
-            <Button onClick={() => handleGradeSelection(10)}>
-              10° Grado
-            </Button>
-            <Button onClick={() => handleGradeSelection(11)}>
-              11° Grado
-            </Button>
+          {/* ButtonDescripted examples used in grade selection */}
+          <div className="flex flex-col gap-4 my-5 text-left">
+            {/* Tenth grade button */}
+            <ButtonDescripted 
+              title="Décimo año" 
+              subtitle="Química general" 
+              icon="arrow-right"
+              gradient="custom"
+              customGradient="bg-gradient-to-r from-[#517AF6] to-[#3BE5EB]"
+              onClick={() => handleGradeSelection(10)}
+            />
+
+            {/* Eleventh grade button */}
+            <ButtonDescripted 
+              title="Undécimo año" 
+              subtitle="Química avanzada" 
+              icon= "arrow-right"
+              gradient="custom"
+              customGradient="bg-gradient-to-r from-[#A756F7] to-[#00CD90]"
+              onClick={() => handleGradeSelection(11)}
+              />
           </div>
+
+          {/* Highlight themes */}
+          <div className="my-5 text-left">
+            <h1 className="text-2xl font-bold">Temas destacados</h1>
+          </div>
+
+
+          {/* Featured topics placeholder */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-5">
+            <ButtonDescripted 
+              title="Tabla Periódica" 
+              subtitle="Elementos y propiedades" 
+              icon="star"
+              gradient="pink-orange"
+              onClick={() => console.log('Tabla Periódica clicked')}
+            />
+
+            <ButtonDescripted 
+              title="Enlaces Químicos" 
+              subtitle="Iónico, covalente y metálico" 
+              icon="heart"
+              gradient="green-blue"
+              onClick={() => console.log('Enlaces Químicos clicked')}
+            />
+
+            <ButtonDescripted 
+              title="Reacciones Químicas" 
+              subtitle="Balanceo y tipos" 
+              icon="plus"
+              gradient="purple-pink"
+              onClick={() => console.log('Reacciones Químicas clicked')}
+            />
+
+            <ButtonDescripted 
+              title="Estequiometría" 
+              subtitle="Cálculos químicos" 
+              icon="check"
+              gradient="orange-red"
+              onClick={() => console.log('Estequiometría clicked')}
+            />
+          </div>
+
         </div>
       </div>
     </div>
