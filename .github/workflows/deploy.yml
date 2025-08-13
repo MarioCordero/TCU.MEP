@@ -16,9 +16,9 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Clone target repository (webDevelop branch)
+    - name: Clone target repository (webDevelopment branch)
       run: |
-        git clone --branch webDevelop https://x-access-token:${{ secrets.DEPLOY_TOKEN }}@github.com/spectcr/spectcr.com.git target-repo
+        git clone --branch webDevelopment https://x-access-token:${{ secrets.DEPLOY_TOKEN }}@github.com/spectcr/spectcr.com.git target-repo
         cd target-repo
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
