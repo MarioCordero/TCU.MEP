@@ -1,0 +1,70 @@
+name: Deploy Source Code to Production Repository
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'SPECT-Website/src/quimicaApp/**'
+
+jobs:
+  deploy-source:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout source repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Prepare source files
+      run: |
+        # Create deployment directory
+        mkdir -p deployment
+        
+        # Copy ONLY the quimicaApp source files (no building)
+        cp -r SPECT-Website/src/quimicaApp/* deployment/
+        
+        # Create deployment manifest
+        cat << EOF > deployment/DEPLOYMENT_MANIFEST.md
+        # Deployment Information
+        
+        **Source Repository**: spectcr/spectcr.com
+        **Source Commit**: ${{ github.sha }}
+        **Deploy Time**: $(date)
+        **Branch**: ${{ github.ref_name }}
+        
+        ## Changes in this deployment:
+        ${{ github.event.head_commit.message }}
+        
+        ## Files Included:
+        - Raw source files from SPECT-Website/src/quimicaApp/
+        - No build artifacts - ready for compilation in target repo
+        
+        ## Directory Structure Deployed:
+        - \`assets/\`
+        - \`components/\`
+        - \`grade-10/\`
+        - \`grade-11/\`
+        - \`screens/\`
+        - \`lib/\`
+        - \`layout.tsx\`
+        - \`loading.tsx\`
+        - \`manifest.ts\`
+        - \`page.tsx\`
+        - \`quimicaApp.tsx\`
+        EOF
+
+    - name: Deploy to target repository
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        personal_token: ${{ secrets.DEPLOY_TOKEN }}
+        external_repository: MarioCordero/chemmaster-production
+        publish_branch: webDevelopment
+        publish_dir: ./deployment
+        commit_message: |
+          📦 Raw source update from spectcr/spectcr.com@${{ github.sha }}
+          
+          ${{ github.event.head_commit.message }}
+        user_name: 'github-actions[bot]'
+        user_email: 'github-actions[bot]@users.noreply.github.com'
+        keep_files: false
