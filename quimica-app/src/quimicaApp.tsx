@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 
@@ -40,7 +40,7 @@ function DocumentTitle() {
 
 export default function App() {
   return (
-    <Router>
+    <>
       <DocumentTitle />
       <Routes>
         {/* Main pages */}
@@ -56,7 +56,7 @@ export default function App() {
         <Route path="/estructura-atomica" element={<EstructuraAtomica />} />
         <Route path="/configuracion-electronica" element={<ConfiguracionElectronica />} />
       </Routes>
-    </Router>
+    </>
   )
 }
 
