@@ -15,7 +15,7 @@ export default function GradeSelector() {
   const handleGradeSelection = (grade: number) => {
     console.log("User selected grade:", grade)
     console.log("Navigating to grade page...")
-    navigate(`/grade-${grade}`)
+    navigate(`../grade-${grade}`, { replace: true })
   }
 
   return (
