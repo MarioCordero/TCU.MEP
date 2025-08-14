@@ -21,6 +21,17 @@ function DocumentTitle() {
   
   useEffect(() => {
     const titles: { [key: string]: string } = {
+      '/quimicaApp': 'ChemMaster - HOME',
+      '/quimicaApp/': 'ChemMaster - HOME',
+      '/quimicaApp/grade-selector': 'ChemMaster - Selección de Grado',
+      '/quimicaApp/info': 'ChemMaster - Información',
+      '/quimicaApp/grade-10': 'ChemMaster - 10° Grado',
+      '/quimicaApp/grade-11': 'ChemMaster - 11° Grado',
+      '/quimicaApp/clasificacion-materia': 'ChemMaster - Clasificación de Materia',
+      '/quimicaApp/tabla-periodica': 'ChemMaster - Tabla Periódica',
+      '/quimicaApp/estructura-atomica': 'ChemMaster - Estructura Atómica',
+      '/quimicaApp/configuracion-electronica': 'ChemMaster - Configuración Electrónica',
+      // Fallback for standalone mode
       '/': 'ChemMaster - HOME',
       '/grade-selector': 'ChemMaster - Selección de Grado',
       '/info': 'ChemMaster - Información',
@@ -38,12 +49,18 @@ function DocumentTitle() {
   return null
 }
 
-export default function App() {
+// Props interface for sub-app integration
+interface QuimicaAppProps {
+  isLoaderComplete?: boolean;
+  currentPage?: string;
+}
+
+export default function QuimicaApp({ isLoaderComplete, currentPage }: QuimicaAppProps) {
   return (
     <>
       <DocumentTitle />
       <Routes>
-        {/* Main pages */}
+        {/* Main pages - using relative paths since parent route is /quimicaApp/* */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/info" element={<InfoPage />} />
         <Route path="/grade-selector" element={<GradeSelector />} />
