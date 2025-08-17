@@ -6,6 +6,7 @@ import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
 import { Progress } from "../../components/ui/progress"
+import { SearchBar } from '../../components/ui/searchbar'
 import {
   ArrowLeft,
   Droplet,
@@ -132,8 +133,6 @@ export default function GradeElevenPage() {
     },
   ]
 
-  const overallProgress = Math.round(modules.reduce((sum, mod) => sum + mod.progress, 0) / modules.length)
-
   const crossCuttingFeatures = [
     {
       category: "Sistema de Aprendizaje",
@@ -169,7 +168,8 @@ export default function GradeElevenPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
-      {/* Header */}
+
+      {/* HEADER */}
       <header className="bg-white/80 backdrop-blur-md border-b border-emerald-100 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -183,74 +183,46 @@ export default function GradeElevenPage() {
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-gray-800">Undécimo Grado</h1>
-                  <p className="text-xs text-gray-600">5 Módulos Avanzados</p>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="text-right hidden md:block">
-                <p className="text-sm font-semibold text-gray-800">{overallProgress}% Completado</p>
-                <Progress value={overallProgress} className="w-24 h-2" />
-              </div>
-              <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0">11° Grado</Badge>
+              <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 w-full sm:w-auto md:w-fit lg:w-auto px-4 py-1 whitespace-nowrap">11° Grado</Badge>
             </div>
           </div>
         </div>
       </header>
+      {/* HEADER */}
 
+      {/* CONTENT */}
       <div className="container mx-auto px-4 py-8 max-w-7xl">
+
         {/* Welcome Section */}
         <div className="mb-8">
           <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-8 rounded-2xl shadow-lg">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="mb-4 md:mb-0">
-                <h1 className="text-3xl font-bold mb-2">Módulos de Undécimo Grado</h1>
+                <h1 className="text-3xl font-bold mb-2">¡Te damos la bienvenida a quimica para undécimo año!</h1>
                 <p className="text-emerald-100 text-lg">
-                  Química avanzada con simuladores especializados, calculadoras complejas y herramientas 3D.
+                  Profundizá en la química con contenidos avanzados y aplicaciones prácticas.
                 </p>
               </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold mb-1">{overallProgress}%</div>
-                <p className="text-emerald-100 text-sm">Progreso General</p>
-                <Progress value={overallProgress} className="w-32 h-3 mt-2" />
-              </div>
             </div>
           </div>
         </div>
+        {/* Welcome Section */}
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-emerald-100 text-center">
-            <div className="p-2 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg w-fit mx-auto mb-2">
-              <BookOpen className="h-5 w-5 text-white" />
-            </div>
-            <div className="text-2xl font-bold text-gray-800">5</div>
-            <div className="text-xs text-gray-600">Módulos</div>
-          </div>
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-teal-100 text-center">
-            <div className="p-2 bg-gradient-to-r from-teal-500 to-teal-600 rounded-lg w-fit mx-auto mb-2">
-              <Eye className="h-5 w-5 text-white" />
-            </div>
-            <div className="text-2xl font-bold text-gray-800">20+</div>
-            <div className="text-xs text-gray-600">Visualizadores</div>
-          </div>
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-blue-100 text-center">
-            <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg w-fit mx-auto mb-2">
-              <Calculator className="h-5 w-5 text-white" />
-            </div>
-            <div className="text-2xl font-bold text-gray-800">12+</div>
-            <div className="text-xs text-gray-600">Calculadoras</div>
-          </div>
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-purple-100 text-center">
-            <div className="p-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg w-fit mx-auto mb-2">
-              <Trophy className="h-5 w-5 text-white" />
-            </div>
-            <div className="text-2xl font-bold text-gray-800">25h</div>
-            <div className="text-xs text-gray-600">Contenido</div>
-          </div>
+        {/* Search bar */}
+        <div className="mb-4 sm:mb-6">
+          <SearchBar
+            placeholder="Busca en los contenidos de undécimo año..."
+            onSearch={(query) => console.log('Busca en los contenidos de undécimo año:', query)}
+          />
         </div>
+        {/* Search bar */}
 
         {/* Modules Grid */}
+        <h1 className="text-center font-bold text-2xl mb-6">Contenido de undécimo año</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {modules.map((module) => (
             <Card

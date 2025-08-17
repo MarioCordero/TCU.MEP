@@ -6,6 +6,7 @@ import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
 import { Progress } from "../../components/ui/progress"
+import { SearchBar } from '../../components/ui/searchbar'
 import {
   ArrowLeft,
   Table2,
@@ -188,11 +189,10 @@ export default function GradeTenPage() {
     },
   ]
 
-  const overallProgress = Math.round(modules.reduce((sum, mod) => sum + mod.progress, 0) / modules.length)
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-      {/* Header */}
+
+      {/* HEADER */}
       <header className="bg-white/80 backdrop-blur-md border-b border-purple-100 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -206,74 +206,46 @@ export default function GradeTenPage() {
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-gray-800">Décimo Grado</h1>
-                  <p className="text-xs text-gray-600">7 Módulos Especializados</p>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="text-right hidden md:block">
-                <p className="text-sm font-semibold text-gray-800">{overallProgress}% Completado</p>
-                <Progress value={overallProgress} className="w-24 h-2" />
-              </div>
               <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-0">10° Grado</Badge>
             </div>
           </div>
         </div>
       </header>
+      {/* HEADER */}
 
+      {/* CONTENT */}
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Welcome Section */}
+
+        {/* Welcome section */}
         <div className="mb-8">
           <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-8 rounded-2xl shadow-lg">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="mb-4 md:mb-0">
-                <h1 className="text-3xl font-bold mb-2">Módulos de Décimo Grado</h1>
+                <h1 className="text-3xl font-bold mb-2">¡Te damos la bienvenida a química para décimo año!</h1>
                 <p className="text-purple-100 text-lg">
-                  Domina los fundamentos de la química con herramientas interactivas y simuladores avanzados.
+                  Explora los fundamentos de la química con contenido interactivo y ejercicios prácticos.
                 </p>
               </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold mb-1">{overallProgress}%</div>
-                <p className="text-purple-100 text-sm">Progreso General</p>
-                <Progress value={overallProgress} className="w-32 h-3 mt-2" />
-              </div>
             </div>
           </div>
         </div>
+        {/* Welcome section */}
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-purple-100 text-center">
-            <div className="p-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg w-fit mx-auto mb-2">
-              <BookOpen className="h-5 w-5 text-white" />
-            </div>
-            <div className="text-2xl font-bold text-gray-800">7</div>
-            <div className="text-xs text-gray-600">Módulos</div>
-          </div>
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-blue-100 text-center">
-            <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg w-fit mx-auto mb-2">
-              <FlaskConical className="h-5 w-5 text-white" />
-            </div>
-            <div className="text-2xl font-bold text-gray-800">25+</div>
-            <div className="text-xs text-gray-600">Simuladores</div>
-          </div>
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-green-100 text-center">
-            <div className="p-2 bg-gradient-to-r from-green-500 to-green-600 rounded-lg w-fit mx-auto mb-2">
-              <Calculator className="h-5 w-5 text-white" />
-            </div>
-            <div className="text-2xl font-bold text-gray-800">15+</div>
-            <div className="text-xs text-gray-600">Calculadoras</div>
-          </div>
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-orange-100 text-center">
-            <div className="p-2 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg w-fit mx-auto mb-2">
-              <Trophy className="h-5 w-5 text-white" />
-            </div>
-            <div className="text-2xl font-bold text-gray-800">30h</div>
-            <div className="text-xs text-gray-600">Contenido</div>
-          </div>
+        {/* Search bar */}
+        <div className="mb-4 sm:mb-6">
+          <SearchBar 
+            placeholder="Busca en los contenidos de décimo año..." 
+            onSearch={(query) => console.log('Busca en los contenidos de décimo año:', query)} 
+          />
         </div>
+        {/* Search bar */}
 
         {/* Modules Grid */}
+        <h1 className="text-center font-bold text-2xl mb-6">Contenido de décimo año</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {modules.map((module) => (
             <Card
