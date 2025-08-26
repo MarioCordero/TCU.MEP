@@ -38,10 +38,16 @@ const Header = React.forwardRef<
   const navigate = useNavigate()
 
   const handleBack = () => {
+    // If backPath is provided, use it
     if (backPath) {
       navigate(backPath)
     } else {
-      navigate(-1)
+      // If history length is 1 (first page), go to sub-app root
+      if (window.history.length <= 1) {
+        navigate('/quimicaApp', { replace: true })
+      } else {
+        navigate(-1)
+      }
     }
   }
 
