@@ -29,6 +29,7 @@ import {
   Microscope,
   Gamepad2,
   BarChart3,
+  X,
 } from "lucide-react"
 
 export default function GradeElevenPage() {
@@ -42,11 +43,6 @@ export default function GradeElevenPage() {
       description: "Simuladores de polaridad y calculadoras de concentraciones",
       icon: Droplet,
       color: "from-blue-500 to-blue-600",
-      progress: 65,
-      difficulty: "Intermedio",
-      estimatedTime: "4-5 horas",
-      students: "2.1k",
-      rating: 4.8,
       features: [
         { name: "Simulador de Polaridad", icon: Waves, description: "Moléculas polares/apolares interactivas" },
         { name: "Calculadora de Concentraciones", icon: Calculator, description: "% m/m, % m/v, % v/v completas" },
@@ -61,11 +57,6 @@ export default function GradeElevenPage() {
       description: "Visualizadores de efectos y calculadoras especializadas",
       icon: Waves,
       color: "from-purple-500 to-purple-600",
-      progress: 50,
-      difficulty: "Avanzado",
-      estimatedTime: "3-4 horas",
-      students: "1.8k",
-      rating: 4.7,
       features: [
         { name: "Visualizador de Efectos", icon: Eye, description: "Descenso crioscópico animado" },
         { name: "Ascenso Ebulloscópico", icon: Waves, description: "Simulación interactiva" },
@@ -80,11 +71,6 @@ export default function GradeElevenPage() {
       description: "Clasificadores e identificadores de compuestos orgánicos",
       icon: Hexagon,
       color: "from-green-500 to-green-600",
-      progress: 40,
-      difficulty: "Avanzado",
-      estimatedTime: "5-6 horas",
-      students: "1.9k",
-      rating: 4.6,
       features: [
         { name: "Clasificador de Hidrocarburos", icon: Layers, description: "Alcanos, alquenos, alquinos, aromáticos" },
         { name: "Identificador de Grupos", icon: Eye, description: "Haluros, alcoholes, éteres completos" },
@@ -99,11 +85,6 @@ export default function GradeElevenPage() {
       description: "Generador IUPAC y constructor de fórmulas avanzado",
       icon: FileText,
       color: "from-orange-500 to-orange-600",
-      progress: 25,
-      difficulty: "Avanzado",
-      estimatedTime: "4-5 horas",
-      students: "1.6k",
-      rating: 4.5,
       features: [
         { name: "Generador IUPAC", icon: Settings, description: "Nomenclatura básica y avanzada" },
         { name: "Identificación de Cadenas", icon: Target, description: "Cadenas principales automáticas" },
@@ -118,11 +99,6 @@ export default function GradeElevenPage() {
       description: "Visualizadores 3D y juegos de identificación",
       icon: Layers,
       color: "from-teal-500 to-teal-600",
-      progress: 15,
-      difficulty: "Avanzado",
-      estimatedTime: "5-6 horas",
-      students: "1.4k",
-      rating: 4.4,
       features: [
         { name: "Visualizador 3D de Isómeros", icon: Eye, description: "Isomería estructural completa" },
         { name: "Isomería de Cadena", icon: Layers, description: "Posición y función interactivas" },
@@ -130,39 +106,6 @@ export default function GradeElevenPage() {
         { name: "Juego de Identificación", icon: Gamepad2, description: "Reconocer tipos de isomería" },
       ],
       tools: ["Visualizador 3D", "Comparador isómeros", "Juego interactivo", "Guía estereoquímica"],
-    },
-  ]
-
-  const crossCuttingFeatures = [
-    {
-      category: "Sistema de Aprendizaje",
-      icon: Target,
-      features: [
-        "Ruta personalizada basada en nivel de conocimiento",
-        "Tarjetas de estudio descargables por módulo",
-        "Seguimiento de progreso con gráficos de avance",
-        "Recomendaciones adaptativas de contenido",
-      ],
-    },
-    {
-      category: "Herramientas Interactivas",
-      icon: Calculator,
-      features: [
-        "Calculadora científica integrada avanzada",
-        "Tabla periódica offline con datos completos",
-        "Glosario visual de términos químicos",
-        "Conversor de unidades especializado",
-      ],
-    },
-    {
-      category: "Sistema de Evaluación",
-      icon: BarChart3,
-      features: [
-        "Pruebas de competencia alineadas al currículo",
-        "Simulador de exámenes con cronómetro",
-        "Reportes de rendimiento y detección de debilidades",
-        "Banco de preguntas categorizado por dificultad",
-      ],
     },
   ]
 
@@ -175,7 +118,7 @@ export default function GradeElevenPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="hover:bg-emerald-100">
-                <ArrowLeft className="h-5 w-5" />
+                <X className="h-5 w-5" />
               </Button>
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl">
@@ -237,94 +180,13 @@ export default function GradeElevenPage() {
                   >
                     <module.icon className="h-6 w-6 text-white" />
                   </div>
-                  <Badge
-                    variant="outline"
-                    className={`text-xs ${
-                      module.difficulty === "Básico"
-                        ? "border-green-300 text-green-700 bg-green-50"
-                        : module.difficulty === "Intermedio"
-                          ? "border-yellow-300 text-yellow-700 bg-yellow-50"
-                          : "border-red-300 text-red-700 bg-red-50"
-                    }`}
-                  >
-                    {module.difficulty}
-                  </Badge>
                 </div>
                 <CardTitle className="text-lg font-semibold text-gray-800 mb-2">{module.title}</CardTitle>
                 <CardDescription className="text-gray-600 text-sm">{module.description}</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Progreso</span>
-                    <span className="font-semibold text-gray-800">{module.progress}%</span>
-                  </div>
-                  <Progress value={module.progress} className="h-2" />
-
-                  <div className="flex items-center justify-between text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Users className="h-3 w-3" />
-                      <span>{module.students}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      <span>{module.estimatedTime}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-3 w-3 ${i < Math.floor(module.rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
-                      />
-                    ))}
-                    <span className="text-xs text-gray-500 ml-1">{module.rating}</span>
-                  </div>
-
-                  <div className="pt-2">
-                    <Button
-                      className={`w-full bg-gradient-to-r ${module.color} hover:opacity-90 text-white font-semibold group-hover:scale-105 transition-transform`}
-                    >
-                      {module.progress > 0 ? "Continuar" : "Comenzar"}
-                      <ChevronRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
             </Card>
           ))}
         </div>
-
-        {/* Cross-Cutting Features */}
-        <section className="mb-8">
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-8 rounded-2xl shadow-lg">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold mb-4">Características Transversales</h2>
-              <p className="text-indigo-100 max-w-2xl mx-auto">
-                Herramientas y funciones avanzadas que potencian tu experiencia de aprendizaje en todos los módulos.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {crossCuttingFeatures.map((section, index) => (
-                <div key={index} className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-white/20 rounded-lg">
-                      <section.icon className="h-5 w-5 text-white" />
-                    </div>
-                    <h3 className="font-semibold">{section.category}</h3>
-                  </div>
-                  <ul className="space-y-2 text-sm text-indigo-100">
-                    {section.features.map((feature, featureIndex) => (
-                      <li key={featureIndex}>• {feature}</li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* Module Detail Modal */}
         {selectedModule && (
@@ -349,33 +211,15 @@ export default function GradeElevenPage() {
                           onClick={() => setSelectedModule(null)}
                           className="text-white hover:bg-white/20"
                         >
-                          <ArrowLeft className="h-5 w-5" />
+                          <X className="h-5 w-5" />
                         </Button>
-                      </div>
-                      <div className="flex items-center gap-6">
-                        <div>
-                          <div className="text-2xl font-bold">{module.progress}%</div>
-                          <div className="text-white/80 text-sm">Completado</div>
-                        </div>
-                        <div>
-                          <div className="text-2xl font-bold">{module.students}</div>
-                          <div className="text-white/80 text-sm">Estudiantes</div>
-                        </div>
-                        <div>
-                          <div className="text-2xl font-bold">{module.estimatedTime}</div>
-                          <div className="text-white/80 text-sm">Duración</div>
-                        </div>
-                        <div>
-                          <div className="text-2xl font-bold">{module.rating}</div>
-                          <div className="text-white/80 text-sm">Calificación</div>
-                        </div>
                       </div>
                     </div>
 
                     <div className="p-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-800 mb-4">Características Principales</h3>
+                          <h3 className="text-lg font-semibold text-gray-800 mb-4">Lo que deberás aprender</h3>
                           <div className="space-y-3">
                             {module.features.map((feature, index) => (
                               <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
@@ -400,31 +244,7 @@ export default function GradeElevenPage() {
                               </div>
                             ))}
                           </div>
-
-                          <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                            <h4 className="font-semibold text-blue-800 mb-2">Competencias desarrolladas:</h4>
-                            <ul className="text-sm text-blue-700 space-y-1">
-                              <li>• Análisis avanzado de sistemas químicos</li>
-                              <li>• Resolución de problemas complejos</li>
-                              <li>• Interpretación de datos experimentales</li>
-                              <li>• Aplicación de conceptos teóricos</li>
-                            </ul>
-                          </div>
                         </div>
-                      </div>
-
-                      <div className="flex gap-3">
-                        <Button className={`flex-1 bg-gradient-to-r ${module.color} hover:opacity-90 text-white`}>
-                          <Play className="mr-2 h-4 w-4" />
-                          {module.progress > 0 ? "Continuar Módulo" : "Comenzar Módulo"}
-                        </Button>
-                        <Button variant="outline" className="px-6 bg-transparent">
-                          Vista Previa
-                        </Button>
-                        <Button variant="outline" className="px-6 bg-transparent">
-                          <BookOpen className="mr-2 h-4 w-4" />
-                          Recursos
-                        </Button>
                       </div>
                     </div>
                   </div>
