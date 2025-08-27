@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom"
 import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
-import { Progress } from "../../components/ui/progress"
 import { SearchBar } from '../../components/ui/searchbar'
 import {
   ArrowLeft,
@@ -34,6 +33,7 @@ import {
   FlaskConical,
   Trophy,
   BarChart3,
+  X,
 } from "lucide-react"
 
 export default function GradeTenPage() {
@@ -53,6 +53,7 @@ export default function GradeTenPage() {
     }
   }
 
+  // Modulos de 10º grado
   const modules = [
     {
       id: "periodic-table",
@@ -60,11 +61,7 @@ export default function GradeTenPage() {
       description: "Explorador completo de elementos con herramientas avanzadas",
       icon: Table2,
       color: "from-purple-500 to-purple-600",
-      progress: 75,
       difficulty: "Básico",
-      estimatedTime: "3-4 horas",
-      students: "3.2k",
-      rating: 4.9,
       features: [
         { name: "Explorador de Elementos", icon: Eye, description: "Datos completos con búsqueda inteligente" },
         { name: "Sistema de Clasificación Visual", icon: Settings, description: "Codificación por colores y filtros" },
@@ -79,11 +76,7 @@ export default function GradeTenPage() {
       description: "Simuladores 3D y calculadoras nucleares avanzadas",
       icon: Atom,
       color: "from-blue-500 to-blue-600",
-      progress: 60,
       difficulty: "Intermedio",
-      estimatedTime: "4-5 horas",
-      students: "2.8k",
-      rating: 4.8,
       features: [
         { name: "Simulador 3D de Átomos", icon: Atom, description: "Modelos interactivos ajustables" },
         { name: "Calculadora Nuclear", icon: Calculator, description: "Protones, neutrones, electrones" },
@@ -98,11 +91,7 @@ export default function GradeTenPage() {
       description: "Generadores automáticos y visualizadores de orbitales",
       icon: Orbit,
       color: "from-green-500 to-green-600",
-      progress: 45,
       difficulty: "Intermedio",
-      estimatedTime: "5-6 horas",
-      students: "2.5k",
-      rating: 4.7,
       features: [
         { name: "Generador Automático", icon: Settings, description: "Notación estándar y simplificada" },
         { name: "Visualizador de Orbitales", icon: Eye, description: "Diagramas animados con reglas cuánticas" },
@@ -117,11 +106,7 @@ export default function GradeTenPage() {
       description: "Comparadores y laboratorio molecular 3D",
       icon: Link,
       color: "from-orange-500 to-orange-600",
-      progress: 30,
       difficulty: "Intermedio",
-      estimatedTime: "4-5 horas",
-      students: "2.1k",
-      rating: 4.6,
       features: [
         { name: "Comparador de Enlaces", icon: BarChart3, description: "Diferencias iónico/covalente/metálico" },
         { name: "Laboratorio de Moléculas", icon: FlaskRound, description: "Constructor de fórmulas 3D" },
@@ -136,11 +121,7 @@ export default function GradeTenPage() {
       description: "Asistente IUPAC y sistema de desafíos",
       icon: FileText,
       color: "from-teal-500 to-teal-600",
-      progress: 20,
       difficulty: "Avanzado",
-      estimatedTime: "3-4 horas",
-      students: "1.9k",
-      rating: 4.5,
       features: [
         { name: "Asistente IUPAC", icon: Settings, description: "Generador para binarios/ternarios" },
         { name: "Sistemas Stock y Tradicional", icon: BookOpen, description: "Nomenclatura completa" },
@@ -155,11 +136,7 @@ export default function GradeTenPage() {
       description: "Identificadores y balanceadores inteligentes",
       icon: FlaskRound,
       color: "from-pink-500 to-pink-600",
-      progress: 15,
       difficulty: "Avanzado",
-      estimatedTime: "5-6 horas",
-      students: "1.7k",
-      rating: 4.4,
       features: [
         { name: "Identificador de Tipos", icon: Eye, description: "Combinación, descomposición, desplazamiento" },
         { name: "Balanceador Inteligente", icon: Scale, description: "Explicación paso a paso" },
@@ -174,11 +151,7 @@ export default function GradeTenPage() {
       description: "Suite completa de cálculos y problemas",
       icon: Scale,
       color: "from-indigo-500 to-indigo-600",
-      progress: 10,
       difficulty: "Avanzado",
-      estimatedTime: "6-7 horas",
-      students: "1.5k",
-      rating: 4.3,
       features: [
         { name: "Suite de Cálculos", icon: Calculator, description: "Conversiones masa-mol-partículas" },
         { name: "Resolución Guiada", icon: BookOpen, description: "Problemas paso a paso" },
@@ -247,12 +220,15 @@ export default function GradeTenPage() {
         {/* Modules Grid */}
         <h1 className="text-center font-bold text-2xl mb-6">Contenido de décimo año</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Goes through the array of modules and renders a Card for each one */}
           {modules.map((module) => (
+            // What the card will say
             <Card
               key={module.id}
               className="group cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105 border-0 bg-white/80 backdrop-blur-sm overflow-hidden"
               onClick={() => setSelectedModule(module.id)}
             >
+              {/* The info that will be displayed on the card */}
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between mb-3">
                   <div
@@ -276,46 +252,6 @@ export default function GradeTenPage() {
                 <CardTitle className="text-lg font-semibold text-gray-800 mb-2">{module.title}</CardTitle>
                 <CardDescription className="text-gray-600 text-sm">{module.description}</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Progreso</span>
-                    <span className="font-semibold text-gray-800">{module.progress}%</span>
-                  </div>
-                  <Progress value={module.progress} className="h-2" />
-
-                  <div className="flex items-center justify-between text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Users className="h-3 w-3" />
-                      <span>{module.students}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      <span>{module.estimatedTime}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-3 w-3 ${i < Math.floor(module.rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
-                      />
-                    ))}
-                    <span className="text-xs text-gray-500 ml-1">{module.rating}</span>
-                  </div>
-
-                  <div className="pt-2">
-                    <Button
-                      onClick={() => handleModuleStart(module.id)}
-                      className={`w-full bg-gradient-to-r ${module.color} hover:opacity-90 text-white font-semibold group-hover:scale-105 transition-transform`}
-                    >
-                      {module.progress > 0 ? "Continuar" : "Comenzar"}
-                      <ChevronRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
             </Card>
           ))}
         </div>
@@ -343,33 +279,16 @@ export default function GradeTenPage() {
                           onClick={() => setSelectedModule(null)}
                           className="text-white hover:bg-white/20"
                         >
-                          <ArrowLeft className="h-5 w-5" />
+                          <X className="h-5 w-5" />
                         </Button>
-                      </div>
-                      <div className="flex items-center gap-6">
-                        <div>
-                          <div className="text-2xl font-bold">{module.progress}%</div>
-                          <div className="text-white/80 text-sm">Completado</div>
-                        </div>
-                        <div>
-                          <div className="text-2xl font-bold">{module.students}</div>
-                          <div className="text-white/80 text-sm">Estudiantes</div>
-                        </div>
-                        <div>
-                          <div className="text-2xl font-bold">{module.estimatedTime}</div>
-                          <div className="text-white/80 text-sm">Duración</div>
-                        </div>
-                        <div>
-                          <div className="text-2xl font-bold">{module.rating}</div>
-                          <div className="text-white/80 text-sm">Calificación</div>
-                        </div>
                       </div>
                     </div>
 
                     <div className="p-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-800 mb-4">Características Principales</h3>
+                          {/* Where the learning objectives are listed */}
+                          <h3 className="text-lg font-semibold text-gray-800 mb-4">Lo que deberás aprender</h3>
                           <div className="space-y-3">
                             {module.features.map((feature, index) => (
                               <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
@@ -384,44 +303,6 @@ export default function GradeTenPage() {
                             ))}
                           </div>
                         </div>
-
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-800 mb-4">Herramientas Incluidas</h3>
-                          <div className="grid grid-cols-2 gap-3">
-                            {module.tools.map((tool, index) => (
-                              <div key={index} className="p-3 bg-blue-50 rounded-lg text-center">
-                                <div className="text-sm font-medium text-blue-800">{tool}</div>
-                              </div>
-                            ))}
-                          </div>
-
-                          <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
-                            <h4 className="font-semibold text-green-800 mb-2">Lo que aprenderás:</h4>
-                            <ul className="text-sm text-green-700 space-y-1">
-                              <li>• Conceptos fundamentales del módulo</li>
-                              <li>• Aplicación práctica con simuladores</li>
-                              <li>• Resolución de problemas complejos</li>
-                              <li>• Preparación para evaluaciones</li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-3">
-                        <Button 
-                          onClick={() => handleModuleStart(module.id)}
-                          className={`flex-1 bg-gradient-to-r ${module.color} hover:opacity-90 text-white`}
-                        >
-                          <Play className="mr-2 h-4 w-4" />
-                          {module.progress > 0 ? "Continuar Módulo" : "Comenzar Módulo"}
-                        </Button>
-                        <Button variant="outline" className="px-6 bg-transparent">
-                          Vista Previa
-                        </Button>
-                        <Button variant="outline" className="px-6 bg-transparent">
-                          <BookOpen className="mr-2 h-4 w-4" />
-                          Recursos
-                        </Button>
                       </div>
                     </div>
                   </div>
