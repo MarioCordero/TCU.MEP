@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom"
 import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
-import { Progress } from "../../components/ui/progress"
 import { SearchBar } from '../../components/ui/searchbar'
 import {
   ArrowLeft,
@@ -34,6 +33,7 @@ import {
   FlaskConical,
   Trophy,
   BarChart3,
+  X,
 } from "lucide-react"
 
 export default function GradeTenPage() {
@@ -279,7 +279,7 @@ export default function GradeTenPage() {
                           onClick={() => setSelectedModule(null)}
                           className="text-white hover:bg-white/20"
                         >
-                          <ArrowLeft className="h-5 w-5" />
+                          <X className="h-5 w-5" />
                         </Button>
                       </div>
                     </div>
@@ -287,7 +287,8 @@ export default function GradeTenPage() {
                     <div className="p-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-800 mb-4">Características Principales</h3>
+                          {/* Where the learning objectives are listed */}
+                          <h3 className="text-lg font-semibold text-gray-800 mb-4">Lo que deberás aprender</h3>
                           <div className="space-y-3">
                             {module.features.map((feature, index) => (
                               <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
@@ -302,37 +303,6 @@ export default function GradeTenPage() {
                             ))}
                           </div>
                         </div>
-
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-800 mb-4">Herramientas Incluidas</h3>
-                          <div className="grid grid-cols-2 gap-3">
-                            {module.tools.map((tool, index) => (
-                              <div key={index} className="p-3 bg-blue-50 rounded-lg text-center">
-                                <div className="text-sm font-medium text-blue-800">{tool}</div>
-                              </div>
-                            ))}
-                          </div>
-
-                          <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
-                            <h4 className="font-semibold text-green-800 mb-2">Lo que aprenderás:</h4>
-                            <ul className="text-sm text-green-700 space-y-1">
-                              <li>• Conceptos fundamentales del módulo</li>
-                              <li>• Aplicación práctica con simuladores</li>
-                              <li>• Resolución de problemas complejos</li>
-                              <li>• Preparación para evaluaciones</li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-3">
-                        <Button variant="outline" className="px-6 bg-transparent">
-                          Vista Previa
-                        </Button>
-                        <Button variant="outline" className="px-6 bg-transparent">
-                          <BookOpen className="mr-2 h-4 w-4" />
-                          Recursos
-                        </Button>
                       </div>
                     </div>
                   </div>
