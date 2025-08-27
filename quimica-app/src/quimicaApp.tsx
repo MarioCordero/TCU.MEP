@@ -15,6 +15,10 @@ import TablaPeriodicaScreen from './screens/tabla-periodica'
 import EstructuraAtomica from './screens/estructura-atomica'
 import ConfiguracionElectronica from './screens/configuracion-electronica'
 
+// NOTION TEST
+import ChemMasterCMS from './pages/ChemMasterCMS'
+
+
 // Component to handle dynamic titles
 function DocumentTitle() {
   const location = useLocation()
@@ -54,8 +58,8 @@ interface QuimicaAppProps {
   isLoaderComplete?: boolean;
   currentPage?: string;
 }
-
-export default function QuimicaApp({ isLoaderComplete, currentPage }: QuimicaAppProps) {
+// export default function QuimicaApp({ isLoaderComplete, currentPage }: QuimicaAppProps) {
+export default function QuimicaApp({}: QuimicaAppProps) {
   return (
     <>
       <DocumentTitle />
@@ -72,6 +76,9 @@ export default function QuimicaApp({ isLoaderComplete, currentPage }: QuimicaApp
         <Route path="/tabla-periodica" element={<TablaPeriodicaScreen />} />
         <Route path="/estructura-atomica" element={<EstructuraAtomica />} />
         <Route path="/configuracion-electronica" element={<ConfiguracionElectronica />} />
+
+        {/* NotionTest route */}
+        <Route path="/ChemMasterCMS" element={<ChemMasterCMS />} />
       </Routes>
     </>
   )
