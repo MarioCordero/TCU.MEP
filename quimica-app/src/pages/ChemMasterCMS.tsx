@@ -30,6 +30,19 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
     lastUpdated: new Date().toISOString(),
   })
 
+  useEffect(() => {
+  fetch("http://chemmaster.com/API/cmsData.php") // LOCAL
+    .then(res => res.json())
+    .then(data => {
+      if (data.success && data.cmsData) {
+        setCMSData(data.cmsData)
+      }
+    })
+    .catch(() => {
+      // Handle error (optional)
+    })
+}, [])
+
   // Auto-save functionality (simulated)
   useEffect(() => {
     if (hasUnsavedChanges) {
@@ -482,14 +495,14 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
                 </div>
                 <div>
                   <div className="font-semibold">
-                    {cmsData.modules.reduce((acc, m) => acc + m.submodules.length, 0)}
+                    {cmsData.modules.reduce((acc, m) => acc + (m.submodules ? m.submodules.length : 0), 0)}
                   </div>
-                  <div>Submódulos</div>
+                  <div>Temas</div>
                 </div>
                 <div>
                   <div className="font-semibold">
                     {cmsData.modules.reduce(
-                      (acc, m) => acc + m.submodules.reduce((subAcc, s) => subAcc + s.topics.length, 0),
+                      (acc, m) => acc + (m.submodules ? m.submodules.reduce((subAcc, s) => subAcc + (s.topics ? s.topics.length : 0), 0) : 0),
                       0,
                     )}
                   </div>
