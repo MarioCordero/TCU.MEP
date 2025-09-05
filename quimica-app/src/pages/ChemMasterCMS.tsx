@@ -257,7 +257,8 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex">
-      {/* Sidebar */}
+
+      {/* SIDEBAR */}
       <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-gray-200">
@@ -304,29 +305,23 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
           )}
         </div>
 
-        {/* Content Tree */}
+        {/* Modules */}
         <div className="flex-1 overflow-y-auto p-4">
           {filteredModules.map((module) => (
             <div key={module.id} className="mb-2">
               {/* Module */}
-              <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 group">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => toggleModuleExpansion(module.id)}
-                  className="p-1 h-6 w-6"
-                >
-                  {expandedModules.has(module.id) ? (
-                    <ChevronDown className="h-3 w-3" />
-                  ) : (
-                    <ChevronRight className="h-3 w-3" />
-                  )}
-                </Button>
-
-                <div
-                  className={`flex-1 cursor-pointer p-1 rounded ${selectedModule === module.id ? "bg-blue-100" : ""}`}
-                  onClick={() => setSelectedModule(module.id)}
-                >
+              <div
+                className={`flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 group cursor-pointer ${
+                  selectedModule === module.id ? "bg-blue-100" : ""
+                }`}
+                onClick={() => {
+                  setSelectedModule(module.id)
+                  setSelectedSubmodule(null)
+                  setSelectedTopic(null)
+                }}
+              >
+                {/* Removed arrow and + button */}
+                <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="text-xs">
                       {module.grade_level ? `${module.grade_level}°` : "Sin grado"}
@@ -334,118 +329,14 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
                     <span className="text-sm font-medium truncate">{module.title}</span>
                   </div>
                 </div>
-
-                <div className="opacity-0 group-hover:opacity-100 flex gap-1">
-                  <Button variant="ghost" size="sm" onClick={() => addNewSubmodule(module.id)} className="p-1 h-6 w-6">
-                    <Plus className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => deleteModule(module.id)}
-                    className="p-1 h-6 w-6 text-red-500 hover:text-red-700"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
               </div>
-
-              {/* Submodules */}
-              {expandedModules.has(module.id) && (
-                <div className="ml-6 space-y-1">
-                  {module.submodules.map((submodule) => (
-                    <div key={submodule.id}>
-                      <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 group">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleSubmoduleExpansion(submodule.id)}
-                          className="p-1 h-6 w-6"
-                        >
-                          {expandedSubmodules.has(submodule.id) ? (
-                            <ChevronDown className="h-3 w-3" />
-                          ) : (
-                            <ChevronRight className="h-3 w-3" />
-                          )}
-                        </Button>
-
-                        <div
-                          className={`flex-1 cursor-pointer p-1 rounded ${
-                            selectedSubmodule === submodule.id ? "bg-green-100" : ""
-                          }`}
-                          onClick={() => setSelectedSubmodule(submodule.id)}
-                        >
-                          <span className="text-sm truncate">{submodule.title}</span>
-                        </div>
-
-                        <div className="opacity-0 group-hover:opacity-100 flex gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => addNewTopic(module.id, submodule.id)}
-                            className="p-1 h-6 w-6"
-                          >
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => deleteSubmodule(module.id, submodule.id)}
-                            className="p-1 h-6 w-6 text-red-500 hover:text-red-700"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* Topics */}
-                      {expandedSubmodules.has(submodule.id) && (
-                        <div className="ml-6 space-y-1">
-                          {submodule.topics.map((topic) => (
-                            <div
-                              key={topic.id}
-                              className={`flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 group cursor-pointer ${
-                                selectedTopic === topic.id ? "bg-purple-100" : ""
-                              }`}
-                              onClick={() => setSelectedTopic(topic.id)}
-                            >
-                              <div className="w-6" /> {/* Spacer */}
-                              <div className="flex-1">
-                                <span className="text-sm truncate">{topic.title}</span>
-                                <div className="flex items-center gap-1 mt-1">
-                                  <Badge variant="outline" className="text-xs">
-                                    {topic.difficulty}
-                                  </Badge>
-                                  <span className="text-xs text-gray-500">{topic.estimatedTime}</span>
-                                </div>
-                              </div>
-                              <div className="opacity-0 group-hover:opacity-100">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    deleteTopic(module.id, submodule.id, topic.id)
-                                  }}
-                                  className="p-1 h-6 w-6 text-red-500 hover:text-red-700"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           ))}
         </div>
       </div>
+      {/* SIDEBAR */}
 
-      {/* Main Content */}
+      {/* MAIN CONTENT */}
       <div className="flex-1 bg-gray-50 overflow-hidden">
         {selectedTopic ? (
           <CMSTopicEditor
@@ -496,15 +387,26 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
                 </div>
                 <div>
                   <div className="font-semibold">
-                    {cmsData.modules.reduce((acc, m) => acc + (m.submodules ? m.submodules.length : 0), 0)}
+                    {cmsData.modules.reduce(
+                      (acc, m) => acc + (Array.isArray(m.submodules) ? m.submodules.length : 0),
+                      0
+                    )}
                   </div>
-                  <div>Temas</div>
+                  <div>Submódulos</div>
                 </div>
                 <div>
                   <div className="font-semibold">
                     {cmsData.modules.reduce(
-                      (acc, m) => acc + (m.submodules ? m.submodules.reduce((subAcc, s) => subAcc + (s.topics ? s.topics.length : 0), 0) : 0),
-                      0,
+                      (acc, m) =>
+                        acc +
+                        (Array.isArray(m.submodules)
+                          ? m.submodules.reduce(
+                              (subAcc, s) =>
+                                subAcc + (Array.isArray(s.topics) ? s.topics.length : 0),
+                              0
+                            )
+                          : 0),
+                      0
                     )}
                   </div>
                   <div>Temas</div>
@@ -514,6 +416,8 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
           </div>
         )}
       </div>
+      {/* MAIN CONTENT */}
+      
     </div>
   )
 }
