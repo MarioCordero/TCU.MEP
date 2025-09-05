@@ -35,6 +35,7 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
     .then(res => res.json())
     .then(data => {
       if (data.success && data.cmsData) {
+        console.log("CMS data loaded:", data.cmsData)
         setCMSData(data.cmsData)
       }
     })
@@ -328,7 +329,7 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
                 >
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="text-xs">
-                      {module.grade}°
+                      {module.grade_level ? `${module.grade_level}°` : "Sin grado"}
                     </Badge>
                     <span className="text-sm font-medium truncate">{module.title}</span>
                   </div>

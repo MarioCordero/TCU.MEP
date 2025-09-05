@@ -28,7 +28,8 @@ export interface CMSModule {
   description: string
   icon: string
   color: string
-  grade: "10" | "11"
+  grade?: "10" | "11"         // Optional, for legacy/new data
+  grade_level?: string        // Optional, for DB/API compatibility
   difficulty: "Básico" | "Intermedio" | "Avanzado"
   estimatedTime: string
   submodules: CMSSubmodule[]
