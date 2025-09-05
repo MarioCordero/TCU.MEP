@@ -31,18 +31,19 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
   })
 
   useEffect(() => {
-  fetch("http://chemmaster.com/API/cmsData.php") // LOCAL
-    .then(res => res.json())
-    .then(data => {
-      if (data.success && data.cmsData) {
-        console.log("CMS data loaded:", data.cmsData)
-        setCMSData(data.cmsData)
-      }
-    })
-    .catch(() => {
-      // Handle error (optional)
-    })
-}, [])
+    fetch("http://chemmaster.com/API/cmsData.php")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.cmsData) {
+          // Normalize modules
+          const normalizedModules = data.cmsData.modules.map(normalizeModule)
+          setCMSData({ ...data.cmsData, modules: normalizedModules })
+        }
+      })
+      .catch(() => {
+        // Handle error (optional)
+      })
+  }, [])
 
   // Auto-save functionality (simulated)
   useEffect(() => {
@@ -58,6 +59,16 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
   const handleDataChange = (newData: CMSData) => {
     setCMSData(newData)
     setHasUnsavedChanges(true)
+  }
+
+  // Helper to normalize modules
+  function normalizeModule(module: CMSModule): CMSModule {
+    return {
+      ...module,
+      features: Array.isArray(module.features) ? module.features : [],
+      tools: Array.isArray(module.tools) ? module.tools : [],
+      submodules: Array.isArray(module.submodules) ? module.submodules : [],
+    }
   }
 
   // Toggle module expansion
@@ -91,8 +102,6 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
       icon: "BookOpen",
       color: "from-gray-500 to-gray-600",
       grade: "10",
-      difficulty: "Básico",
-      estimatedTime: "1-2 horas",
       order: cmsData.modules.length + 1,
       isActive: true,
       features: [],
@@ -142,8 +151,6 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
       description: "Descripción del nuevo tema",
       content: "Contenido del nuevo tema...",
       icon: "FileText",
-      difficulty: "Básico",
-      estimatedTime: "15 min",
       order: 1,
       isActive: true,
       createdAt: new Date().toISOString(),
@@ -236,7 +243,9 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
       reader.onload = (e) => {
         try {
           const importedData = JSON.parse(e.target?.result as string)
-          setCMSData(importedData)
+          // Normalize modules on import
+          const normalizedModules = importedData.modules.map(normalizeModule)
+          setCMSData({ ...importedData, modules: normalizedModules })
           setHasUnsavedChanges(true)
         } catch (error) {
           alert("Error al importar el archivo. Verifica que sea un JSON válido.")
@@ -276,7 +285,7 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
 
           {/* Actions */}
           <div className="flex gap-2 mt-4 bg-black rounded text-white">
-            <Button size="sm" onClick={addNewModule} className="flex-1">
+            <Button size="sm" onClick={addNewModule} className="flex-1 cursor-pointer">
               <Plus className="h-4 w-4 mr-1" />
               Módulo
             </Button>
@@ -347,6 +356,7 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
           />
         ) : selectedModule ? (
           <CMSModuleEditor
+            key={selectedModule}
             module={cmsData.modules.find((m) => m.id === selectedModule)!}
             onSave={(updatedModule) => {
               const newData = {

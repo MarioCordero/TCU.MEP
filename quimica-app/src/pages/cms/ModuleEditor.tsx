@@ -105,7 +105,6 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
             <div>
               <h1 className="text-2xl font-bold text-gray-800">{isEditing ? "Editando Módulo" : "Vista de Módulo"}</h1>
               <p className="text-gray-600">
-                {editedModule.grade}° Grado • {editedModule.difficulty} • {editedModule.estimatedTime}
               </p>
             </div>
           </div>
@@ -205,38 +204,6 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                     <SelectItem value="11">11° Grado</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="difficulty">Dificultad</Label>
-                <Select
-                  value={editedModule.difficulty}
-                  onValueChange={(value: "Básico" | "Intermedio" | "Avanzado") =>
-                    setEditedModule({ ...editedModule, difficulty: value })
-                  }
-                  disabled={!isEditing}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Básico">Básico</SelectItem>
-                    <SelectItem value="Intermedio">Intermedio</SelectItem>
-                    <SelectItem value="Avanzado">Avanzado</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="estimatedTime">Tiempo Estimado</Label>
-                <Input
-                  id="estimatedTime"
-                  value={editedModule.estimatedTime}
-                  onChange={(e) => setEditedModule({ ...editedModule, estimatedTime: e.target.value })}
-                  disabled={!isEditing}
-                  className="mt-1"
-                  placeholder="ej: 3-4 horas"
-                />
               </div>
             </div>
 

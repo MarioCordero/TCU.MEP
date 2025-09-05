@@ -1,11 +1,12 @@
+// -------------------------------------------------------------------------------- //
+// ------------------------These are the types used in the CMS--------------------- //
+// -------------------------------------------------------------------------------- //
 export interface CMSTopic {
   id: string
   title: string
   description: string
   content: string
   icon: string
-  difficulty: "Básico" | "Intermedio" | "Avanzado"
-  estimatedTime: string
   order: number
   isActive: boolean
   createdAt: string
@@ -30,8 +31,6 @@ export interface CMSModule {
   color: string
   grade?: "10" | "11"         // Optional, for legacy/new data
   grade_level?: string        // Optional, for DB/API compatibility
-  difficulty: "Básico" | "Intermedio" | "Avanzado"
-  estimatedTime: string
   submodules: CMSSubmodule[]
   order: number
   isActive: boolean
