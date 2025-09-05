@@ -1,13 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
+import { Button } from "../../components/ui/button"
+import { Input } from "../../components/ui/input"
+import { Textarea } from "../../components/ui/textarea"
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
+import { Switch } from "../../components/ui/switch"
+import { Label } from "../../components/ui/label"
 import { Save, Edit3, Plus, Trash2, Star, Target } from "lucide-react"
 import type { CMSModule } from "../../types/cms"
 
@@ -95,7 +95,8 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
 
   return (
     <div className="h-full overflow-y-auto">
-      {/* Header */}
+
+      {/* HEADER */}
       <div className="bg-white border-b border-gray-200 p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -110,8 +111,10 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* The Switch for module active state */}
             <div className="flex items-center gap-2 mr-4">
               <Label htmlFor="module-active">Activo</Label>
+              {/* Switch icon */}
               <Switch
                 id="module-active"
                 checked={editedModule.isActive}
@@ -120,25 +123,26 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
               />
             </div>
 
+            {/* If the module is being edited or not */}
             {isEditing ? (
               <>
                 <Button variant="outline" onClick={handleCancel}>
                   Cancelar
                 </Button>
-                <Button onClick={handleSave}>
+                <Button variant="black" onClick={handleSave}>
                   <Save className="h-4 w-4 mr-2" />
                   Guardar
                 </Button>
               </>
             ) : (
-              <Button onClick={() => setIsEditing(true)}>
-                <Edit3 className="h-4 w-4 mr-2" />
-                Editar
+              <Button variant="black" onClick={() => setIsEditing(true)}>
+                <Edit3 className="h-4 w-4 mr-2" />Editar
               </Button>
             )}
           </div>
         </div>
       </div>
+      {/* HEADER */}
 
       {/* Content */}
       <div className="p-6 space-y-6">

@@ -4,6 +4,24 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  safelist: [
+    "bg-purple-500",
+    "bg-blue-500",
+    "bg-green-500",
+    "bg-orange-500",
+    "bg-teal-500",
+    "bg-pink-500",
+    "bg-indigo-500",
+    "bg-emerald-500",
+    "data-[state=checked]:bg-purple-500",
+    "data-[state=checked]:bg-blue-500",
+    "data-[state=checked]:bg-green-500",
+    "data-[state=checked]:bg-orange-500",
+    "data-[state=checked]:bg-teal-500",
+    "data-[state=checked]:bg-pink-500",
+    "data-[state=checked]:bg-indigo-500",
+    "data-[state=checked]:bg-emerald-500",
+  ],
   theme: {
     extend: {
       colors: {
