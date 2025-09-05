@@ -60,6 +60,7 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
     setHasUnsavedChanges(true)
   }
 
+  // Toggle module expansion
   const toggleModuleExpansion = (moduleId: string) => {
     const newExpanded = new Set(expandedModules)
     if (newExpanded.has(moduleId)) {
@@ -70,6 +71,7 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
     setExpandedModules(newExpanded)
   }
 
+  // Toggle submodule expansion
   const toggleSubmoduleExpansion = (submoduleId: string) => {
     const newExpanded = new Set(expandedSubmodules)
     if (newExpanded.has(submoduleId)) {
@@ -80,6 +82,7 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
     setExpandedSubmodules(newExpanded)
   }
 
+  // Add a new module
   const addNewModule = () => {
     const newModule: CMSModule = {
       id: `module-${Date.now()}`,
@@ -107,6 +110,7 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
     setEditMode("edit")
   }
 
+  // Add a new submodule
   const addNewSubmodule = (moduleId: string) => {
     const newSubmodule: CMSSubmodule = {
       id: `submodule-${Date.now()}`,
@@ -130,6 +134,7 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
     setEditMode("edit")
   }
 
+  // Add a new topic
   const addNewTopic = (moduleId: string, submoduleId: string) => {
     const newTopic: CMSTopic = {
       id: `topic-${Date.now()}`,
@@ -164,6 +169,7 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
     setEditMode("edit")
   }
 
+  // Delete handlers
   const deleteModule = (moduleId: string) => {
     if (confirm("¿Estás seguro de que quieres eliminar este módulo?")) {
       const newData = {
@@ -178,6 +184,7 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
     }
   }
 
+  // Delete handlers
   const deleteSubmodule = (moduleId: string, submoduleId: string) => {
     if (confirm("¿Estás seguro de que quieres eliminar este submódulo?")) {
       const newData = {
@@ -196,6 +203,7 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
     }
   }
 
+  // Delete handlers
   const deleteTopic = (moduleId: string, submoduleId: string, topicId: string) => {
     if (confirm("¿Estás seguro de que quieres eliminar este tema?")) {
       const newData = {
@@ -219,17 +227,6 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
         setSelectedTopic(null)
       }
     }
-  }
-
-  const exportData = () => {
-    const dataStr = JSON.stringify(cmsData, null, 2)
-    const dataBlob = new Blob([dataStr], { type: "application/json" })
-    const url = URL.createObjectURL(dataBlob)
-    const link = document.createElement("a")
-    link.href = url
-    link.download = `chemmaster-cms-data-${new Date().toISOString().split("T")[0]}.json`
-    link.click()
-    URL.revokeObjectURL(url)
   }
 
   const importData = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -264,9 +261,6 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-xl font-bold text-gray-800">CMS ChemMaster</h1>
-            <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="h-5 w-5" />
-            </Button>
           </div>
 
           {/* Search */}
@@ -281,20 +275,11 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2 mt-4">
+          <div className="flex gap-2 mt-4 bg-black rounded text-white">
             <Button size="sm" onClick={addNewModule} className="flex-1">
               <Plus className="h-4 w-4 mr-1" />
               Módulo
             </Button>
-            <Button size="sm" variant="outline" onClick={exportData}>
-              <Download className="h-4 w-4" />
-            </Button>
-            <label className="cursor-pointer">
-              <Button size="sm" variant="outline">
-                <Upload className="h-4 w-4" />
-              </Button>
-              <input type="file" accept=".json" onChange={importData} className="hidden" />
-            </label>
           </div>
 
           {hasUnsavedChanges && (
@@ -417,7 +402,7 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
         )}
       </div>
       {/* MAIN CONTENT */}
-      
+
     </div>
   )
 }
