@@ -1,6 +1,4 @@
-"use client"
-
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import { Textarea } from "../../components/ui/textarea"
@@ -8,8 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/ca
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
 import { Switch } from "../../components/ui/switch"
 import { Label } from "../../components/ui/label"
-import { Save, Edit3, Plus, Trash2, Star, Target } from "lucide-react"
 import type { CMSModule } from "../../types/cms"
+import * as LucideIcons from "lucide-react" // Import all icons
 
 interface CMSModuleEditorProps {
   module: CMSModule
@@ -17,10 +15,15 @@ interface CMSModuleEditorProps {
 }
 
 export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
-  const [editedModule, setEditedModule] = useState<CMSModule>(module)
+  const [editedModule, setEditedModule] = useState<CMSModule>({
+    ...module,
+    icon: typeof module.icon === "string" ? module.icon : "BookOpen",
+  })
+
   const [isEditing, setIsEditing] = useState(false)
   const [newFeature, setNewFeature] = useState("")
   const [newTool, setNewTool] = useState("")
+  const [showIconModal, setShowIconModal] = useState(false)
 
   const handleSave = () => {
     onSave(editedModule)
@@ -101,7 +104,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className={`p-3 bg-gradient-to-r ${editedModule.color} rounded-xl`}>
-              <Target className="h-6 w-6 text-white" />
+
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-800">{isEditing ? "Editando Módulo" : "Vista de Módulo"}</h1>
@@ -130,13 +133,13 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                   Cancelar
                 </Button>
                 <Button variant="black" onClick={handleSave}>
-                  <Save className="h-4 w-4 mr-2" />
+                  <LucideIcons.Save className="h-4 w-4 mr-2" />
                   Guardar
                 </Button>
               </>
             ) : (
               <Button variant="black" onClick={() => setIsEditing(true)}>
-                <Edit3 className="h-4 w-4 mr-2" />Editar
+                <LucideIcons.Edit3 className="h-4 w-4 mr-2" />Editar
               </Button>
             )}
           </div>
@@ -150,8 +153,8 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5" />
-              Información Básica
+              <LucideIcons.Target className="h-5 w-5" />
+                Información Básica
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -169,15 +172,77 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
 
               <div>
                 <Label htmlFor="icon">Icono</Label>
-                <Input
-                  id="icon"
-                  value={editedModule.icon}
-                  onChange={(e) => setEditedModule({ ...editedModule, icon: e.target.value })}
-                  disabled={!isEditing}
-                  className="mt-1"
-                  placeholder="Nombre del icono (ej: Atom, BookOpen)"
-                />
+                <div className="relative">
+                  <Input
+                    id="icon"
+                    value={editedModule.icon}
+                    onChange={(e) => setEditedModule({ ...editedModule, icon: e.target.value })}
+                    disabled={!isEditing}
+                    className="mt-1"
+                    placeholder="Nombre del icono (ej: Atom, BookOpen)"
+                  />
+                  {isEditing && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="absolute right-2 top-2"
+                      onClick={() => setShowIconModal(true)}
+                    >
+                      <LucideIcons.Search className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                
+                {/* Modal to select the icon */}
+                {showIconModal && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                    <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl w-full">
+                      {/* HEADER */}
+                      <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-lg font-bold">Selecciona un icono</h2>
+                        <Button variant="ghost" onClick={() => setShowIconModal(false)}>
+                          <LucideIcons.X className="h-5 w-5" />
+                        </Button>
+  
+                      </div>
+                      {/* HEADER */}
+
+                      {/* WEB to https://lucide.dev/icons/ */}
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-600 mb-2">
+                          Busca y copia el nombre del icono en <a href="https://lucide.dev/icons/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">lucide.dev/icons</a> y pégalo abajo.
+                        </p>
+                        <iframe
+                          src="https://lucide.dev/icons/"
+                          title="Lucide Icon Browser"
+                          className="w-full h-96 border rounded"
+                        />
+                      </div>
+                      <div className="mt-4">
+                        <Label htmlFor="iconName" className="mb-1 block">Nombre del icono</Label>
+                        <Input
+                          id="iconName"
+                          value={editedModule.icon}
+                          onChange={(e) => setEditedModule({ ...editedModule, icon: e.target.value })}
+                          placeholder="Ejemplo: BookOpen"
+                          autoFocus
+                        />
+                        <Button
+                          className="mt-2"
+                          onClick={() => setShowIconModal(false)}
+                        >
+                          Usar este icono
+                        </Button>
+                      </div>
+                      {/* WEB to https://lucide.dev/icons/ */}
+                      
+                    </div>
+                  </div>
+                )}
+
               </div>
+              
             </div>
 
             <div>
@@ -239,7 +304,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Star className="h-5 w-5" />
+              <LucideIcons.Star className="h-5 w-5" />
               Características Principales
             </CardTitle>
           </CardHeader>
@@ -268,7 +333,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                       onClick={() => removeFeature(index)}
                       className="text-red-500 hover:text-red-700"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <LucideIcons.Trash2 className="h-4 w-4" />
                     </Button>
                   )}
                 </div>
@@ -283,7 +348,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                     onKeyPress={(e) => e.key === "Enter" && addFeature()}
                   />
                   <Button onClick={addFeature}>
-                    <Plus className="h-4 w-4" />
+                    <LucideIcons.Plus className="h-4 w-4" />
                   </Button>
                 </div>
               )}
@@ -295,7 +360,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5" />
+              <LucideIcons.Target className="h-5 w-5" />
               Herramientas Incluidas
             </CardTitle>
           </CardHeader>
@@ -324,7 +389,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                       onClick={() => removeTool(index)}
                       className="text-red-500 hover:text-red-700"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <LucideIcons.Trash2 className="h-4 w-4" />
                     </Button>
                   )}
                 </div>
@@ -339,7 +404,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                     onKeyPress={(e) => e.key === "Enter" && addTool()}
                   />
                   <Button onClick={addTool}>
-                    <Plus className="h-4 w-4" />
+                    <LucideIcons.Plus className="h-4 w-4" />
                   </Button>
                 </div>
               )}
