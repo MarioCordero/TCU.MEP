@@ -38,9 +38,9 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
   // -------------------------------- USE EFFECTS --------------------------------
  
   // DEBUG: Log when a new module is received
-  useEffect(() => {
-    console.log("Nuevo módulo recibido desde la DB:", module)
-  }, [module])
+  // useEffect(() => {
+  //   console.log("Nuevo módulo recibido desde la DB:", module)
+  // }, [module])
 
   useEffect(() => {
     setEditedModule({
@@ -61,21 +61,82 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
   const [showIconModal, setShowIconModal] = useState(false)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [password, setPassword] = useState("")
+  const [deletedTopicIds, setDeletedTopicIds] = useState<number[]>([])
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
 
   const handleSave = async () => {
-  try {
-    // Save the module (including topics) to your backend
-    await fetch("http://chemmaster.com/API/updateModule.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editedModule),
-    })
-    setIsEditing(false)
-  } catch (err) {
-    alert("Error al guardar el módulo")
-    console.error(err)
+    try {
+      // Update module info
+      await fetch("http://chemmaster.com/API/updateModule.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...editedModule,
+          // Optionally remove topics here if you want to handle them separately
+        }),
+      })
+
+      // Add new topics
+      for (const topic of editedModule.topics) {
+        if (!topic.id) {
+          console.log("Adding topic:", {
+            module_id: editedModule.module_id,
+            title: topic.title,
+            description: topic.description || "",
+            content: topic.content,
+            order_in_module: topic.order_in_module || 0,
+          })
+
+          const response = await fetch("http://chemmaster.com/API/addTopic.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              module_id: editedModule.module_id,
+              title: topic.title,
+              description: topic.description || "",
+              content: topic.content,
+              order_in_module: topic.order_in_module || 0,
+            }),
+          })
+
+          const data = await response.json()
+          console.log("Add topic response:", data)
+        }
+      }
+
+      // Update existing topics
+      for (const topic of editedModule.topics) {
+        if (topic.id) {
+          await fetch("http://chemmaster.com/API/updateTopic.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: topic.id,
+              title: topic.title,
+              description: topic.description || "",
+              content: topic.content,
+              order_in_module: topic.order_in_module || 0,
+            }),
+          })
+        }
+      }
+
+      // Delete removed topics (optional: keep a list of deleted topic ids in state)
+      for (const deletedId of deletedTopicIds) {
+        await fetch("http://chemmaster.com/API/deleteTopic.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: deletedId }),
+        })
+      }
+
+      setIsEditing(false)
+      setShowSuccessModal(true)
+    } catch (err) {
+      alert("Error al guardar el módulo o los tópicos")
+      console.error(err)
+    }
   }
-}
 
   const handleCancel = () => {
     setEditedModule(module)
@@ -83,10 +144,20 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
   }
 
   const removeTopic = (idx: number) => {
+    const topic = editedModule.topics[idx]
+    if (topic.id) {
+      setDeletedTopicIds([...deletedTopicIds, topic.id])
+    }
     setEditedModule({
       ...editedModule,
       topics: editedModule.topics.filter((_, i) => i !== idx)
     })
+  }
+  
+  const fetchTopics = async () => {
+    const res = await fetch(`http://chemmaster.com/API/getTopics.php?module_id=${editedModule.module_id}`)
+    const data = await res.json()
+    setEditedModule({ ...editedModule, topics: data.topics })
   }
 
   const colorOptions = [
@@ -459,6 +530,25 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
               Confirmar
             </Button>
           </div>
+        </div>
+      </div>
+    )}
+
+    {/* SUCCESS MODAL */}
+    {showSuccessModal && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-center">
+          <h2 className="text-lg font-bold mb-4 text-green-700">¡Guardado exitoso!</h2>
+          <p className="mb-4 text-gray-700">
+            El módulo y los tópicos fueron actualizados correctamente.
+          </p>
+          <Button
+            variant="black"
+            onClick={() => setShowSuccessModal(false)}
+            className="mx-auto"
+          >
+            Cerrar
+          </Button>
         </div>
       </div>
     )}
