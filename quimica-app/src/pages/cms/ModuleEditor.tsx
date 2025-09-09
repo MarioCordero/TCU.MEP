@@ -143,6 +143,8 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                 Información Básica
             </CardTitle>
           </CardHeader>
+
+          {/* CARD OF THE MODULE */}
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -249,7 +251,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                     </div>
                   </div>
                 )}
-
+                {/* Modal to select the icon */}
               </div>
               
             </div>
@@ -285,6 +287,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
               </div>
             </div>
 
+            {/* MODULE COLOR */}
             <div>
               <Label>Color del Módulo</Label>
               <div className="grid grid-cols-4 gap-2 mt-2">
@@ -306,9 +309,63 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                 ))}
               </div>
             </div>
-          </CardContent>
-        </Card>
+            {/* MODULE COLOR */}
 
+            {/* TOPICS SECTION */}
+            <div>
+              <Label>Tópicos</Label>
+              <Button
+                type="button"
+                variant="outline"
+                className="ml-2 mb-2"
+                onClick={addTopic}
+                disabled={!isEditing}
+              >
+                + Añadir tópico
+              </Button>
+              {(editedModule.topics || []).map((topic, idx) => (
+                <div key={idx} className="mb-6 border rounded p-4 bg-gray-50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Input
+                      placeholder="Título del tópico"
+                      value={topic.title}
+                      onChange={e => {
+                        const topics = [...editedModule.topics]
+                        topics[idx].title = e.target.value
+                        setEditedModule({ ...editedModule, topics })
+                      }}
+                      disabled={!isEditing}
+                    />
+                    {isEditing && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => removeTopic(idx)}
+                        title="Eliminar tópico"
+                      >
+                        <LucideIcons.Trash className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                  <ReactQuill
+                    theme="snow"
+                    value={topic.content}
+                    onChange={value => {
+                      const topics = [...editedModule.topics]
+                      topics[idx].content = value
+                      setEditedModule({ ...editedModule, topics })
+                    }}
+                    readOnly={!isEditing}
+                    style={{ background: isEditing ? "white" : "#f9fafb" }}
+                  />
+                </div>
+              ))}
+            </div>
+            {/* TOPICS SECTION */}
+
+          </CardContent>
+          {/* CARD OF THE MODULE */}
+        </Card>
       </div>
     </div>
   )
