@@ -1,6 +1,8 @@
 // -------------------------------------------------------------------------------- //
 // ------------------------These are the types used in the CMS--------------------- //
 // -------------------------------------------------------------------------------- //
+import type { Topic } from "../pages/cms/ModuleEditor" // or define Topic in a shared file
+
 export interface CMSTopic {
   id: string
   title: string
@@ -29,6 +31,7 @@ export interface CMSModule {
   description: string
   icon: string
   color: string
+  module_id: string
   grade?: "10" | "11"         // Optional, for legacy/new data
   grade_level?: string        // Optional, for DB/API compatibility
   submodules: CMSSubmodule[]
@@ -36,7 +39,7 @@ export interface CMSModule {
   isActive: boolean
   features: string[]
   tools: string[]
-  topics: { title: string; content: string }[]
+  topics: Topic[]
 }
 
 export interface CMSData {

@@ -1,7 +1,4 @@
-"use client"
-
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Button } from "../components/ui/button"
 import { Input } from "../components/ui/input"
@@ -16,20 +13,86 @@ interface CMSPageProps {
 }
 
 const CMSPage = ({ onClose }: CMSPageProps) => {
+
+  // ---------------------------- CONSTANTS & STATES ----------------------------
   const [selectedModule, setSelectedModule] = useState<string | null>(null)
-  const [selectedSubmodule, setSelectedSubmodule] = useState<string | null>(null)
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null)
-  const [editMode, setEditMode] = useState<CMSEditMode>("view")
   const [searchQuery, setSearchQuery] = useState("")
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set())
   const [expandedSubmodules, setExpandedSubmodules] = useState<Set<string>>(new Set())
+  const [selectedSubmodule, setSelectedSubmodule] = useState<string | null>(null)
+  const [editMode, setEditMode] = useState<CMSEditMode>("view")
+  const [showSuccess, setShowSuccess] = useState(false)
+
 
   const [cmsData, setCMSData] = useState<CMSData>({
     modules: [],
     lastUpdated: new Date().toISOString(),
   })
 
+  const handleDataChange = (newData: CMSData) => {
+    setCMSData(newData)
+    setHasUnsavedChanges(true)
+  }
+
+  // Toggle module expansion
+  const toggleModuleExpansion = (moduleId: string) => {
+    const newExpanded = new Set(expandedModules)
+    if (newExpanded.has(moduleId)) {
+      newExpanded.delete(moduleId)
+    } else {
+      newExpanded.add(moduleId)
+    }
+    setExpandedModules(newExpanded)
+  }
+
+  // Toggle submodule expansion
+  const toggleSubmoduleExpansion = (submoduleId: string) => {
+    const newExpanded = new Set(expandedSubmodules)
+    if (newExpanded.has(submoduleId)) {
+      newExpanded.delete(submoduleId)
+    } else {
+      newExpanded.add(submoduleId)
+    }
+    setExpandedSubmodules(newExpanded)
+  }
+
+    // Add a new module
+  const addNewModule = () => {
+    const newModule: CMSModule = {
+      id: `module-${Date.now()}`,
+      title: "Nuevo Módulo",
+      description: "Descripción del nuevo módulo",
+      icon: "BookOpen",
+      color: "from-gray-500 to-gray-600",
+      grade: "10",
+      order: cmsData.modules.length + 1,
+      isActive: true,
+      features: [],
+      tools: [],
+      submodules: [],
+    }
+
+    const newData = {
+      ...cmsData,
+      modules: [...cmsData.modules, newModule],
+      lastUpdated: new Date().toISOString(),
+    }
+    handleDataChange(newData)
+    setSelectedModule(newModule.id)
+    setEditMode("edit")
+  }
+
+  const filteredModules = cmsData.modules.filter(
+    (module) =>
+      module.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      module.description.toLowerCase().includes(searchQuery.toLowerCase()),
+  )
+
+  // ---------------------------- CONSTANTS & STATES ----------------------------
+
+  // ---------------------------- EFFECTS & HELPERS ----------------------------
   useEffect(() => {
     fetch("http://chemmaster.com/API/cmsData.php")
       .then(res => res.json())
@@ -56,10 +119,7 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
     }
   }, [cmsData, hasUnsavedChanges])
 
-  const handleDataChange = (newData: CMSData) => {
-    setCMSData(newData)
-    setHasUnsavedChanges(true)
-  }
+  // ---------------------------- EFFECTS & HELPERS ----------------------------
 
   // Helper to normalize modules
   function normalizeModule(module: CMSModule): CMSModule {
@@ -70,196 +130,6 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
       submodules: Array.isArray(module.submodules) ? module.submodules : [],
     }
   }
-
-  // Toggle module expansion
-  const toggleModuleExpansion = (moduleId: string) => {
-    const newExpanded = new Set(expandedModules)
-    if (newExpanded.has(moduleId)) {
-      newExpanded.delete(moduleId)
-    } else {
-      newExpanded.add(moduleId)
-    }
-    setExpandedModules(newExpanded)
-  }
-
-  // Toggle submodule expansion
-  const toggleSubmoduleExpansion = (submoduleId: string) => {
-    const newExpanded = new Set(expandedSubmodules)
-    if (newExpanded.has(submoduleId)) {
-      newExpanded.delete(submoduleId)
-    } else {
-      newExpanded.add(submoduleId)
-    }
-    setExpandedSubmodules(newExpanded)
-  }
-
-  // Add a new module
-  const addNewModule = () => {
-    const newModule: CMSModule = {
-      id: `module-${Date.now()}`,
-      title: "Nuevo Módulo",
-      description: "Descripción del nuevo módulo",
-      icon: "BookOpen",
-      color: "from-gray-500 to-gray-600",
-      grade: "10",
-      order: cmsData.modules.length + 1,
-      isActive: true,
-      features: [],
-      tools: [],
-      submodules: [],
-    }
-
-    const newData = {
-      ...cmsData,
-      modules: [...cmsData.modules, newModule],
-      lastUpdated: new Date().toISOString(),
-    }
-    handleDataChange(newData)
-    setSelectedModule(newModule.id)
-    setEditMode("edit")
-  }
-
-  // Add a new submodule
-  const addNewSubmodule = (moduleId: string) => {
-    const newSubmodule: CMSSubmodule = {
-      id: `submodule-${Date.now()}`,
-      title: "Nuevo Submódulo",
-      description: "Descripción del nuevo submódulo",
-      icon: "Folder",
-      order: 1,
-      isActive: true,
-      topics: [],
-    }
-
-    const newData = {
-      ...cmsData,
-      modules: cmsData.modules.map((module) =>
-        module.id === moduleId ? { ...module, submodules: [...module.submodules, newSubmodule] } : module,
-      ),
-      lastUpdated: new Date().toISOString(),
-    }
-    handleDataChange(newData)
-    setSelectedSubmodule(newSubmodule.id)
-    setEditMode("edit")
-  }
-
-  // Add a new topic
-  const addNewTopic = (moduleId: string, submoduleId: string) => {
-    const newTopic: CMSTopic = {
-      id: `topic-${Date.now()}`,
-      title: "Nuevo Tema",
-      description: "Descripción del nuevo tema",
-      content: "Contenido del nuevo tema...",
-      icon: "FileText",
-      order: 1,
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-
-    const newData = {
-      ...cmsData,
-      modules: cmsData.modules.map((module) =>
-        module.id === moduleId
-          ? {
-              ...module,
-              submodules: module.submodules.map((submodule) =>
-                submodule.id === submoduleId ? { ...submodule, topics: [...submodule.topics, newTopic] } : submodule,
-              ),
-            }
-          : module,
-      ),
-      lastUpdated: new Date().toISOString(),
-    }
-    handleDataChange(newData)
-    setSelectedTopic(newTopic.id)
-    setEditMode("edit")
-  }
-
-  // Delete handlers
-  const deleteModule = (moduleId: string) => {
-    if (confirm("¿Estás seguro de que quieres eliminar este módulo?")) {
-      const newData = {
-        ...cmsData,
-        modules: cmsData.modules.filter((module) => module.id !== moduleId),
-        lastUpdated: new Date().toISOString(),
-      }
-      handleDataChange(newData)
-      if (selectedModule === moduleId) {
-        setSelectedModule(null)
-      }
-    }
-  }
-
-  // Delete handlers
-  const deleteSubmodule = (moduleId: string, submoduleId: string) => {
-    if (confirm("¿Estás seguro de que quieres eliminar este submódulo?")) {
-      const newData = {
-        ...cmsData,
-        modules: cmsData.modules.map((module) =>
-          module.id === moduleId
-            ? { ...module, submodules: module.submodules.filter((sub) => sub.id !== submoduleId) }
-            : module,
-        ),
-        lastUpdated: new Date().toISOString(),
-      }
-      handleDataChange(newData)
-      if (selectedSubmodule === submoduleId) {
-        setSelectedSubmodule(null)
-      }
-    }
-  }
-
-  // Delete handlers
-  const deleteTopic = (moduleId: string, submoduleId: string, topicId: string) => {
-    if (confirm("¿Estás seguro de que quieres eliminar este tema?")) {
-      const newData = {
-        ...cmsData,
-        modules: cmsData.modules.map((module) =>
-          module.id === moduleId
-            ? {
-                ...module,
-                submodules: module.submodules.map((submodule) =>
-                  submodule.id === submoduleId
-                    ? { ...submodule, topics: submodule.topics.filter((topic) => topic.id !== topicId) }
-                    : submodule,
-                ),
-              }
-            : module,
-        ),
-        lastUpdated: new Date().toISOString(),
-      }
-      handleDataChange(newData)
-      if (selectedTopic === topicId) {
-        setSelectedTopic(null)
-      }
-    }
-  }
-
-  const importData = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        try {
-          const importedData = JSON.parse(e.target?.result as string)
-          // Normalize modules on import
-          const normalizedModules = importedData.modules.map(normalizeModule)
-          setCMSData({ ...importedData, modules: normalizedModules })
-          setHasUnsavedChanges(true)
-        } catch (error) {
-          alert("Error al importar el archivo. Verifica que sea un JSON válido.")
-        }
-      }
-      reader.readAsText(file)
-    }
-  }
-
-  const filteredModules = cmsData.modules.filter(
-    (module) =>
-      module.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      module.description.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex">
@@ -355,19 +225,36 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
             }}
           />
         ) : selectedModule ? (
+          // Module Editor
           <CMSModuleEditor
             key={selectedModule}
             module={cmsData.modules.find((m) => m.id === selectedModule)!}
-            onSave={(updatedModule) => {
+            onSave={async (updatedModule) => {
               const newData = {
                 ...cmsData,
                 modules: cmsData.modules.map((module) => (module.id === selectedModule ? updatedModule : module)),
                 lastUpdated: new Date().toISOString(),
               }
               handleDataChange(newData)
+
+              // API call to save changes
+              try {
+                await fetch("http://chemmaster.com/API/updateModule.php", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(updatedModule),
+                })
+                setShowSuccess(true)
+                setTimeout(() => setShowSuccess(false), 2000)
+              } catch (err) {
+                alert("Error al guardar en el servidor")
+                console.error(err)
+              }
             }}
           />
+          // Module Editor
         ) : (
+          // When nothing is selected
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
               <Settings className="h-16 w-16 text-gray-400 mx-auto mb-4" />
@@ -409,10 +296,17 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
               </div>
             </div>
           </div>
+          // When nothing is selected
         )}
       </div>
       {/* MAIN CONTENT */}
 
+      {/* SUCCESS MESSAGE */}
+      {showSuccess && (
+        <div className="fixed top-6 right-6 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50 transition">
+          ¡Módulo guardado exitosamente!
+        </div>
+      )}
     </div>
   )
 }

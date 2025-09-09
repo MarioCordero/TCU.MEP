@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import { Textarea } from "../../components/ui/textarea"
@@ -11,41 +11,75 @@ import * as LucideIcons from "lucide-react" // Import all icons
 import ReactQuill from "react-quill"
 import "react-quill/dist/quill.snow.css" // Import Quill styles
 
+// -------------------------------- TYPES --------------------------------------
 interface CMSModuleEditorProps {
   module: CMSModule
   onSave: (module: CMSModule) => void
 }
 
+type Topic = {
+  title: string
+  description?: string
+  content: any
+  order_in_module?: number
+  id?: number
+}; 
+export type { Topic }
+
+// -------------------------------- TYPES --------------------------------------
+
 export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
   const [editedModule, setEditedModule] = useState<CMSModule>({
     ...module,
+    grade: module.grade || module.grade_level || "",
     icon: typeof module.icon === "string" ? module.icon : "BookOpen",
   })
 
-  const [isEditing, setIsEditing] = useState(false)
-  const [newFeature, setNewFeature] = useState("")
-  const [newTool, setNewTool] = useState("")
-  const [showIconModal, setShowIconModal] = useState(false)
+  // -------------------------------- USE EFFECTS --------------------------------
+ 
+  // DEBUG: Log when a new module is received
+  useEffect(() => {
+    console.log("Nuevo módulo recibido desde la DB:", module)
+  }, [module])
 
-  const handleSave = () => {
-    onSave(editedModule)
+  useEffect(() => {
+    setEditedModule({
+      ...module,
+      grade: module.grade || module.grade_level || "",
+      icon: typeof module.icon === "string" ? module.icon : "BookOpen",
+    })
+  }, [module])
+
+  // -------------------------------- USE EFFECTS --------------------------------
+
+  // -------------------------------- CONSTS--------------------------------------
+
+  const allowedGrades = ["10", "11"] as const
+  type AllowedGrade = typeof allowedGrades[number]
+
+  const [isEditing, setIsEditing] = useState(false)
+  const [showIconModal, setShowIconModal] = useState(false)
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [password, setPassword] = useState("")
+
+  const handleSave = async () => {
+  try {
+    // Save the module (including topics) to your backend
+    await fetch("http://chemmaster.com/API/updateModule.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(editedModule),
+    })
     setIsEditing(false)
+  } catch (err) {
+    alert("Error al guardar el módulo")
+    console.error(err)
   }
+}
 
   const handleCancel = () => {
     setEditedModule(module)
     setIsEditing(false)
-  }
-
-  // Inside your CMSModuleEditor function, after color options and before return:
-  const addTopic = () => {
-    setEditedModule({
-      ...editedModule,
-      topics: [
-        ...(editedModule.topics || []),
-        { title: "", content: "" }
-      ]
-    })
   }
 
   const removeTopic = (idx: number) => {
@@ -81,6 +115,30 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
       preview: "bg-gradient-to-r from-emerald-500 to-emerald-600",
     },
   ]
+
+  // -------------------------------- CONSTS -------------------------------------
+
+  // -------------------------------- FUNCTONS -----------------------------------
+  function toAllowedGrade(val: any): AllowedGrade | undefined {
+    return allowedGrades.includes(val) ? val : undefined
+  }
+
+  async function addTopicToModule(moduleId: string, topic: { title: string; description?: string; content: any; order_in_module?: number }) {
+    const response = await fetch("http://chemmaster.com/API/addTopic.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        module_id: moduleId,
+        title: topic.title,
+        description: topic.description || "",
+        content: topic.content, // Should be an object/array, not a string
+        order_in_module: topic.order_in_module || 0,
+      }),
+    })
+    const data = await response.json()
+    return data
+  }
+  // -------------------------------- FUNCTONS -----------------------------------
 
   return (
     <div className="h-full overflow-y-auto">
@@ -118,7 +176,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                 <Button variant="outline" onClick={handleCancel}>
                   Cancelar
                 </Button>
-                <Button variant="black" onClick={handleSave}>
+                <Button variant="black" onClick={() => setShowConfirmModal(true)}>
                   <LucideIcons.Save className="h-4 w-4 mr-2" />
                   Guardar
                 </Button>
@@ -268,24 +326,21 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="grade">Grado</Label>
-                <Select
-                  value={editedModule.grade}
-                  onValueChange={(value: "10" | "11") => setEditedModule({ ...editedModule, grade: value })}
-                  disabled={!isEditing}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-50">
-                    <SelectItem value="10">10° Grado</SelectItem>
-                    <SelectItem value="11">11° Grado</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            {/* GRADE SELECTOR */}
+            <Select
+              value={toAllowedGrade(editedModule.grade_level)}
+              onValueChange={(value: AllowedGrade) => setEditedModule({ ...editedModule, grade_level: value })}
+              disabled={!isEditing}
+            >
+              <SelectTrigger className="mt-1 bg-gray-100">
+                <SelectValue placeholder="Selecciona el grado" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-50">
+                <SelectItem value="10">10° Grado</SelectItem>
+                <SelectItem value="11">11° Grado</SelectItem>
+              </SelectContent>
+            </Select>
+            {/* GRADE SELECTOR */}
 
             {/* MODULE COLOR */}
             <div>
@@ -318,7 +373,15 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                 type="button"
                 variant="outline"
                 className="ml-2 mb-2"
-                onClick={addTopic}
+                onClick={() => {
+                  setEditedModule({
+                    ...editedModule,
+                    topics: [
+                      ...(editedModule.topics || []),
+                      { title: "", content: "" }
+                    ]
+                  })
+                }}
                 disabled={!isEditing}
               >
                 + Añadir tópico
@@ -367,6 +430,38 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
           {/* CARD OF THE MODULE */}
         </Card>
       </div>
+
+      {/* CONFIRM MODAL TO SAVE EDITS */}
+      {showConfirmModal && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
+          <h2 className="text-lg font-bold mb-4">Confirmar guardado</h2>
+          <p className="mb-4 text-gray-700">Por favor, ingresa tu contraseña para confirmar el guardado del módulo.</p>
+          <Input
+            type="password"
+            placeholder="Contraseña"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            className="mb-4"
+          />
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowConfirmModal(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="black"
+              onClick={() => {
+                setShowConfirmModal(false)
+                setPassword("")
+                handleSave()
+              }}
+            >
+              Confirmar
+            </Button>
+          </div>
+        </div>
+      </div>
+    )}
     </div>
   )
 }
