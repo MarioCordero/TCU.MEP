@@ -279,7 +279,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                   <SelectTrigger className="mt-1">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-gray-50">
                     <SelectItem value="10">10° Grado</SelectItem>
                     <SelectItem value="11">11° Grado</SelectItem>
                   </SelectContent>
