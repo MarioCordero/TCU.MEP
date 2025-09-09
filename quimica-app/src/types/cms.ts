@@ -36,6 +36,7 @@ export interface CMSModule {
   isActive: boolean
   features: string[]
   tools: string[]
+  topics: { title: string; content: string }[]
 }
 
 export interface CMSData {

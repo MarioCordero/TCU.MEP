@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import { Textarea } from "../../components/ui/textarea"
@@ -8,6 +8,8 @@ import { Switch } from "../../components/ui/switch"
 import { Label } from "../../components/ui/label"
 import type { CMSModule } from "../../types/cms"
 import * as LucideIcons from "lucide-react" // Import all icons
+import ReactQuill from "react-quill"
+import "react-quill/dist/quill.snow.css" // Import Quill styles
 
 interface CMSModuleEditorProps {
   module: CMSModule
@@ -35,37 +37,21 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
     setIsEditing(false)
   }
 
-  const addFeature = () => {
-    if (newFeature.trim()) {
-      setEditedModule({
-        ...editedModule,
-        features: [...editedModule.features, newFeature.trim()],
-      })
-      setNewFeature("")
-    }
-  }
-
-  const removeFeature = (index: number) => {
+  // Inside your CMSModuleEditor function, after color options and before return:
+  const addTopic = () => {
     setEditedModule({
       ...editedModule,
-      features: editedModule.features.filter((_, i) => i !== index),
+      topics: [
+        ...(editedModule.topics || []),
+        { title: "", content: "" }
+      ]
     })
   }
 
-  const addTool = () => {
-    if (newTool.trim()) {
-      setEditedModule({
-        ...editedModule,
-        tools: [...editedModule.tools, newTool.trim()],
-      })
-      setNewTool("")
-    }
-  }
-
-  const removeTool = (index: number) => {
+  const removeTopic = (idx: number) => {
     setEditedModule({
       ...editedModule,
-      tools: editedModule.tools.filter((_, i) => i !== index),
+      topics: editedModule.topics.filter((_, i) => i !== idx)
     })
   }
 
@@ -196,7 +182,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                 
                 {/* Modal to select the icon */}
                 {showIconModal && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
                     <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl w-full">
                       {/* HEADER */}
                       <div className="flex justify-between items-center mb-4">
@@ -208,7 +194,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                       </div>
                       {/* HEADER */}
 
-                      {/* WEB to https://lucide.dev/icons/ */}
+                      {/* IFRAME */}
                       <div className="mb-4">
                         <p className="text-sm text-gray-600 mb-2">
                           Busca y copia el nombre del icono en <a href="https://lucide.dev/icons/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">lucide.dev/icons</a> y pégalo abajo.
@@ -218,25 +204,48 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                           title="Lucide Icon Browser"
                           className="w-full h-96 border rounded"
                         />
+                        <p className="text-xs text-gray-500 mt-2">
+                          Haz clic en el icono en la web de Lucide para copiar el nombre, luego pégalo aquí abajo.
+                        </p>
                       </div>
+                      {/* IFRAME */}
+
+                      {/* ICON NAME REFRACT */}
                       <div className="mt-4">
                         <Label htmlFor="iconName" className="mb-1 block">Nombre del icono</Label>
-                        <Input
-                          id="iconName"
-                          value={editedModule.icon}
-                          onChange={(e) => setEditedModule({ ...editedModule, icon: e.target.value })}
-                          placeholder="Ejemplo: BookOpen"
-                          autoFocus
-                        />
+                        <div className="flex gap-2">
+                          <Input
+                            id="iconName"
+                            value={editedModule.icon}
+                            onChange={(e) => setEditedModule({ ...editedModule, icon: e.target.value })}
+                            placeholder="Ejemplo: BookOpen"
+                            autoFocus
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={async () => {
+                              try {
+                                const text = await navigator.clipboard.readText()
+                                setEditedModule({ ...editedModule, icon: text })
+                              } catch {
+                                alert("No se pudo acceder al portapapeles. Pega manualmente el nombre del icono.")
+                              }
+                            }}
+                            title="Pegar nombre del icono"
+                          >
+                            <LucideIcons.ClipboardPaste className="h-4 w-4" />
+                          </Button>
+                        </div>
                         <Button
-                          className="mt-2"
+                          className="bg-black text-white block w-1/4 m-auto mt-2.5"
                           onClick={() => setShowIconModal(false)}
                         >
                           Usar este icono
                         </Button>
                       </div>
-                      {/* WEB to https://lucide.dev/icons/ */}
-                      
+                      {/* ICON NAME */}
+
                     </div>
                   </div>
                 )}
@@ -300,144 +309,6 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
           </CardContent>
         </Card>
 
-        {/* Features */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <LucideIcons.Star className="h-5 w-5" />
-              Características Principales
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {editedModule.features.map((feature, index) => (
-                <div key={index} className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                  <div className="flex-1">
-                    {isEditing ? (
-                      <Input
-                        value={feature}
-                        onChange={(e) => {
-                          const newFeatures = [...editedModule.features]
-                          newFeatures[index] = e.target.value
-                          setEditedModule({ ...editedModule, features: newFeatures })
-                        }}
-                      />
-                    ) : (
-                      <span>{feature}</span>
-                    )}
-                  </div>
-                  {isEditing && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeFeature(index)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <LucideIcons.Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-
-              {isEditing && (
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Nueva característica..."
-                    value={newFeature}
-                    onChange={(e) => setNewFeature(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && addFeature()}
-                  />
-                  <Button onClick={addFeature}>
-                    <LucideIcons.Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Tools */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <LucideIcons.Target className="h-5 w-5" />
-              Herramientas Incluidas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {editedModule.tools.map((tool, index) => (
-                <div key={index} className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
-                  <div className="flex-1">
-                    {isEditing ? (
-                      <Input
-                        value={tool}
-                        onChange={(e) => {
-                          const newTools = [...editedModule.tools]
-                          newTools[index] = e.target.value
-                          setEditedModule({ ...editedModule, tools: newTools })
-                        }}
-                      />
-                    ) : (
-                      <span className="text-blue-800 font-medium">{tool}</span>
-                    )}
-                  </div>
-                  {isEditing && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeTool(index)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <LucideIcons.Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-
-              {isEditing && (
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Nueva herramienta..."
-                    value={newTool}
-                    onChange={(e) => setNewTool(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && addTool()}
-                  />
-                  <Button onClick={addTool}>
-                    <LucideIcons.Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Module Statistics */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Estadísticas del Módulo</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold text-blue-600">{editedModule.submodules.length}</div>
-                <div className="text-sm text-gray-600">Submódulos</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-green-600">
-                  {editedModule.submodules.reduce((acc, sub) => acc + sub.topics.length, 0)}
-                </div>
-                <div className="text-sm text-gray-600">Temas Totales</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-purple-600">
-                  {editedModule.features.length + editedModule.tools.length}
-                </div>
-                <div className="text-sm text-gray-600">Recursos</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   )
