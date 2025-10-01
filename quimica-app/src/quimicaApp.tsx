@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import { useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 // Import page components
 import LandingPage from './pages/LandingPage'
@@ -14,6 +14,9 @@ import ClasificacionMateria from './screens/clasificacion-materia'
 import TablaPeriodicaScreen from './screens/tabla-periodica'
 import EstructuraAtomica from './screens/estructura-atomica'
 import ConfiguracionElectronica from './screens/configuracion-electronica'
+
+// NOTION TEST
+import ChemMasterCMS from './pages/ChemMasterCMS'
 
 // Component to handle dynamic titles
 function DocumentTitle() {
@@ -31,6 +34,7 @@ function DocumentTitle() {
       '/quimicaApp/tabla-periodica': 'ChemMaster - Tabla Periódica',
       '/quimicaApp/estructura-atomica': 'ChemMaster - Estructura Atómica',
       '/quimicaApp/configuracion-electronica': 'ChemMaster - Configuración Electrónica',
+      '/quimicaApp/ChemMasterCMS': 'ChemMaster - CMS', // Add CMS title
       // Fallback for standalone mode
       '/': 'ChemMaster - HOME',
       '/grade-selector': 'ChemMaster - Selección de Grado',
@@ -40,7 +44,8 @@ function DocumentTitle() {
       '/clasificacion-materia': 'ChemMaster - Clasificación de Materia',
       '/tabla-periodica': 'ChemMaster - Tabla Periódica',
       '/estructura-atomica': 'ChemMaster - Estructura Atómica',
-      '/configuracion-electronica': 'ChemMaster - Configuración Electrónica'
+      '/configuracion-electronica': 'ChemMaster - Configuración Electrónica',
+      '/ChemMasterCMS': 'ChemMaster - CMS'
     }
     
     document.title = titles[location.pathname] || 'ChemMaster'
@@ -55,7 +60,13 @@ interface QuimicaAppProps {
   currentPage?: string;
 }
 
-export default function QuimicaApp({ isLoaderComplete, currentPage }: QuimicaAppProps) {
+export default function QuimicaApp({}: QuimicaAppProps) {
+  const navigate = useNavigate()
+  
+  const handleCMSClose = () => {
+    navigate('/') // Navigate back to home page when CMS is closed
+  }
+  
   return (
     <>
       <DocumentTitle />
@@ -72,6 +83,9 @@ export default function QuimicaApp({ isLoaderComplete, currentPage }: QuimicaApp
         <Route path="/tabla-periodica" element={<TablaPeriodicaScreen />} />
         <Route path="/estructura-atomica" element={<EstructuraAtomica />} />
         <Route path="/configuracion-electronica" element={<ConfiguracionElectronica />} />
+
+        {/* NotionTest route - now with proper onClose prop */}
+        <Route path="/ChemMasterCMS" element={<ChemMasterCMS onClose={handleCMSClose} />} />
       </Routes>
     </>
   )
