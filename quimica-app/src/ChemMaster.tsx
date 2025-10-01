@@ -24,17 +24,17 @@ function DocumentTitle() {
   
   useEffect(() => {
     const titles: { [key: string]: string } = {
-      '/quimicaApp': 'ChemMaster - HOME',
-      '/quimicaApp/': 'ChemMaster - HOME',
-      '/quimicaApp/grade-selector': 'ChemMaster - Selección de Grado',
-      '/quimicaApp/info': 'ChemMaster - Información',
-      '/quimicaApp/grade-10': 'ChemMaster - 10° Grado',
-      '/quimicaApp/grade-11': 'ChemMaster - 11° Grado',
-      '/quimicaApp/clasificacion-materia': 'ChemMaster - Clasificación de Materia',
-      '/quimicaApp/tabla-periodica': 'ChemMaster - Tabla Periódica',
-      '/quimicaApp/estructura-atomica': 'ChemMaster - Estructura Atómica',
-      '/quimicaApp/configuracion-electronica': 'ChemMaster - Configuración Electrónica',
-      '/quimicaApp/ChemMasterCMS': 'ChemMaster - CMS', // Add CMS title
+      '/ChemMaster': 'ChemMaster - HOME',
+      '/ChemMaster/': 'ChemMaster - HOME',
+      '/ChemMaster/grade-selector': 'ChemMaster - Selección de Grado',
+      '/ChemMaster/info': 'ChemMaster - Información',
+      '/ChemMaster/grade-10': 'ChemMaster - 10° Grado',
+      '/ChemMaster/grade-11': 'ChemMaster - 11° Grado',
+      '/ChemMaster/clasificacion-materia': 'ChemMaster - Clasificación de Materia',
+      '/ChemMaster/tabla-periodica': 'ChemMaster - Tabla Periódica',
+      '/ChemMaster/estructura-atomica': 'ChemMaster - Estructura Atómica',
+      '/ChemMaster/configuracion-electronica': 'ChemMaster - Configuración Electrónica',
+      '/ChemMaster/ChemMasterCMS': 'ChemMaster - CMS', // Add CMS title
       // Fallback for standalone mode
       '/': 'ChemMaster - HOME',
       '/grade-selector': 'ChemMaster - Selección de Grado',
@@ -85,7 +85,7 @@ export default function QuimicaApp({}: QuimicaAppProps) {
         <Route path="/configuracion-electronica" element={<ConfiguracionElectronica />} />
 
         {/* NotionTest route - now with proper onClose prop */}
-        <Route path="/ChemMasterCMS" element={<ChemMasterCMS onClose={handleCMSClose} />} />
+        <Route path="/CMS" element={<ChemMasterCMS onClose={handleCMSClose} />} />
       </Routes>
     </>
   )

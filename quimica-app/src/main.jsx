@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { BrowserRouter as Router } from 'react-router-dom'
 import { createRoot } from 'react-dom/client'
 import './main.css'
-import App from './quimicaApp.tsx'
+import App from './ChemMaster.tsx'
 
 // Suppress ReactQuill warnings - more comprehensive approach
 if (import.meta.env.DEV) {
