@@ -34,11 +34,12 @@ jobs:
         rm -rf target-repo/API/ChemMaster/*
         mkdir -p target-repo/API/ChemMaster
 
-    - name: Copy all quimica-app files to ChemMaster
+    - name: Copy quimica-app files to ChemMaster (excluding main files)
       run: |
-        # Copy everything from quimica-app to ChemMaster folder
+        # Copy everything from quimica-app to ChemMaster folder, excluding main.css and main.jsx
         if [ -d "quimica-app" ]; then
-          cp -r quimica-app/* target-repo/SPECT-Website/src/ChemMaster/
+          # Use rsync to copy files with exclusions
+          rsync -av --exclude='src/main.css' --exclude='src/main.jsx' quimica-app/ target-repo/SPECT-Website/src/ChemMaster/
         fi
 
     - name: Copy API files

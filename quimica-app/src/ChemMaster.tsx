@@ -15,7 +15,7 @@ import TablaPeriodicaScreen from './screens/tabla-periodica'
 import EstructuraAtomica from './screens/estructura-atomica'
 import ConfiguracionElectronica from './screens/configuracion-electronica'
 
-// NOTION TEST
+// CMS Component
 import ChemMasterCMS from './pages/ChemMasterCMS'
 
 // Component to handle dynamic titles
@@ -96,5 +96,4 @@ export default function QuimicaApp({ basePath = '' }: QuimicaAppProps) {
     </>
   )
 }
-
 // APLICACIÓN COMO TAL ESTA ES LA QUE VA AL SERVER DE PRODUCCIÓN
