@@ -7,7 +7,6 @@ import { X, Plus, Trash2, Search, Settings, ChevronDown, ChevronRight, Download,
 import type { CMSData, CMSModule, CMSEditMode } from "../types/cms"
 import { CMSModuleEditor } from "./cms/ModuleEditor"
 import { getApiUrl } from "../config/api"
-// import { CMSTopicEditor } from "./cms/[ ]TopicEditor"
 
 interface CMSPageProps {
   onClose: () => void
@@ -17,7 +16,6 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
 
   // ---------------------------- CONSTANTS & STATES ----------------------------
   const [selectedModule, setSelectedModule] = useState<string | number | null>(null)
-  // const [selectedTopic, setSelectedTopic] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set())
@@ -25,7 +23,6 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
   const [selectedSubmodule, setSelectedSubmodule] = useState<string | null>(null)
   const [editMode, setEditMode] = useState<CMSEditMode>("view")
   const [showSuccess, setShowSuccess] = useState(false)
-
 
   const [cmsData, setCMSData] = useState<CMSData>({
     modules: [],
@@ -70,36 +67,35 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
       module.description.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
-  // ---------------------------- CONSTANTS & STATES ----------------------------
-
   // ---------------------------- EFFECTS & HELPERS ----------------------------
   useEffect(() => {
     fetch(getApiUrl("cmsData.php"))
-      .then(res => res.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then(data => {
         if (data.success && data.cmsData) {
-          // Normalize modules
-          const normalizedModules = data.cmsData.modules.map(normalizeModule)
-          setCMSData({ ...data.cmsData, modules: normalizedModules })
+          const normalizedModules = data.cmsData.modules.map(normalizeModule);
+          setCMSData({ ...data.cmsData, modules: normalizedModules });
         }
       })
-      .catch(() => {
-        // Handle error (optional)
-      })
+      .catch(error => {
+        console.error('Error fetching CMS data:', error);
+      });
   }, [])
 
-  // Auto-save functionality (simulated)
+  // Auto-save functionality
   useEffect(() => {
     if (hasUnsavedChanges) {
       const timer = setTimeout(() => {
-        console.log("Auto-saving changes...", cmsData)
         setHasUnsavedChanges(false)
       }, 2000)
       return () => clearTimeout(timer)
     }
   }, [cmsData, hasUnsavedChanges])
-
-  // ---------------------------- EFFECTS & HELPERS ----------------------------
 
   // Helper to normalize modules
   function normalizeModule(module: CMSModule): CMSModule {
@@ -176,15 +172,8 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
                   selectedModule === module.id ? "bg-blue-100" : ""
                 }`}
                 onClick={() => {
-
-                  // DEBUG LOGS
-                  // console.log(`Module "${module.title}" active field:`, module.active);
-                  // console.log(`Module "${module.title}" isActive field:`, module.isActive);
-                  // console.log(`Full module object:`, module);
-
                   setSelectedModule(module.id)
                   setSelectedSubmodule(null)
-                  // setSelectedTopic(null)
                 }}
               >
                 <div className="flex-1">
@@ -200,7 +189,6 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
           ))}
         </div>
       </div>
-      {/* SIDEBAR */}
 
       {/* MAIN CONTENT */}
       <div className="flex-1 bg-gray-50 overflow-hidden">
@@ -258,7 +246,7 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
         )}
       </div>
 
-      {/* SUCCESS MESSAGE - same as before */}
+      {/* SUCCESS MESSAGE */}
       {showSuccess && (
         <div className="fixed top-6 right-6 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50 transition">
           ¡Módulo guardado exitosamente!

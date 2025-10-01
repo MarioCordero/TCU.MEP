@@ -22,9 +22,18 @@
     $database = $config['database']['database'];
 
     try {
-        $pdo = new PDO("mysql:host=$host;dbname=$database;charset=utf8", $username, $password);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    } catch (PDOException $e) {
+        // Create MySQLi connection instead of PDO
+        $conn = new mysqli($host, $username, $password, $database);
+        
+        // Check connection
+        if ($conn->connect_error) {
+            die("Connection failed: " . $conn->connect_error);
+        }
+        
+        // Set charset
+        $conn->set_charset("utf8");
+        
+    } catch (Exception $e) {
         die("Database connection failed: " . $e->getMessage());
     }
 ?>

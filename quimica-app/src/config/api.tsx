@@ -1,12 +1,11 @@
 // API Configuration
 export const API_CONFIG = {
   // Change this to switch between environments
-  ENVIRONMENT: 'development' as 'development' | 'production' | 'local',
-  
+  ENVIRONMENT: 'development' as 'development' | 'production',
+
   ENDPOINTS: {
     development: 'http://chemmaster.com/API/',
-    production: 'https://spectcr.com/API/ChemMaster/',
-    local: 'http://localhost/API/'
+    production: 'https://spectcr.com/API/ChemMaster/'
   }
 } as const
 
