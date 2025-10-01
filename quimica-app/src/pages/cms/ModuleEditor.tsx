@@ -10,12 +10,12 @@ import type { CMSModule } from "../../types/cms"
 import * as LucideIcons from "lucide-react"
 import ReactQuill from "react-quill"
 import "react-quill/dist/quill.snow.css"
+import { getApiUrl } from "../../config/api"
+
 
 // ================================ TYPES & CONSTANTS ================================
 const ALLOWED_GRADES = ["10", "11"] as const
 type AllowedGrade = typeof ALLOWED_GRADES[number]
-
-const API_BASE_URL = "http://chemmaster.com/API"
 
 const COLOR_OPTIONS = [
   {
@@ -65,7 +65,7 @@ function toAllowedGrade(value: any): AllowedGrade | undefined {
 // ================================ API FUNCTIONS ================================
 const apiRequest = async (endpoint: string, data: any) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
+    const response = await fetch(getApiUrl(endpoint), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),

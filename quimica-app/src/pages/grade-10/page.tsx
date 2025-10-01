@@ -4,6 +4,7 @@ import { Button } from "../../components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
 import { SearchBar } from '../../components/ui/searchbar'
+import { getApiUrl } from "../../config/api"
 import {
   ArrowLeft,
   Table2,
@@ -89,7 +90,7 @@ export default function GradeTenPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch("http://chemmaster.com/API/modulesTenth.php")
+    fetch(getApiUrl("cmsData.php"))
       .then(res => res.json())
       .then(data => {
         if (data.success) setModules(data.modules)

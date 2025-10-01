@@ -4,8 +4,9 @@ import { Button } from "../components/ui/button"
 import { Input } from "../components/ui/input"
 import { Badge } from "../components/ui/badge"
 import { X, Plus, Trash2, Search, Settings, ChevronDown, ChevronRight, Download, Upload } from "lucide-react"
-import type { CMSData, CMSModule, CMSSubmodule, CMSTopic, CMSEditMode } from "../types/cms"
+import type { CMSData, CMSModule, CMSEditMode } from "../types/cms"
 import { CMSModuleEditor } from "./cms/ModuleEditor"
+import { getApiUrl } from "../config/api"
 // import { CMSTopicEditor } from "./cms/[ ]TopicEditor"
 
 interface CMSPageProps {
@@ -73,7 +74,7 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
 
   // ---------------------------- EFFECTS & HELPERS ----------------------------
   useEffect(() => {
-    fetch("http://chemmaster.com/API/cmsData.php")
+    fetch(getApiUrl("cmsData.php"))
       .then(res => res.json())
       .then(data => {
         if (data.success && data.cmsData) {
@@ -116,7 +117,7 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
 
   const refreshCMSData = async () => {
     try {
-      const response = await fetch("http://chemmaster.com/API/cmsData.php");
+      const response = await fetch(getApiUrl("cmsData.php"));
       const data = await response.json();
       if (data.success && data.cmsData) {
         const normalizedModules = data.cmsData.modules.map(normalizeModule);

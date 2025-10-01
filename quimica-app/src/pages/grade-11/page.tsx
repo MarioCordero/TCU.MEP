@@ -4,6 +4,8 @@ import { Button } from "../../components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
 import { SearchBar } from '../../components/ui/searchbar'
+import { getApiUrl } from "../../config/api"
+
 import {
   Droplet,
   Waves,
@@ -64,7 +66,7 @@ export default function GradeElevenPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch("http://chemmaster.com/API/modulesEleventh.php")
+    fetch(getApiUrl("cmsData.php"))
       .then(res => res.json())
       .then(data => {
         if (data.success) setModules(data.modules)
