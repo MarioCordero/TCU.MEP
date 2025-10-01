@@ -1,7 +1,14 @@
 // -------------------------------------------------------------------------------- //
 // ------------------------These are the types used in the CMS--------------------- //
 // -------------------------------------------------------------------------------- //
-import type { Topic } from "../pages/cms/ModuleEditor" // or define Topic in a shared file
+
+export interface Topic {
+  id?: number
+  title: string
+  description?: string
+  content: any
+  order_in_module?: number
+}
 
 export interface CMSTopic {
   id: string
@@ -26,20 +33,23 @@ export interface CMSSubmodule {
 }
 
 export interface CMSModule {
-  id: string
+  id: string | number
+  module_id: string
   title: string
   description: string
   icon: string
   color: string
-  module_id: string
-  grade?: "10" | "11"         // Optional, for legacy/new data
-  grade_level?: string        // Optional, for DB/API compatibility
-  submodules: CMSSubmodule[]
-  order: number
-  isActive: boolean
-  features: string[]
-  tools: string[]
-  topics: Topic[]
+  grade?: "10" | "11"         // Frontend field
+  grade_level?: "10" | "11"   // Database field
+  submodules?: CMSSubmodule[]
+  order?: number
+  isActive: boolean           // Frontend field (boolean)
+  active?: number | boolean   // Database field (tinyint/boolean)
+  features?: string[]
+  tools?: string[]
+  topics?: Topic[]
+  created_at?: string
+  updated_at?: string
 }
 
 export interface CMSData {

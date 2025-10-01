@@ -6,7 +6,7 @@ import { Badge } from "../components/ui/badge"
 import { X, Plus, Trash2, Search, Settings, ChevronDown, ChevronRight, Download, Upload } from "lucide-react"
 import type { CMSData, CMSModule, CMSSubmodule, CMSTopic, CMSEditMode } from "../types/cms"
 import { CMSModuleEditor } from "./cms/ModuleEditor"
-import { CMSTopicEditor } from "./cms/TopicEditor"
+import { CMSTopicEditor } from "./cms/[ ]TopicEditor"
 
 interface CMSPageProps {
   onClose: () => void
@@ -128,8 +128,27 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
       features: Array.isArray(module.features) ? module.features : [],
       tools: Array.isArray(module.tools) ? module.tools : [],
       submodules: Array.isArray(module.submodules) ? module.submodules : [],
+      grade: module.grade_level || module.grade,
+      // FIX: Proper normalization that handles all cases
+      isActive: Boolean(
+        module.isActive !== undefined ? module.isActive : 
+        (module.active === 1 || module.active === "1" || module.active === true)
+      )
     }
   }
+
+  const refreshCMSData = async () => {
+    try {
+      const response = await fetch("http://chemmaster.com/API/cmsData.php");
+      const data = await response.json();
+      if (data.success && data.cmsData) {
+        const normalizedModules = data.cmsData.modules.map(normalizeModule);
+        setCMSData({ ...data.cmsData, modules: normalizedModules });
+      }
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex">
@@ -227,25 +246,27 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
         ) : selectedModule ? (
           // Module Editor
           <CMSModuleEditor
-            key={selectedModule}
+            key={selectedModule} // Remove timestamp from key
             module={cmsData.modules.find((m) => m.id === selectedModule)!}
             onSave={async (updatedModule) => {
+              // Update local state immediately
               const newData = {
                 ...cmsData,
                 modules: cmsData.modules.map((module) => (module.id === selectedModule ? updatedModule : module)),
                 lastUpdated: new Date().toISOString(),
               }
-              handleDataChange(newData)
-
-              // API call to save changes
+              setCMSData(newData) // Don't use handleDataChange to avoid the hasUnsavedChanges flag
+              
+              // Save to server but don't refresh immediately
               try {
-                await fetch("http://chemmaster.com/API/updateModule.php", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(updatedModule),
-                })
                 setShowSuccess(true)
                 setTimeout(() => setShowSuccess(false), 2000)
+                
+                // Optional: Refresh after a delay to ensure DB consistency
+                setTimeout(async () => {
+                  await refreshCMSData();
+                }, 1000);
+                
               } catch (err) {
                 alert("Error al guardar en el servidor")
                 console.error(err)

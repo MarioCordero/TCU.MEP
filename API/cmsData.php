@@ -7,7 +7,7 @@
     header('Content-Type: application/json; charset=utf-8');
 
     // Fetch modules
-    $modulesResult = $conn->query("SELECT * FROM modules ORDER BY id ASC");
+    $modulesResult = $conn->query("SELECT * FROM modules ORDER BY id ASC"); 
     $modules = [];
     while ($module = $modulesResult->fetch_assoc()) {
         $module_id = $module['module_id'];

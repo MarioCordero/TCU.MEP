@@ -78,11 +78,6 @@ export function CMSTopicEditor({ topic, onSave }: CMSTopicEditorProps) {
             <div>
               <h1 className="text-2xl font-bold text-gray-800">{isEditing ? "Editando Tema" : "Vista de Tema"}</h1>
               <div className="flex items-center gap-4 mt-1">
-                <Badge variant="outline">{editedTopic.difficulty}</Badge>
-                <span className="text-sm text-gray-600 flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  {editedTopic.estimatedTime}
-                </span>
                 <span className="text-sm text-gray-600">
                   {wordCount} palabras • ~{readingTime} min lectura
                 </span>
@@ -141,13 +136,6 @@ export function CMSTopicEditor({ topic, onSave }: CMSTopicEditorProps) {
                     <CardTitle className="text-2xl">{editedTopic.title}</CardTitle>
                     <p className="text-purple-100 mt-1">{editedTopic.description}</p>
                   </div>
-                </div>
-                <div className="flex items-center gap-4 mt-4">
-                  <Badge className="bg-white/20 text-white border-0">{editedTopic.difficulty}</Badge>
-                  <span className="text-purple-100 flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    {editedTopic.estimatedTime}
-                  </span>
                 </div>
               </CardHeader>
               <CardContent className="p-8">
@@ -272,40 +260,6 @@ Incluye ejemplos, explicaciones detalladas y conceptos clave."
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="topic-difficulty">Nivel de Dificultad</Label>
-                      <Select
-                        value={editedTopic.difficulty}
-                        onValueChange={(value: "Básico" | "Intermedio" | "Avanzado") =>
-                          setEditedTopic({ ...editedTopic, difficulty: value })
-                        }
-                        disabled={!isEditing}
-                      >
-                        <SelectTrigger className="mt-1">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Básico">Básico</SelectItem>
-                          <SelectItem value="Intermedio">Intermedio</SelectItem>
-                          <SelectItem value="Avanzado">Avanzado</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="topic-time">Tiempo Estimado</Label>
-                      <Input
-                        id="topic-time"
-                        value={editedTopic.estimatedTime}
-                        onChange={(e) => setEditedTopic({ ...editedTopic, estimatedTime: e.target.value })}
-                        disabled={!isEditing}
-                        className="mt-1"
-                        placeholder="ej: 30 min, 1 hora"
-                      />
-                    </div>
-                  </div>
-
                   <div>
                     <Label htmlFor="topic-icon">Icono del Tema</Label>
                     <Select
