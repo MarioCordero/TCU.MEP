@@ -1,13 +1,14 @@
-name: Deploy React Source Structure to webDevelopment
+name: Deploy ChemMaster App and API to webDevelopment
 
 on:
   push:
     branches: [ main ]
     paths:
       - 'quimica-app/**'
+      - 'API/**'
 
 jobs:
-  deploy-source:
+  deploy-chemmaster:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,16 +24,21 @@ jobs:
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
 
-    - name: Clean quimicaApp folder in target repo
+    - name: Clean ChemMaster folders in target repo
       run: |
-        rm -rf target-repo/SPECT-Website/src/quimicaApp/*
-        mkdir -p target-repo/SPECT-Website/src/quimicaApp
+        # Clean React app folder
+        rm -rf target-repo/SPECT-Website/src/ChemMaster/*
+        mkdir -p target-repo/SPECT-Website/src/ChemMaster
+        
+        # Clean API folder
+        rm -rf target-repo/API/ChemMaster/*
+        mkdir -p target-repo/API/ChemMaster
 
-    - name: Copy required folders and files
+    - name: Copy React app source files
       run: |
-        # Define source and target
+        # Define source and target for React app
         SRC_DIR="quimica-app/src"
-        DEST_DIR="target-repo/SPECT-Website/src/quimicaApp"
+        DEST_DIR="target-repo/SPECT-Website/src/ChemMaster"
 
         # Copy folders if they exist
         for folder in assets components lib pages screens; do
@@ -47,9 +53,16 @@ jobs:
           cp "$SRC_DIR/quimicaApp.tsx" "$DEST_DIR/"
         fi
 
+    - name: Copy API files
+      run: |
+        # Copy API files if API directory exists
+        if [ -d "API" ]; then
+          cp -r API/* target-repo/API/ChemMaster/
+        fi
+
     - name: Commit and push changes
       run: |
         cd target-repo
-        git add SPECT-Website/src/quimicaApp
-        git commit -m "📦 Update ChemMaster source from MarioCordero/TCU.MEP@${{ github.sha }}" || echo "No changes to commit"
+        git add SPECT-Website/src/ChemMaster API/ChemMaster
+        git commit -m "📦 Update ChemMaster app and API from MarioCordero/TCU.MEP@${{ github.sha }}" || echo "No changes to commit"
         git push origin webDevelopment

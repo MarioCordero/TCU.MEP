@@ -36,28 +36,6 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
     setHasUnsavedChanges(true)
   }
 
-  // Toggle module expansion
-  const toggleModuleExpansion = (moduleId: string) => {
-    const newExpanded = new Set(expandedModules)
-    if (newExpanded.has(moduleId)) {
-      newExpanded.delete(moduleId)
-    } else {
-      newExpanded.add(moduleId)
-    }
-    setExpandedModules(newExpanded)
-  }
-
-  // Toggle submodule expansion
-  const toggleSubmoduleExpansion = (submoduleId: string) => {
-    const newExpanded = new Set(expandedSubmodules)
-    if (newExpanded.has(submoduleId)) {
-      newExpanded.delete(submoduleId)
-    } else {
-      newExpanded.add(submoduleId)
-    }
-    setExpandedSubmodules(newExpanded)
-  }
-
   // Add a new module
   const addNewModule = () => {
     const newModule: CMSModule = {
