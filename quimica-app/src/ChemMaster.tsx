@@ -35,7 +35,9 @@ function DocumentTitle() {
       '/ChemMaster/estructura-atomica': 'ChemMaster - Estructura Atómica',
       '/ChemMaster/configuracion-electronica': 'ChemMaster - Configuración Electrónica',
       '/ChemMaster/CMS': 'ChemMaster - CMS',
+
       // Fallback for standalone mode
+      
       '/': 'ChemMaster - HOME',
       '/grade-selector': 'ChemMaster - Selección de Grado',
       '/info': 'ChemMaster - Información',
