@@ -6,7 +6,7 @@ import { Badge } from "../components/ui/badge"
 import { X, Plus, Trash2, Search, Settings, ChevronDown, ChevronRight, Download, Upload } from "lucide-react"
 import type { CMSData, CMSModule, CMSSubmodule, CMSTopic, CMSEditMode } from "../types/cms"
 import { CMSModuleEditor } from "./cms/ModuleEditor"
-import { CMSTopicEditor } from "./cms/[ ]TopicEditor"
+// import { CMSTopicEditor } from "./cms/[ ]TopicEditor"
 
 interface CMSPageProps {
   onClose: () => void
@@ -15,8 +15,8 @@ interface CMSPageProps {
 const CMSPage = ({ onClose }: CMSPageProps) => {
 
   // ---------------------------- CONSTANTS & STATES ----------------------------
-  const [selectedModule, setSelectedModule] = useState<string | null>(null)
-  const [selectedTopic, setSelectedTopic] = useState<string | null>(null)
+  const [selectedModule, setSelectedModule] = useState<string | number | null>(null)
+  // const [selectedTopic, setSelectedTopic] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set())
@@ -58,10 +58,11 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
     setExpandedSubmodules(newExpanded)
   }
 
-    // Add a new module
+  // Add a new module
   const addNewModule = () => {
     const newModule: CMSModule = {
       id: `module-${Date.now()}`,
+      module_id: `new-module-${Date.now()}`,
       title: "Nuevo Módulo",
       description: "Descripción del nuevo módulo",
       icon: "BookOpen",
@@ -123,18 +124,16 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
 
   // Helper to normalize modules
   function normalizeModule(module: CMSModule): CMSModule {
-    return {
+    const normalized = {
       ...module,
       features: Array.isArray(module.features) ? module.features : [],
       tools: Array.isArray(module.tools) ? module.tools : [],
-      submodules: Array.isArray(module.submodules) ? module.submodules : [],
+      topics: Array.isArray(module.topics) ? module.topics : [],
       grade: module.grade_level || module.grade,
-      // FIX: Proper normalization that handles all cases
-      isActive: Boolean(
-        module.isActive !== undefined ? module.isActive : 
-        (module.active === 1 || module.active === "1" || module.active === true)
-      )
-    }
+      isActive: module.active === 1 || module.active === "1" || module.active === true
+    };
+
+    return normalized;
   }
 
   const refreshCMSData = async () => {
@@ -198,12 +197,17 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
                   selectedModule === module.id ? "bg-blue-100" : ""
                 }`}
                 onClick={() => {
+
+                  // DEBUG LOGS
+                  // console.log(`Module "${module.title}" active field:`, module.active);
+                  // console.log(`Module "${module.title}" isActive field:`, module.isActive);
+                  // console.log(`Full module object:`, module);
+
                   setSelectedModule(module.id)
                   setSelectedSubmodule(null)
-                  setSelectedTopic(null)
+                  // setSelectedTopic(null)
                 }}
               >
-                {/* Removed arrow and + button */}
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="text-xs">
@@ -221,48 +225,22 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
 
       {/* MAIN CONTENT */}
       <div className="flex-1 bg-gray-50 overflow-hidden">
-        {selectedTopic ? (
-          <CMSTopicEditor
-            topic={
-              cmsData.modules
-                .flatMap((m) => m.submodules)
-                .flatMap((s) => s.topics)
-                .find((t) => t.id === selectedTopic)!
-            }
-            onSave={(updatedTopic) => {
-              const newData = {
-                ...cmsData,
-                modules: cmsData.modules.map((module) => ({
-                  ...module,
-                  submodules: module.submodules.map((submodule) => ({
-                    ...submodule,
-                    topics: submodule.topics.map((topic) => (topic.id === selectedTopic ? updatedTopic : topic)),
-                  })),
-                })),
-              }
-              handleDataChange(newData)
-            }}
-          />
-        ) : selectedModule ? (
-          // Module Editor
+        {selectedModule ? (
           <CMSModuleEditor
-            key={selectedModule} // Remove timestamp from key
+            key={String(selectedModule)}
             module={cmsData.modules.find((m) => m.id === selectedModule)!}
             onSave={async (updatedModule) => {
-              // Update local state immediately
               const newData = {
                 ...cmsData,
                 modules: cmsData.modules.map((module) => (module.id === selectedModule ? updatedModule : module)),
                 lastUpdated: new Date().toISOString(),
               }
-              setCMSData(newData) // Don't use handleDataChange to avoid the hasUnsavedChanges flag
+              setCMSData(newData)
               
-              // Save to server but don't refresh immediately
               try {
                 setShowSuccess(true)
                 setTimeout(() => setShowSuccess(false), 2000)
                 
-                // Optional: Refresh after a delay to ensure DB consistency
                 setTimeout(async () => {
                   await refreshCMSData();
                 }, 1000);
@@ -273,17 +251,15 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
               }
             }}
           />
-          // Module Editor
         ) : (
-          // When nothing is selected
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
               <Settings className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-gray-600 mb-2">Sistema de Gestión de Contenido</h2>
               <p className="text-gray-500 max-w-md">
-                Selecciona un módulo, submódulo o tema del panel izquierdo para comenzar a editar el contenido.
+                Selecciona un módulo del panel izquierdo para comenzar a editar el contenido y sus temas.
               </p>
-              <div className="mt-6 grid grid-cols-3 gap-4 text-sm text-gray-600">
+              <div className="mt-6 grid grid-cols-2 gap-4 text-sm text-gray-600">
                 <div>
                   <div className="font-semibold">{cmsData.modules.length}</div>
                   <div>Módulos</div>
@@ -291,24 +267,7 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
                 <div>
                   <div className="font-semibold">
                     {cmsData.modules.reduce(
-                      (acc, m) => acc + (Array.isArray(m.submodules) ? m.submodules.length : 0),
-                      0
-                    )}
-                  </div>
-                  <div>Submódulos</div>
-                </div>
-                <div>
-                  <div className="font-semibold">
-                    {cmsData.modules.reduce(
-                      (acc, m) =>
-                        acc +
-                        (Array.isArray(m.submodules)
-                          ? m.submodules.reduce(
-                              (subAcc, s) =>
-                                subAcc + (Array.isArray(s.topics) ? s.topics.length : 0),
-                              0
-                            )
-                          : 0),
+                      (acc, m) => acc + (Array.isArray(m.topics) ? m.topics.length : 0),
                       0
                     )}
                   </div>
@@ -317,12 +276,10 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
               </div>
             </div>
           </div>
-          // When nothing is selected
         )}
       </div>
-      {/* MAIN CONTENT */}
 
-      {/* SUCCESS MESSAGE */}
+      {/* SUCCESS MESSAGE - same as before */}
       {showSuccess && (
         <div className="fixed top-6 right-6 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50 transition">
           ¡Módulo guardado exitosamente!

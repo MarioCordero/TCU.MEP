@@ -44,7 +44,7 @@ export interface CMSModule {
   submodules?: CMSSubmodule[]
   order?: number
   isActive: boolean           // Frontend field (boolean)
-  active?: number | boolean   // Database field (tinyint/boolean)
+  active?: number | boolean | string   // Database field - add string type if needed
   features?: string[]
   tools?: string[]
   topics?: Topic[]

@@ -11,6 +11,10 @@
     $modules = [];
     while ($module = $modulesResult->fetch_assoc()) {
         $module_id = $module['module_id'];
+        
+        // DEBUG: Log the active field from database
+        error_log("Module {$module['title']}: active field = " . var_export($module['active'], true) . " (type: " . gettype($module['active']) . ")");
+        
         $topicsResult = $conn->query("SELECT * FROM topics WHERE module_id = '$module_id' ORDER BY order_in_module ASC");
         $topics = [];
         while ($topic = $topicsResult->fetch_assoc()) {
@@ -18,6 +22,10 @@
             $topics[] = $topic;
         }
         $module['topics'] = $topics;
+        
+        // Ensure active is properly typed
+        $module['active'] = (int) $module['active'];
+        
         $modules[] = $module;
     }
     echo json_encode([
