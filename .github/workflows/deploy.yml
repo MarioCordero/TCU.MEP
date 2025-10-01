@@ -34,23 +34,11 @@ jobs:
         rm -rf target-repo/API/ChemMaster/*
         mkdir -p target-repo/API/ChemMaster
 
-    - name: Copy React app source files
+    - name: Copy all quimica-app files to ChemMaster
       run: |
-        # Define source and target for React app
-        SRC_DIR="quimica-app/src"
-        DEST_DIR="target-repo/SPECT-Website/src/ChemMaster"
-
-        # Copy folders if they exist
-        for folder in assets components lib pages screens; do
-          if [ -d "$SRC_DIR/$folder" ]; then
-            mkdir -p "$DEST_DIR/$folder"
-            cp -r "$SRC_DIR/$folder"/* "$DEST_DIR/$folder"/
-          fi
-        done
-
-        # Copy quimicaApp.tsx if exists
-        if [ -f "$SRC_DIR/quimicaApp.tsx" ]; then
-          cp "$SRC_DIR/quimicaApp.tsx" "$DEST_DIR/"
+        # Copy everything from quimica-app to ChemMaster folder
+        if [ -d "quimica-app" ]; then
+          cp -r quimica-app/* target-repo/SPECT-Website/src/ChemMaster/
         fi
 
     - name: Copy API files

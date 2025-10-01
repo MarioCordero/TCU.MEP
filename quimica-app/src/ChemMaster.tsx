@@ -34,7 +34,7 @@ function DocumentTitle() {
       '/ChemMaster/tabla-periodica': 'ChemMaster - Tabla Periódica',
       '/ChemMaster/estructura-atomica': 'ChemMaster - Estructura Atómica',
       '/ChemMaster/configuracion-electronica': 'ChemMaster - Configuración Electrónica',
-      '/ChemMaster/ChemMasterCMS': 'ChemMaster - CMS', // Add CMS title
+      '/ChemMaster/CMS': 'ChemMaster - CMS',
       // Fallback for standalone mode
       '/': 'ChemMaster - HOME',
       '/grade-selector': 'ChemMaster - Selección de Grado',
@@ -45,7 +45,7 @@ function DocumentTitle() {
       '/tabla-periodica': 'ChemMaster - Tabla Periódica',
       '/estructura-atomica': 'ChemMaster - Estructura Atómica',
       '/configuracion-electronica': 'ChemMaster - Configuración Electrónica',
-      '/ChemMasterCMS': 'ChemMaster - CMS'
+      '/CMS': 'ChemMaster - CMS'
     }
     
     document.title = titles[location.pathname] || 'ChemMaster'
@@ -58,20 +58,26 @@ function DocumentTitle() {
 interface QuimicaAppProps {
   isLoaderComplete?: boolean;
   currentPage?: string;
+  basePath?: string; // Add basePath prop to handle parent routing
 }
 
-export default function QuimicaApp({}: QuimicaAppProps) {
+export default function QuimicaApp({ basePath = '' }: QuimicaAppProps) {
   const navigate = useNavigate()
+  const location = useLocation()
+  
+  // Determine if we're in standalone mode or integrated mode
+  const isIntegratedMode = location.pathname.startsWith('/ChemMaster')
+  const homeRoute = isIntegratedMode ? '/ChemMaster' : '/'
   
   const handleCMSClose = () => {
-    navigate('/') // Navigate back to home page when CMS is closed
+    navigate(homeRoute) // Navigate to the correct home based on context
   }
   
   return (
     <>
       <DocumentTitle />
       <Routes>
-        {/* Main pages - using relative paths since parent route is /quimicaApp/* */}
+        {/* Main pages - using relative paths since parent route handles the base */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/info" element={<InfoPage />} />
         <Route path="/grade-selector" element={<GradeSelector />} />
@@ -84,7 +90,7 @@ export default function QuimicaApp({}: QuimicaAppProps) {
         <Route path="/estructura-atomica" element={<EstructuraAtomica />} />
         <Route path="/configuracion-electronica" element={<ConfiguracionElectronica />} />
 
-        {/* NotionTest route - now with proper onClose prop */}
+        {/* CMS route - now with proper onClose prop */}
         <Route path="/CMS" element={<ChemMasterCMS onClose={handleCMSClose} />} />
       </Routes>
     </>
