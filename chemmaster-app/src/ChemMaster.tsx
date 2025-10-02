@@ -98,4 +98,5 @@ export default function QuimicaApp({ basePath = '' }: QuimicaAppProps) {
     </>
   )
 }
+
 // APLICACIÓN COMO TAL ESTA ES LA QUE VA AL SERVER DE PRODUCCIÓN

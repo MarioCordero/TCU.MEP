@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'quimica-app/**'
+      - 'chemmaster-app/**'
       - 'API/**'
 
 jobs:
@@ -34,25 +34,25 @@ jobs:
         rm -rf target-repo/API/ChemMaster/*
         mkdir -p target-repo/API/ChemMaster
 
-    - name: Copy specific quimica-app files to ChemMaster
+    - name: Copy specific chemmaster-app files to ChemMaster
       run: |
         DEST_DIR="target-repo/SPECT-Website/src/ChemMaster"
 
         # Copy node_modules
-        if [ -d "quimica-app/node_modules" ]; then
-          cp -r quimica-app/node_modules "$DEST_DIR/"
+        if [ -d "chemmaster-app/node_modules" ]; then
+          cp -r chemmaster-app/node_modules "$DEST_DIR/"
         fi
 
         # Copy src folders
         for folder in assets components config lib pages types screens; do
-          if [ -d "quimica-app/src/$folder" ]; then
-            cp -r "quimica-app/src/$folder" "$DEST_DIR/"
+          if [ -d "chemmaster-app/src/$folder" ]; then
+            cp -r "chemmaster-app/src/$folder" "$DEST_DIR/"
           fi
         done
 
         # Copy ChemMaster.tsx
-        if [ -f "quimica-app/src/ChemMaster.tsx" ]; then
-          cp "quimica-app/src/ChemMaster.tsx" "$DEST_DIR/"
+        if [ -f "chemmaster-app/src/ChemMaster.tsx" ]; then
+          cp "chemmaster-app/src/ChemMaster.tsx" "$DEST_DIR/"
         fi
 
     - name: Copy API files
