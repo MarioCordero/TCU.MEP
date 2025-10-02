@@ -1,6 +1,18 @@
 <?php
-    // Determine environment (you can set this via environment variable or a simple config)
-    $environment = getenv('APP_ENV') ?: 'development'; // Default to development
+    // CORS headers
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+    header('Content-Type: application/json');
+
+    // Handle preflight OPTIONS request
+    if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(200);
+        exit();
+    }
+
+    // Hardcode environment - change this manually when needed
+    $environment = 'production'; // or 'development'
 
     // Load the appropriate config file
     $configFile = __DIR__ . "/config/{$environment}.ini";
@@ -22,7 +34,7 @@
     $database = $config['database']['database'];
 
     try {
-        // Create MySQLi connection instead of PDO
+        // Create MySQLi connection
         $conn = new mysqli($host, $username, $password, $database);
         
         // Check connection

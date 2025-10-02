@@ -1,7 +1,8 @@
 {
-  "name": "quimica-app",
+  "name": "chemmaster-app",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "ChemMaster - Interactive Chemistry Learning Application",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -38,5 +39,14 @@
     "globals": "^16.0.0",
     "typescript": "^5.9.2",
     "vite": "^6.3.5"
-  }
+  },
+  "keywords": [
+    "chemistry",
+    "education",
+    "react",
+    "typescript",
+    "vite"
+  ],
+  "author": "Mario Cordero",
+  "license": "MIT"
 }
