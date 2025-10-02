@@ -8,10 +8,9 @@ import { Switch } from "../../components/ui/switch"
 import { Label } from "../../components/ui/label"
 import type { CMSModule } from "../../types/cms"
 import * as LucideIcons from "lucide-react"
-import ReactQuill from "react-quill"
-import "react-quill/dist/quill.snow.css"
+import { useEditor, EditorContent } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
 import { getApiUrl } from "../../config/api"
-
 
 // ================================ TYPES & CONSTANTS ================================
 const ALLOWED_GRADES = ["10", "11"] as const
@@ -149,18 +148,176 @@ const moduleAPI = {
   deleteTopic: (topicId: number) => apiRequest("deleteTopic.php", { id: topicId }),
 }
 
+// ================================ TIPTAP EDITOR COMPONENT ================================
+interface TipTapEditorProps {
+  content: string
+  onChange: (content: string) => void
+  disabled?: boolean
+  placeholder?: string
+}
+
+function TipTapEditor({ content, onChange, disabled = false, placeholder = "Escribe aquí..." }: TipTapEditorProps) {
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: content || '',
+    editable: !disabled,
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML())
+    },
+    editorProps: {
+      attributes: {
+        class: `prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[200px] p-3 ${
+          disabled ? 'bg-gray-50 cursor-not-allowed' : 'bg-white'
+        }`
+      }
+    }
+  })
+
+  // Update editor content when prop changes
+  useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content || '')
+    }
+  }, [content, editor])
+
+  // Update editor editable state when disabled prop changes
+  useEffect(() => {
+    if (editor) {
+      editor.setEditable(!disabled)
+    }
+  }, [disabled, editor])
+
+  if (!editor) {
+    return (
+      <div className="border rounded-md min-h-[200px] bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-500">Cargando editor...</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-2">
+      {/* Toolbar */}
+      {!disabled && (
+        <div className="border border-gray-300 rounded-t-md bg-gray-50 p-2 flex flex-wrap gap-1">
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('bold') ? 'bg-gray-300' : ''}`}
+            title="Negrita"
+          >
+            <LucideIcons.Bold className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('italic') ? 'bg-gray-300' : ''}`}
+            title="Cursiva"
+          >
+            <LucideIcons.Italic className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleStrike().run()}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('strike') ? 'bg-gray-300' : ''}`}
+            title="Tachado"
+          >
+            <LucideIcons.Strikethrough className="h-4 w-4" />
+          </button>
+          <div className="w-px bg-gray-300 mx-1" />
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('heading', { level: 1 }) ? 'bg-gray-300' : ''}`}
+            title="Título 1"
+          >
+            <LucideIcons.Heading1 className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('heading', { level: 2 }) ? 'bg-gray-300' : ''}`}
+            title="Título 2"
+          >
+            <LucideIcons.Heading2 className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().setParagraph().run()}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('paragraph') ? 'bg-gray-300' : ''}`}
+            title="Párrafo"
+          >
+            <LucideIcons.Pilcrow className="h-4 w-4" />
+          </button>
+          <div className="w-px bg-gray-300 mx-1" />
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('bulletList') ? 'bg-gray-300' : ''}`}
+            title="Lista con viñetas"
+          >
+            <LucideIcons.List className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('orderedList') ? 'bg-gray-300' : ''}`}
+            title="Lista numerada"
+          >
+            <LucideIcons.ListOrdered className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleBlockquote().run()}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('blockquote') ? 'bg-gray-300' : ''}`}
+            title="Cita"
+          >
+            <LucideIcons.Quote className="h-4 w-4" />
+          </button>
+          <div className="w-px bg-gray-300 mx-1" />
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().undo().run()}
+            disabled={!editor.can().undo()}
+            className="p-2 rounded hover:bg-gray-200 disabled:opacity-50"
+            title="Deshacer"
+          >
+            <LucideIcons.Undo className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().redo().run()}
+            disabled={!editor.can().redo()}
+            className="p-2 rounded hover:bg-gray-200 disabled:opacity-50"
+            title="Rehacer"
+          >
+            <LucideIcons.Redo className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+      
+      {/* Editor Content */}
+      <div className={`border rounded-md ${!disabled ? 'border-t-0 rounded-t-none' : ''} min-h-[200px] ${disabled ? 'bg-gray-50' : 'bg-white'}`}>
+        <EditorContent editor={editor} />
+        {!content && !disabled && (
+          <div className="absolute top-3 left-3 text-gray-400 pointer-events-none">
+            {placeholder}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ================================ CUSTOM HOOKS ================================
 function useModuleEditor(initialModule: CMSModule) {
-  const [editedModule, setEditedModule] = useState<CMSModule>(initialModule) // ADD THIS LINE
+  const [editedModule, setEditedModule] = useState<CMSModule>(initialModule)
   const [originalTopics, setOriginalTopics] = useState<Topic[]>([])
   const [deletedTopicIds, setDeletedTopicIds] = useState<number[]>([])
   const [isEditing, setIsEditing] = useState(false)
 
   useEffect(() => {
-    // console.log("Initial module in useModuleEditor:", initialModule); // Debug log
-    // console.log("Initial module active value:", initialModule.active); // Debug log
-    // console.log("Initial module isActive value:", initialModule.isActive); // Debug log
-    setEditedModule(initialModule) // Use the already normalized module
+    setEditedModule(initialModule)
     setOriginalTopics(initialModule.topics || [])
     setDeletedTopicIds([])
   }, [initialModule])
@@ -201,7 +358,7 @@ function useModuleEditor(initialModule: CMSModule) {
   }, [editedModule.topics])
 
   const resetToOriginal = useCallback(() => {
-    setEditedModule(initialModule) // Remove normalizeModule call since it's already normalized
+    setEditedModule(initialModule)
     setOriginalTopics(initialModule.topics || [])
     setDeletedTopicIds([])
     setIsEditing(false)
@@ -220,7 +377,8 @@ function useModuleEditor(initialModule: CMSModule) {
     resetToOriginal,
   }
 }
-// ================================ COMPONENT FUNCTIONS ================================
+
+// ================================ MODAL COMPONENTS ================================
 interface IconModalProps {
   show: boolean
   onClose: () => void
@@ -443,11 +601,12 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className={`p-3 bg-gradient-to-r ${editedModule.color} rounded-xl`}>
-
+              {/* Icon placeholder */}
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-800">{isEditing ? "Editando Módulo" : "Vista de Módulo"}</h1>
               <p className="text-gray-600">
+                {/* Module description */}
               </p>
             </div>
           </div>
@@ -620,7 +779,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
               {/* Topics List */}
               {(editedModule.topics || []).map((topic, idx) => (
                 <div key={`topic-${idx}-${topic.id || 'new'}`} className="mb-6 border rounded p-4 bg-gray-50">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-4">
                     <Input
                       placeholder="Título del tópico"
                       value={topic.title}
@@ -646,12 +805,11 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                     )}
                   </div>
                   
-                  <ReactQuill
-                    theme="snow"
-                    value={topic.content || ''}
-                    onChange={value => updateTopic(idx, 'content', value)}
-                    readOnly={!isEditing}
-                    style={{ background: isEditing ? "white" : "#f9fafb" }}
+                  {/* Replace ReactQuill with TipTapEditor */}
+                  <TipTapEditor
+                    content={topic.content || ''}
+                    onChange={(value) => updateTopic(idx, 'content', value)}
+                    disabled={!isEditing}
                     placeholder="Contenido del tópico..."
                   />
                   
