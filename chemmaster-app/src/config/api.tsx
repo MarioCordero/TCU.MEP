@@ -1,7 +1,7 @@
 // API Configuration
 export const API_CONFIG = {
   // Change this to switch between environments
-  ENVIRONMENT: 'production' as 'development' | 'production',
+  ENVIRONMENT: 'development' as 'development' | 'production',
 
   ENDPOINTS: {
     development: 'http://chemmaster.com/API/',
