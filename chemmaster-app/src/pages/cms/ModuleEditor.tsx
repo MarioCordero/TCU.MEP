@@ -537,12 +537,10 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
   const [password, setPassword] = useState("")
 
   const handleSave = async () => {
+    
     try {
-      console.log("Starting save process...")
-      
       // Update module info
       const { topics, ...moduleWithoutTopics } = editedModule
-      console.log("Updating module:", moduleWithoutTopics)
       await moduleAPI.update(moduleWithoutTopics as CMSModule)
 
       // Handle topic operations in parallel
@@ -550,28 +548,24 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
 
       // Add new topics
       const newTopics = editedModule.topics?.filter(topic => !topic.id) || []
-      console.log("Adding new topics:", newTopics.length)
       newTopics.forEach(topic => {
         operations.push(moduleAPI.addTopic(editedModule.module_id, topic))
       })
+      debugger;
 
       // Update existing topics
       const existingTopics = editedModule.topics?.filter(topic => topic.id) || []
-      console.log("Updating existing topics:", existingTopics.length)
       existingTopics.forEach(topic => {
         operations.push(moduleAPI.updateTopic(topic))
       })
 
       // Delete removed topics
-      console.log("Deleting topics:", deletedTopicIds.length)
       deletedTopicIds.forEach(topicId => {
         operations.push(moduleAPI.deleteTopic(topicId))
       })
 
-      console.log("Executing parallel operations...")
       await Promise.all(operations)
 
-      console.log("Save completed successfully")
       setIsEditing(false)
       setShowSuccessModal(true)
       onSave?.(editedModule)
@@ -805,7 +799,6 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                     )}
                   </div>
                   
-                  {/* Replace ReactQuill with TipTapEditor */}
                   <TipTapEditor
                     content={topic.content || ''}
                     onChange={(value) => updateTopic(idx, 'content', value)}
