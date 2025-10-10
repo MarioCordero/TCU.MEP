@@ -23,7 +23,6 @@
         $topicsResult = $conn->query("SELECT * FROM topics WHERE module_id = '$module_id' ORDER BY order_in_module ASC");
         $topics = [];
         while ($topic = $topicsResult->fetch_assoc()) {
-            $topic['content'] = json_decode($topic['content'], true);
             $topics[] = $topic;
         }
         $module['topics'] = $topics;
