@@ -12,7 +12,7 @@
     }
 
     // Hardcode environment - change this manually when needed
-    $environment = 'development'; // or 'development' , 'production'
+    $environment = 'production'; // or 'development' , 'production'
 
     // Load the appropriate config file
     $configFile = __DIR__ . "/config/{$environment}.ini";
