@@ -11,6 +11,7 @@ import * as LucideIcons from "lucide-react"
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { getApiUrl } from "../../config/api"
+import { TopicEditor } from "./TopicEditor"
 
 // ================================ TYPES & CONSTANTS ================================
 const ALLOWED_GRADES = ["10", "11"] as const
@@ -529,7 +530,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
     removeTopic,
     resetToOriginal,
   } = useModuleEditor(module)
-
+  
   // Modal states
   const [showIconModal, setShowIconModal] = useState(false)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -673,21 +674,21 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
 
               <div>
                 <Label htmlFor="icon">Icono</Label>
-<div className="relative">
-  <Input
-    id="icon"
-    value={editedModule.icon}
-    onChange={(e) => setEditedModule({ ...editedModule, icon: e.target.value })}
-    onClick={() => isEditing && setShowIconModal(true)}
-    disabled={!isEditing}
-    className="mt-1 pr-10 w-full cursor-pointer"
-    placeholder="Nombre del icono (ej: Atom, BookOpen)"
-    readOnly={!isEditing} // Optional: prevent typing when not editing
-  />
-  <span className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
-    <LucideIcons.Search className="h-5 w-5 text-gray-500" />
-  </span>
-</div>
+                <div className="relative">
+                  <Input
+                    id="icon"
+                    value={editedModule.icon}
+                    onChange={(e) => setEditedModule({ ...editedModule, icon: e.target.value })}
+                    onClick={() => isEditing && setShowIconModal(true)}
+                    disabled={!isEditing}
+                    className="mt-1 pr-10 w-full cursor-pointer"
+                    placeholder="Nombre del icono (ej: Atom, BookOpen)"
+                    readOnly={!isEditing} // Optional: prevent typing when not editing
+                  />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <LucideIcons.Search className="h-5 w-5 text-gray-500" />
+                  </span>
+                </div>
                 
                 <IconModal
                   show={showIconModal}
@@ -754,81 +755,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
               </div>
             </div>
             {/* MODULE COLOR */}
-
-            {/* TOPICS SECTION */}
-            <div>
-              <Label>Tópicos ({editedModule.topics?.length || 0})</Label>
-              
-              {/* Add Topic Button */}
-              <Button
-                type="button"
-                variant="outline"
-                className="ml-2 mb-2"
-                onClick={addTopic}
-                disabled={!isEditing}
-              >
-                + Añadir tópico
-              </Button>
-              
-              {/* Topics List */}
-              {(editedModule.topics || []).map((topic, idx) => (
-                <div key={`topic-${idx}-${topic.id || 'new'}`} className="mb-6 border rounded p-4 bg-gray-50">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Input
-                      placeholder="Título del tópico"
-                      value={topic.title}
-                      onChange={e => updateTopic(idx, 'title', e.target.value)}
-                      disabled={!isEditing}
-                    />
-                    <Input
-                      placeholder="Descripción (opcional)"
-                      value={topic.description || ''}
-                      onChange={e => updateTopic(idx, 'description', e.target.value)}
-                      disabled={!isEditing}
-                      className="flex-1"
-                    />
-                    {isEditing && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() => removeTopic(idx)}
-                        title="Eliminar tópico"
-                      >
-                        <LucideIcons.Trash className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                  
-                  {/* Replace ReactQuill with TipTapEditor */}
-                  <TipTapEditor
-                    content={topic.content || ''}
-                    onChange={(value) => updateTopic(idx, 'content', value)}
-                    disabled={!isEditing}
-                    placeholder="Contenido del tópico..."
-                  />
-                  
-                  {/* Show topic status */}
-                  {isEditing && (
-                    <div className="mt-2 text-xs text-gray-500">
-                      {topic.id ? `Tópico existente (ID: ${topic.id})` : 'Tópico nuevo - se guardará al confirmar'}
-                    </div>
-                  )}
-                </div>
-              ))}
-              
-              {/* Empty state */}
-              {(!editedModule.topics || editedModule.topics.length === 0) && (
-                <div className="text-center py-8 text-gray-500">
-                  <LucideIcons.FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>No hay tópicos en este módulo</p>
-                  {isEditing && (
-                    <p className="text-sm">Haz clic en "Añadir tópico" para crear uno</p>
-                  )}
-                </div>
-              )}
-            </div>
-            {/* TOPICS SECTION */}
-
+            
           </CardContent>
           {/* CARD OF THE MODULE */}
         </Card>
