@@ -673,27 +673,21 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
 
               <div>
                 <Label htmlFor="icon">Icono</Label>
-                <div className="relative">
-                  <Input
-                    id="icon"
-                    value={editedModule.icon}
-                    onChange={(e) => setEditedModule({ ...editedModule, icon: e.target.value })}
-                    disabled={!isEditing}
-                    className="mt-1"
-                    placeholder="Nombre del icono (ej: Atom, BookOpen)"
-                  />
-                  {isEditing && (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      className="absolute right-2 top-2"
-                      onClick={() => setShowIconModal(true)}
-                    >
-                      <LucideIcons.Search className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
+<div className="relative">
+  <Input
+    id="icon"
+    value={editedModule.icon}
+    onChange={(e) => setEditedModule({ ...editedModule, icon: e.target.value })}
+    onClick={() => isEditing && setShowIconModal(true)}
+    disabled={!isEditing}
+    className="mt-1 pr-10 w-full cursor-pointer"
+    placeholder="Nombre del icono (ej: Atom, BookOpen)"
+    readOnly={!isEditing} // Optional: prevent typing when not editing
+  />
+  <span className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+    <LucideIcons.Search className="h-5 w-5 text-gray-500" />
+  </span>
+</div>
                 
                 <IconModal
                   show={showIconModal}
