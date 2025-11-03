@@ -127,18 +127,30 @@ const ChemMasterCMS = ({ onClose }: { onClose: () => void }) => {
               <div className="flex items-center gap-2">
                 {isEditing ? (
                   <>
-                    <Button variant="default" onClick={() => setShowConfirmModal(true)}>
-                      <Save className="h-4 w-4 mr-2" />Guardar
-                    </Button>
-                    <Button variant="outline" onClick={() => setEditedModule(selectedModule)}>
-                      <RotateCcw className="h-4 w-4 mr-2" />Deshacer
-                    </Button>
-                    <Button variant="destructive" onClick={() => {
+                  <Button
+                    variant="default"
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    onClick={() => setShowConfirmModal(true)}
+                  >
+                    <Save className="h-4 w-4 mr-2" />Guardar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="text-gray-700 border-gray-300 hover:bg-gray-100"
+                    onClick={() => setEditedModule(selectedModule)}
+                  >
+                    <RotateCcw className="h-4 w-4 mr-2" />Deshacer
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                    onClick={() => {
                       setEditedModule(selectedModule);
                       setIsEditing(false);
-                    }}>
-                      Cancelar
-                    </Button>
+                    }}
+                  >
+                    Cancelar
+                  </Button>
                   </>
                 ) : (
                   <Button variant="black" onClick={() => setIsEditing(true)}>
