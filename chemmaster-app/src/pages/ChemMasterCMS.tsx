@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { Settings, Save, Edit3, RotateCcw } from "lucide-react";
-import type { CMSData, CMSModule } from "../types/cms";
 import { getApiUrl } from "../config/api";
-import { ModuleSidebar } from "./cms/ModuleSidebar";
-import { CMSModuleEditor } from "./cms/ModuleEditor";
-import { ConfirmModal, SuccessModal } from "./cms/Modals";
 import { Button } from "../components/ui/button";
 import { Label } from "../components/ui/label";
 import { Switch } from "../components/ui/switch";
+import type { CMSData, CMSModule } from "../types/cms";
+import { TopicEditor } from "./cms/TopicEditor";
+import { ModuleSidebar } from "./cms/ModuleSidebar";
+import { CMSModuleEditor } from "./cms/ModuleEditor";
+import { ConfirmModal, SuccessModal } from "./cms/Modals";
 
 type EditorView = "module";
 
@@ -108,7 +109,7 @@ const ChemMasterCMS = ({ onClose }: { onClose: () => void }) => {
         />
       </div>
 
-      <div className="flex-1 bg-gray-50 overflow-hidden">
+      <div className="flex-1 bg-gray-50 flex flex-col">
         {selectedModule && editedModule ? (
           <>
             <div className="bg-white border-b border-gray-200 p-6 flex items-center justify-between">
@@ -125,31 +126,57 @@ const ChemMasterCMS = ({ onClose }: { onClose: () => void }) => {
               </div>
               <div className="flex items-center gap-2">
                 {isEditing ? (
-                  <Button variant="default" onClick={() => setShowConfirmModal(true)}>
-                    <Save className="h-4 w-4 mr-2" />Guardar
-                  </Button>
+                  <>
+                    <Button variant="default" onClick={() => setShowConfirmModal(true)}>
+                      <Save className="h-4 w-4 mr-2" />Guardar
+                    </Button>
+                    <Button variant="outline" onClick={() => setEditedModule(selectedModule)}>
+                      <RotateCcw className="h-4 w-4 mr-2" />Deshacer
+                    </Button>
+                    <Button variant="destructive" onClick={() => {
+                      setEditedModule(selectedModule);
+                      setIsEditing(false);
+                    }}>
+                      Cancelar
+                    </Button>
+                  </>
                 ) : (
                   <Button variant="black" onClick={() => setIsEditing(true)}>
                     <Edit3 className="h-4 w-4 mr-2" />Editar
                   </Button>
                 )}
-                {isEditing && (
-                  <Button variant="outline" onClick={() => setEditedModule(selectedModule)}>
-                    <RotateCcw className="h-4 w-4 mr-2" />Deshacer
-                  </Button>
-                )}
               </div>
             </div>
-            <CMSModuleEditor
-              key={selectedModuleId}
-              module={selectedModule}
-              editedModule={editedModule}
-              setEditedModule={setEditedModule}
-              isEditing={isEditing}
-              showIconModal={showIconModal}
-              setShowIconModal={setShowIconModal}
-              selectedModuleId={selectedModuleId}
-            />
+
+            <div className="flex-1 overflow-y-auto">
+              <div className="max-w-4xl mx-auto">
+                <CMSModuleEditor
+                  key={selectedModuleId}
+                  module={selectedModule}
+                  editedModule={editedModule}
+                  setEditedModule={setEditedModule}
+                  isEditing={isEditing}
+                  showIconModal={showIconModal}
+                  setShowIconModal={setShowIconModal}
+                  selectedModuleId={selectedModuleId}
+                />
+                <TopicEditor
+                  topics={selectedModule.topics || []}
+                  isEditing={isEditing}
+                  updateTopic={(idx, field, value) => {
+                    const updatedTopics = [...(editedModule.topics || [])];
+                    updatedTopics[idx] = { ...updatedTopics[idx], [field]: value };
+                    setEditedModule({ ...editedModule, topics: updatedTopics });
+                  }}
+                  removeTopic={(idx) => {
+                    const updatedTopics = [...(editedModule.topics || [])];
+                    updatedTopics.splice(idx, 1);
+                    setEditedModule({ ...editedModule, topics: updatedTopics });
+                  }}
+                />
+              </div>
+            </div>
+
           </>
         ) : (
           <div className="h-full flex items-center justify-center">
