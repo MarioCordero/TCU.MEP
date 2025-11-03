@@ -25,6 +25,7 @@ const ChemMasterCMS = ({ onClose }: { onClose: () => void }) => {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
+    localStorage.setItem("selectedModuleId", "");
     fetch(getApiUrl("cmsData.php"))
       .then(response => response.json())
       .then(data => setCMSData(data.cmsData))

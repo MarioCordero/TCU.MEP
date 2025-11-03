@@ -7,7 +7,7 @@ import type { CMSModule } from "../../types/cms"
 
 interface ModuleSidebarProps {
   modules: CMSModule[]
-  onModuleSelect?: (id: string | number) => void
+  onModuleSelect?: (id: number) => void
   showAddModule?: boolean
   onAddModule?: () => void
   showSaving?: boolean
@@ -21,7 +21,8 @@ export function ModuleSidebar({
   showSaving = false,
 }: ModuleSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedModule, setSelectedModule] = useState<string | number | null>(null)
+
+  const selectedModuleId = localStorage.getItem("selectedModuleId")
 
   const filteredModules = useMemo(
     () =>
@@ -34,29 +35,13 @@ export function ModuleSidebar({
   )
 
   const handleSelect = (id: string | number) => {
-    setSelectedModule(id)
-    if (onModuleSelect) onModuleSelect(id)
+    localStorage.setItem("selectedModuleId", String(id));
+    if (onModuleSelect) onModuleSelect(Number(id));
   }
-
-    {filteredModules.length === 0 && (
-    <div className="text-center text-gray-500 mt-8">
-      <Settings className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-      <div className="font-semibold">{modules.length} Módulos</div>
-      <div>
-        {modules.reduce(
-          (acc, m) => acc + (Array.isArray(m.topics) ? m.topics.length : 0),
-          0
-        )} Temas
-      </div>
-      <div className="mt-2">No hay módulos para mostrar.</div>
-    </div>
-  )}
 
   return (
     <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-      {/* Header */}
       <div className="p-4 border-b border-gray-200">
-        {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
@@ -66,7 +51,6 @@ export function ModuleSidebar({
             className="pl-10"
           />
         </div>
-        {/* Actions */}
         {showAddModule && onAddModule && (
           <div className="flex gap-2 mt-4 bg-black rounded text-white">
             <Button size="sm" onClick={onAddModule} className="flex-1 cursor-pointer">
@@ -82,7 +66,6 @@ export function ModuleSidebar({
           </div>
         )}
       </div>
-      {/* Modules List */}
       <div className="flex-1 overflow-y-auto p-4">
         {filteredModules.length === 0 ? (
           <div className="text-center text-gray-500 mt-8">
@@ -101,7 +84,7 @@ export function ModuleSidebar({
             <div key={module.id} className="mb-2">
               <div
                 className={`flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 group cursor-pointer ${
-                  selectedModule === module.id ? "bg-blue-100" : ""
+                  String(module.id) === selectedModuleId ? "bg-blue-100" : ""
                 }`}
                 onClick={() => handleSelect(module.id)}
               >
