@@ -229,13 +229,26 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
     resetToOriginal,
   } = useModuleEditor(module);
 
+  // useEffect(() => {
+  //   fetch(getApiUrl(`getModule.php?id=${module.module_id}`))
+  //     .then(res => res.json())
+  //     .then(data => {
+  //       setEditedModule(data) // Make sure 'data' includes topics and their content
+  //     })
+  //     .catch(err => {
+  //       console.error("Error fetching module/topics:", err)
+  //     })
+  // }, [module.module_id])
+
   // Modal states
   const [showIconModal, setShowIconModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [password, setPassword] = useState("");
 
+  // LOOK
   const handleSave = async () => {
+    
     try {
       const { topics, ...moduleWithoutTopics } = editedModule;
       await moduleAPI.update(moduleWithoutTopics as CMSModule);
