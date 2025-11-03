@@ -1,80 +1,81 @@
-import type React from "react"
-import { useState, useEffect } from "react"
-import { Button } from "../components/ui/button"
-import { Input } from "../components/ui/input"
-import { Badge } from "../components/ui/badge"
-import { X, Plus, Trash2, Search, Settings, ChevronDown, ChevronRight, Download, Upload } from "lucide-react"
-import type { CMSData, CMSModule, CMSEditMode } from "../types/cms"
-import { getApiUrl } from "../config/api"
+import { useState, useEffect } from "react";
+import { Settings } from "lucide-react";
+import type { CMSData, CMSModule, Topic } from "../types/cms";
+import { getApiUrl } from "../config/api";
+import { ModuleSidebar } from "./cms/ModuleSidebar";
+import { CMSModuleEditor } from "./cms/ModuleEditor";
+import { TopicEditor } from "./cms/TopicEditor";
 
-// Components
-import { ModuleSidebar } from "./cms/ModuleSidebar"
-import { ModuleEditor } from "./cms/ModuleEditor"
-import { TopicEditor } from "./cms/TopicEditor"
+type EditorView = "module" | "topic";
 
-interface CMSPageProps {
-  onClose: () => void
-}
-
-type EditorView = "module" | "topic"
-
-const CMSPage = ({ onClose }: CMSPageProps) => {
-  const [selectedModule, setSelectedModule] = useState<string | number | null>(null)
-  const [selectedTopic, setSelectedTopic] = useState<string | number | null>(null)
-  const [editorView, setEditorView] = useState<EditorView>("module")
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
-  const [showSuccess, setShowSuccess] = useState(false)
-
+const ChemMasterCMS = ({ onClose }: { onClose: () => void }) => {
   const [cmsData, setCMSData] = useState<CMSData>({
     modules: [],
     lastUpdated: new Date().toISOString(),
-  })
+  });
+  const [selectedModuleId, setSelectedModuleId] = useState<string | number | null>(null);
+  const [selectedTopicId, setSelectedTopicId] = useState<number | null>(null);
+  const [editorView, setEditorView] = useState<EditorView>("module");
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     fetch(getApiUrl("cmsData.php"))
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        setCMSData(data.cmsData);
-      })
-      .catch(error => {
-        console.error('Error fetching CMS data:', error);
-      });
+      .then(response => response.json())
+      .then(data => setCMSData(data.cmsData))
+      .catch(error => console.error('Error fetching CMS data:', error));
   }, []);
 
-  // Handler to switch to topic editor
-  const handleTopicSelect = (topicId: string | number) => {
-    setSelectedTopic(topicId)
-    setEditorView("topic")
-  }
+  // Orquestador: decide qué editor mostrar
+  const selectedModule = cmsData.modules.find(m => m.id === selectedModuleId) || null;
+  const selectedTopic = selectedModule?.topics?.find(t => t.id === selectedTopicId) || null;
 
-  // Handler to switch back to module editor
-  const handleBackToModule = () => {
-    setEditorView("module")
-    setSelectedTopic(null)
-  }
+  // Guardar módulo
+  const handleSaveModule = (updatedModule: CMSModule) => {
+    setCMSData(prev => ({
+      ...prev,
+      modules: prev.modules.map(m => m.id === updatedModule.id ? updatedModule : m),
+      lastUpdated: new Date().toISOString(),
+    }));
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 2000);
+  };
+
+  // Guardar tópico
+  const handleSaveTopic = (updatedTopic: Topic) => {
+    setCMSData(prev => ({
+      ...prev,
+      modules: prev.modules.map(module => {
+        if (module.id !== selectedModuleId) return module;
+        return {
+          ...module,
+          topics: module.topics?.map(topic =>
+            topic.id === updatedTopic.id ? updatedTopic : topic
+          ),
+        };
+      }),
+      lastUpdated: new Date().toISOString(),
+    }));
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 2000);
+    setEditorView("module");
+    setSelectedTopicId(null);
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex">
       {/* SIDEBAR */}
       <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
         <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-bold text-gray-800">CMS ChemMaster</h1>
-          </div>
+          <h1 className="text-xl font-bold text-gray-800">CMS ChemMaster</h1>
         </div>
         <ModuleSidebar
           modules={cmsData.modules}
           onModuleSelect={id => {
-            setSelectedModule(id)
-            setEditorView("module")
+            setSelectedModuleId(id);
+            setEditorView("module");
+            setSelectedTopicId(null);
           }}
           showAddModule={true}
-          showSaving={hasUnsavedChanges}
         />
       </div>
 
@@ -82,48 +83,32 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
       <div className="flex-1 bg-gray-50 overflow-hidden">
         {selectedModule ? (
           editorView === "module" ? (
-            <ModuleEditor
-              module={cmsData.modules.find((m) => m.id === selectedModule)!}
-              onEditTopic={handleTopicSelect}
-              onSave={async (updatedModule: CMSModule) => {
-                const newData = {
-                  ...cmsData,
-                  modules: cmsData.modules.map((module) => (module.id === selectedModule ? updatedModule : module)),
-                  lastUpdated: new Date().toISOString(),
-                }
-                setCMSData(newData)
-                setShowSuccess(true)
-                setTimeout(() => setShowSuccess(false), 2000)
+            <CMSModuleEditor
+              module={selectedModule}
+              onSave={handleSaveModule}
+              onEditTopic={topicId => {
+                setSelectedTopicId(topicId);
+                setEditorView("topic");
               }}
             />
           ) : (
-            <TopicEditor
-              topic={cmsData.modules
-                .find((m) => m.id === selectedModule)
-                ?.topics.find((t) => t.id === selectedTopic)}
-              onBack={handleBackToModule}
-              onSave={async (updatedTopic) => {
-                const updatedModules = cmsData.modules.map((module) => {
-                  if (module.id === selectedModule) {
-                    return {
-                      ...module,
-                      topics: module.topics.map((topic) =>
-                        topic.id === updatedTopic.id ? updatedTopic : topic
-                      ),
-                    }
-                  }
-                  return module
-                })
-                setCMSData({
-                  ...cmsData,
-                  modules: updatedModules,
-                  lastUpdated: new Date().toISOString(),
-                })
-                setShowSuccess(true)
-                setTimeout(() => setShowSuccess(false), 2000)
-                setEditorView("module")
-              }}
-            />
+            selectedTopic && (
+              <TopicEditor
+                topics={[selectedTopic]}
+                isEditing={true}
+                updateTopic={(idx, field, value) => {
+                  // Solo hay un tópico, idx siempre 0
+                  handleSaveTopic({ ...selectedTopic, [field]: value });
+                }}
+                removeTopic={() => {
+                  // Implementa lógica de eliminación si lo necesitas
+                }}
+                onBack={() => {
+                  setEditorView("module");
+                  setSelectedTopicId(null);
+                }}
+              />
+            )
           )
         ) : (
           <div className="h-full flex items-center justify-center">
@@ -141,11 +126,11 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
       {/* SUCCESS MESSAGE */}
       {showSuccess && (
         <div className="fixed top-6 right-6 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50 transition">
-          ¡Módulo guardado exitosamente!
+          ¡Guardado exitosamente!
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default CMSPage
+export default ChemMasterCMS;

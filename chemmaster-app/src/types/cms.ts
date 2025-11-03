@@ -57,5 +57,11 @@ export interface CMSData {
   lastUpdated: string
 }
 
+export type CMSModuleEditorProps = {
+  module: CMSModule;
+  onSave: (module: CMSModule) => void;
+  onEditTopic: (topicId: number) => void; // <-- agrega esto
+};
+
 export type CMSEditMode = "view" | "edit" | "add"
 export type CMSContentType = "module" | "submodule" | "topic"

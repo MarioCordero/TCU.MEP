@@ -1,13 +1,14 @@
 import { Input } from "../../components/ui/input"
 import { Button } from "../../components/ui/button"
 import * as LucideIcons from "lucide-react"
-import { TipTapEditor } from "./ModuleEditor" // Or import from its own file if separated
+import { TipTapEditor } from "../../components/ui/TipTapEditor"
 
 export function TopicEditor({
   topics,
   isEditing,
   updateTopic,
   removeTopic,
+  onBack,
 }: {
   topics: Array<{
     id?: number
@@ -18,6 +19,7 @@ export function TopicEditor({
   isEditing: boolean
   updateTopic: (idx: number, field: string, value: any) => void
   removeTopic: (idx: number) => void
+  onBack: () => void
 }) {
   return (
     <div>
