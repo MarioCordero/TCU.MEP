@@ -59,6 +59,7 @@ export function CMSModuleEditor({
   isEditing,
   showIconModal,
   setShowIconModal,
+  selectedModuleId,
 }: {
   module: CMSModule;
   editedModule: CMSModule;
@@ -66,7 +67,9 @@ export function CMSModuleEditor({
   isEditing: boolean;
   showIconModal: boolean;
   setShowIconModal: (show: boolean) => void;
+  selectedModuleId: number | null;
 }) {
+  
   const handleChange = (field: keyof CMSModule, value: any) => {
     setEditedModule({ ...editedModule, [field]: value });
   };

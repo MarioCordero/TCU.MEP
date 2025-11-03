@@ -13,8 +13,6 @@ export default function GradeSelector() {
   const navigate = useNavigate()
   
   const handleGradeSelection = (grade: number) => {
-    console.log("User selected grade:", grade)
-    console.log("Navigating to grade page...")
     navigate(`../grade-${grade}`, { replace: true })
   }
 

@@ -16,7 +16,10 @@ const ChemMasterCMS = ({ onClose }: { onClose: () => void }) => {
     modules: [],
     lastUpdated: new Date().toISOString(),
   });
-  const [selectedModuleId, setSelectedModuleId] = useState<number | null>(null);
+  const [selectedModuleId, setSelectedModuleId] = useState<number | null>(() => {
+    const stored = localStorage.getItem("selectedModuleId");
+    return stored && stored !== "" ? Number(stored) : null;
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [editedModule, setEditedModule] = useState<CMSModule | null>(null);
   const [showIconModal, setShowIconModal] = useState(false);
@@ -32,7 +35,7 @@ const ChemMasterCMS = ({ onClose }: { onClose: () => void }) => {
       .catch(error => console.error('Error fetching CMS data:', error));
   }, []);
 
-  const selectedModule = cmsData.modules.find(m => m.id === selectedModuleId) || null;
+  const selectedModule = cmsData.modules.find(m => Number(m.id) === Number(selectedModuleId)) || null;
 
   useEffect(() => {
     if (selectedModule) setEditedModule(selectedModule);
@@ -98,6 +101,7 @@ const ChemMasterCMS = ({ onClose }: { onClose: () => void }) => {
         <ModuleSidebar
           modules={cmsData.modules}
           onModuleSelect={id => {
+            localStorage.setItem("selectedModuleId", String(id));
             setSelectedModuleId(Number(id));
           }}
           showAddModule={true}
@@ -137,12 +141,14 @@ const ChemMasterCMS = ({ onClose }: { onClose: () => void }) => {
               </div>
             </div>
             <CMSModuleEditor
+              key={selectedModuleId}
               module={selectedModule}
               editedModule={editedModule}
               setEditedModule={setEditedModule}
               isEditing={isEditing}
               showIconModal={showIconModal}
               setShowIconModal={setShowIconModal}
+              selectedModuleId={selectedModuleId}
             />
           </>
         ) : (
