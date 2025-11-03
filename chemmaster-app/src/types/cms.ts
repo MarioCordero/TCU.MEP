@@ -39,12 +39,12 @@ export interface CMSModule {
   description: string
   icon: string
   color: string
-  grade?: "10" | "11"         // Frontend field
-  grade_level?: "10" | "11"   // Database field
+  grade?: "10" | "11"
+  grade_level?: "10" | "11"
   submodules?: CMSSubmodule[]
   order?: number
-  isActive: boolean           // Frontend field (boolean)
-  active?: number | boolean | string   // Database field - add string type if needed
+  isActive: boolean
+  active?: number | boolean | string
   features?: string[]
   tools?: string[]
   topics?: Topic[]
@@ -60,7 +60,7 @@ export interface CMSData {
 export type CMSModuleEditorProps = {
   module: CMSModule;
   onSave: (module: CMSModule) => void;
-  onEditTopic: (topicId: number) => void; // <-- agrega esto
+  onEditTopic: (topicId: number) => void;
 };
 
 export type CMSEditMode = "view" | "edit" | "add"

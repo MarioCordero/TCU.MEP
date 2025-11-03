@@ -4,8 +4,8 @@ export const API_CONFIG = {
   ENVIRONMENT: 'production' as 'development' | 'production',
 
   ENDPOINTS: {
-    development: 'http://chemmaster.com/API/',
-    production: 'https://spectcr.com/API/ChemMaster/'
+    development: 'http://chemmaster.com/backend/',
+    production: 'https://spectcr.com/API/ChemMaster/' //TODO: update production URL  
   }
 } as const
 
