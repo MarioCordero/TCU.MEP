@@ -6,7 +6,7 @@ import { Badge } from "../components/ui/badge"
 import { X, Plus, Trash2, Search, Settings, ChevronDown, ChevronRight, Download, Upload } from "lucide-react"
 import type { CMSData, CMSModule, CMSEditMode } from "../types/cms"
 import { CMSModuleEditor } from "./cms/ModuleEditor"
-import { getApiUrl } from "../config/api"
+import { getApiUrl } from "../lib/api"
 
 interface CMSPageProps {
   onClose: () => void
@@ -66,8 +66,7 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
       module.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       module.description.toLowerCase().includes(searchQuery.toLowerCase()),
   )
-
-  // ---------------------------- EFFECTS & HELPERS ----------------------------
+  
   useEffect(() => {
     fetch(getApiUrl("cmsData.php"))
       .then(response => {

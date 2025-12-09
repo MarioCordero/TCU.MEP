@@ -8,10 +8,9 @@ import { Switch } from "../../components/ui/switch"
 import { Label } from "../../components/ui/label"
 import type { CMSModule } from "../../types/cms"
 import * as LucideIcons from "lucide-react"
-import { getApiUrl } from "../../config/api"
-import { TopicEditor, type Topic } from "./TopicEditor" // Import the new component
+import { getApiUrl } from "../../lib/api"
+import { TopicEditor, type Topic } from "./TopicEditor"
 
-// ================================ TYPES & CONSTANTS ================================
 const ALLOWED_GRADES = ["10", "11"] as const
 type AllowedGrade = typeof ALLOWED_GRADES[number]
 
@@ -47,12 +46,10 @@ interface CMSModuleEditorProps {
   onSave: (module: CMSModule) => void
 }
 
-// ================================ UTILITY FUNCTIONS ================================
 function toAllowedGrade(value: any): AllowedGrade | undefined {
   return ALLOWED_GRADES.includes(value) ? value : undefined
 }
 
-// ================================ API FUNCTIONS ================================
 const apiRequest = async (endpoint: string, data: any) => {
   try {
     const response = await fetch(getApiUrl(endpoint), {
@@ -120,7 +117,6 @@ const moduleAPI = {
       order_in_module: topic.order_in_module || 0,
     }),
   updateTopic: (topic: Topic) => {
-    // Ensure all required fields are present
     if (!topic.id) {
       throw new Error("Topic ID is required for updates");
     }
@@ -139,7 +135,6 @@ const moduleAPI = {
   deleteTopic: (topicId: number) => apiRequest("deleteTopic.php", { id: topicId }),
 }
 
-// ================================ CUSTOM HOOKS ================================
 function useModuleEditor(initialModule: CMSModule) {
   const [editedModule, setEditedModule] = useState<CMSModule>(initialModule)
   const [originalTopics, setOriginalTopics] = useState<Topic[]>([])
@@ -208,7 +203,6 @@ function useModuleEditor(initialModule: CMSModule) {
   }
 }
 
-// ================================ MODAL COMPONENTS ================================
 interface IconModalProps {
   show: boolean
   onClose: () => void

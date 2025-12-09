@@ -1,7 +1,7 @@
 // API Configuration
 export const API_CONFIG = {
   // Change this to switch between environments
-  ENVIRONMENT: 'production' as 'development' | 'production',
+  ENVIRONMENT: 'development' as 'development' | 'production',
 
   ENDPOINTS: {
     development: 'http://chemmaster.com/API/',
@@ -25,5 +25,10 @@ export const apiRequest = async (endpoint: string, options?: RequestInit) => {
       ...options?.headers,
     },
   })
+  
+  if (!response.ok) {
+    throw new Error(`API Error: ${response.status}`)
+  }
+  
   return response
 }

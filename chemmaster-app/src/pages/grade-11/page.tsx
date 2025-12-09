@@ -4,7 +4,7 @@ import { Button } from "../../components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
 import { SearchBar } from '../../components/ui/searchbar'
-import { getApiUrl } from "../../config/api"
+import { getApiUrl } from "../../lib/api"
 
 import {
   Droplet,
