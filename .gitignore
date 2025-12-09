@@ -2,3 +2,4 @@ API/config.ini
 API/config/production.ini
 API/config/development.ini
 /.vscode
+API/ChemMaster/config.ini
