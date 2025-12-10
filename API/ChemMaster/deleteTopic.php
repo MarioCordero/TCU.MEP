@@ -1,38 +1,32 @@
 <?php
-    header('Access-Control-Allow-Origin: *'); // Or specify your domain: 'http://localhost:5173'
-    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
-    header('Content-Type: application/json');
-
-    // Handle preflight OPTIONS request
-    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-        http_response_code(200);
-        exit();
-    }
-
-    header('Content-Type: application/json; charset=utf-8');
-    ini_set('display_errors', 1);
-    ini_set('display_startup_errors', 1);
-    error_reporting(E_ALL);
-    
-    require_once "dbhandler.php";
-
+    require_once 'dbhandler.php';
     $input = json_decode(file_get_contents("php://input"), true);
-    if (!$input || !isset($input['id'])) {
+    $id = $input['id'] ?? null;
+    if (!$id) {
         http_response_code(400);
-        echo json_encode(["success" => false, "message" => "Falta el id del tópico"]);
+        echo json_encode(["success" => false, "message" => "Falta el ID del tópico"]);
         exit;
     }
-
-    $id = intval($input['id']);
-    $stmt = $conn->prepare("DELETE FROM topics WHERE id = ?");
-    $stmt->bind_param("i", $id);
-    if ($stmt->execute()) {
-        echo json_encode(["success" => true]);
-    } else {
+    try {
+        $stmt = $conn->prepare("DELETE FROM topics WHERE id = ?");
+        if (!$stmt) {
+            throw new Exception("Error preparando la consulta: " . $conn->error);
+        }
+        $stmt->bind_param("i", $id); // Integer
+        if (!$stmt->execute()) {
+            throw new Exception("Error ejecutando la eliminación: " . $stmt->error);
+        }
+        $stmt->close();
+        echo json_encode([
+            "success" => true, 
+            "message" => "Tópico eliminado correctamente"
+        ]);
+    } catch (Exception $e) {
         http_response_code(500);
-        echo json_encode(["success" => false, "message" => "Error al eliminar el tópico"]);
+        $errorMsg = "Error al eliminar el tópico.";
+        if (isset($environment) && $environment === 'development') {
+            $errorMsg .= " Detalle: " . $e->getMessage();
+        }
+        echo json_encode(["success" => false, "message" => $errorMsg]);
     }
-    $stmt->close();
-    $conn->close();
 ?>
