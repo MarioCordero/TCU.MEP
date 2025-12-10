@@ -3,10 +3,10 @@ import { useState, useEffect } from "react"
 import { Button } from "../components/ui/button"
 import { Input } from "../components/ui/input"
 import { Badge } from "../components/ui/badge"
-import { X, Plus, Trash2, Search, Settings, ChevronDown, ChevronRight, Download, Upload } from "lucide-react"
-import type { CMSData, CMSModule, CMSEditMode } from "../types/cms"
+import { Plus, Search, Settings } from "lucide-react"
+import type { CMSEditMode, Module, AllContentResponse } from "../types/cms"
 import { CMSModuleEditor } from "./cms/ModuleEditor"
-import { getApiUrl } from "../lib/api"
+import { API } from "../lib/api"
 
 interface CMSPageProps {
   onClose: () => void
@@ -15,113 +15,62 @@ interface CMSPageProps {
 const CMSPage = ({ onClose }: CMSPageProps) => {
 
   // ---------------------------- CONSTANTS & STATES ----------------------------
-  const [selectedModule, setSelectedModule] = useState<string | number | null>(null)
+  const [selectedModuleId, setSelectedModuleId] = useState<number | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
-  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set())
-  const [expandedSubmodules, setExpandedSubmodules] = useState<Set<string>>(new Set())
-  const [selectedSubmodule, setSelectedSubmodule] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const [editMode, setEditMode] = useState<CMSEditMode>("view")
   const [showSuccess, setShowSuccess] = useState(false)
 
-  const [cmsData, setCMSData] = useState<CMSData>({
+  const [cmsData, setCMSData] = useState<AllContentResponse>({
     modules: [],
     lastUpdated: new Date().toISOString(),
+    total_modules: 0,
   })
 
-  const handleDataChange = (newData: CMSData) => {
-    setCMSData(newData)
-    setHasUnsavedChanges(true)
-  }
+  // Fetch all content on mount
+  useEffect(() => {
+    loadCMSData()
+  }, [])
 
-  // Add a new module
-  const addNewModule = () => {
-    const newModule: CMSModule = {
-      id: `module-${Date.now()}`,
-      module_id: `new-module-${Date.now()}`,
-      title: "Nuevo Módulo",
-      description: "Descripción del nuevo módulo",
-      icon: "BookOpen",
-      color: "from-gray-500 to-gray-600",
-      grade: "10",
-      order: cmsData.modules.length + 1,
-      isActive: true,
-      features: [],
-      tools: [],
-      submodules: [],
+  const loadCMSData = async () => {
+    try {
+      setIsLoading(true)
+      const data = await API.GetAllContent()
+      setCMSData(data)
+    } catch (error) {
+      console.error("Error fetching CMS data:", error)
+    } finally {
+      setIsLoading(false)
     }
-
-    const newData = {
-      ...cmsData,
-      modules: [...cmsData.modules, newModule],
-      lastUpdated: new Date().toISOString(),
-    }
-    handleDataChange(newData)
-    setSelectedModule(newModule.id)
-    setEditMode("edit")
   }
 
   const filteredModules = cmsData.modules.filter(
     (module) =>
       module.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      module.description.toLowerCase().includes(searchQuery.toLowerCase()),
+      module.description?.toLowerCase().includes(searchQuery.toLowerCase()),
   )
-  
-  useEffect(() => {
-    fetch(getApiUrl("cmsData.php"))
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        if (data.success && data.cmsData) {
-          const normalizedModules = data.cmsData.modules.map(normalizeModule);
-          setCMSData({ ...data.cmsData, modules: normalizedModules });
-        }
-      })
-      .catch(error => {
-        console.error('Error fetching CMS data:', error);
-      });
-  }, [])
 
-  // Auto-save functionality
-  useEffect(() => {
-    if (hasUnsavedChanges) {
-      const timer = setTimeout(() => {
-        setHasUnsavedChanges(false)
-      }, 2000)
-      return () => clearTimeout(timer)
-    }
-  }, [cmsData, hasUnsavedChanges])
+  const selectedModule = cmsData.modules.find((m) => m.id === selectedModuleId)
 
-  // Helper to normalize modules
-  function normalizeModule(module: CMSModule): CMSModule {
-    const normalized = {
-      ...module,
-      features: Array.isArray(module.features) ? module.features : [],
-      tools: Array.isArray(module.tools) ? module.tools : [],
-      topics: Array.isArray(module.topics) ? module.topics : [],
-      grade: module.grade_level || module.grade,
-      isActive: module.active === 1 || module.active === "1" || module.active === true
-    };
-
-    return normalized;
-  }
-
-  const refreshCMSData = async () => {
+  const handleModuleUpdate = async (updatedModule: Module) => {
     try {
-      const response = await fetch(getApiUrl("cmsData.php"));
-      const data = await response.json();
-      if (data.success && data.cmsData) {
-        const normalizedModules = data.cmsData.modules.map(normalizeModule);
-        setCMSData({ ...data.cmsData, modules: normalizedModules });
-      }
+      // Update via API
+      await API.UpdateModule(updatedModule.id, updatedModule)
+
+      // Update local state
+      setCMSData((prev) => ({
+        ...prev,
+        modules: prev.modules.map((m) => (m.id === updatedModule.id ? updatedModule : m)),
+        lastUpdated: new Date().toISOString(),
+      }))
+
+      setShowSuccess(true)
+      setTimeout(() => setShowSuccess(false), 2000)
     } catch (error) {
-      console.error("Error refreshing data:", error);
+      console.error("Error updating module:", error)
+      alert("Error al guardar el módulo en el servidor")
     }
-  };
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex">
@@ -145,47 +94,44 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
             />
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-2 mt-4 bg-black rounded text-white">
-            <Button size="sm" onClick={addNewModule} className="flex-1 cursor-pointer">
-              <Plus className="h-4 w-4 mr-1" />
-              Módulo
-            </Button>
+          {/* Stats */}
+          <div className="mt-4 text-xs text-gray-500">
+            {cmsData.total_modules} módulos disponibles
           </div>
-
-          {hasUnsavedChanges && (
-            <div className="mt-2 text-xs text-amber-600 flex items-center gap-1">
-              <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
-              Guardando cambios...
-            </div>
-          )}
         </div>
 
-        {/* Modules */}
+        {/* Modules List */}
         <div className="flex-1 overflow-y-auto p-4">
-          {filteredModules.map((module) => (
-            <div key={module.id} className="mb-2">
-              {/* Module */}
+          {isLoading ? (
+            <div className="text-center text-gray-400 py-8">Cargando módulos...</div>
+          ) : filteredModules.length === 0 ? (
+            <div className="text-center text-gray-400 py-8">No se encontraron módulos</div>
+          ) : (
+            filteredModules.map((module) => (
               <div
-                className={`flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 group cursor-pointer ${
-                  selectedModule === module.id ? "bg-blue-100" : ""
+                key={module.id}
+                className={`flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 mb-2 cursor-pointer transition ${
+                  selectedModuleId === module.id ? "bg-blue-100 border-l-4 border-blue-500" : ""
                 }`}
-                onClick={() => {
-                  setSelectedModule(module.id)
-                  setSelectedSubmodule(null)
-                }}
+                onClick={() => setSelectedModuleId(module.id)}
               >
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
                     <Badge variant="outline" className="text-xs">
-                      {module.grade_level ? `${module.grade_level}°` : "Sin grado"}
+                      {module.grade_level}°
                     </Badge>
-                    <span className="text-sm font-medium truncate">{module.title}</span>
+                    {!module.active && (
+                      <Badge variant="secondary" className="text-xs bg-gray-200">
+                        Inactivo
+                      </Badge>
+                    )}
                   </div>
+                  <p className="text-sm font-medium truncate">{module.title}</p>
+                  <p className="text-xs text-gray-500 truncate">{module.description}</p>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
@@ -193,29 +139,9 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
       <div className="flex-1 bg-gray-50 overflow-hidden">
         {selectedModule ? (
           <CMSModuleEditor
-            key={String(selectedModule)}
-            module={cmsData.modules.find((m) => m.id === selectedModule)!}
-            onSave={async (updatedModule) => {
-              const newData = {
-                ...cmsData,
-                modules: cmsData.modules.map((module) => (module.id === selectedModule ? updatedModule : module)),
-                lastUpdated: new Date().toISOString(),
-              }
-              setCMSData(newData)
-              
-              try {
-                setShowSuccess(true)
-                setTimeout(() => setShowSuccess(false), 2000)
-                
-                setTimeout(async () => {
-                  await refreshCMSData();
-                }, 1000);
-                
-              } catch (err) {
-                alert("Error al guardar en el servidor")
-                console.error(err)
-              }
-            }}
+            key={selectedModule.id}
+            module={selectedModule}
+            onSave={handleModuleUpdate}
           />
         ) : (
           <div className="h-full flex items-center justify-center">
@@ -227,13 +153,13 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
               </p>
               <div className="mt-6 grid grid-cols-2 gap-4 text-sm text-gray-600">
                 <div>
-                  <div className="font-semibold">{cmsData.modules.length}</div>
+                  <div className="font-semibold">{cmsData.total_modules}</div>
                   <div>Módulos</div>
                 </div>
                 <div>
                   <div className="font-semibold">
                     {cmsData.modules.reduce(
-                      (acc, m) => acc + (Array.isArray(m.topics) ? m.topics.length : 0),
+                      (acc, m) => acc + (m.topics?.length || 0),
                       0
                     )}
                   </div>
@@ -248,7 +174,7 @@ const CMSPage = ({ onClose }: CMSPageProps) => {
       {/* SUCCESS MESSAGE */}
       {showSuccess && (
         <div className="fixed top-6 right-6 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50 transition">
-          ¡Módulo guardado exitosamente!
+          ¡Cambios guardados exitosamente!
         </div>
       )}
     </div>
