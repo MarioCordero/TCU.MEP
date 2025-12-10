@@ -1,37 +1,40 @@
 <?php
-    header('Access-Control-Allow-Origin: *'); // Or specify your domain: 'http://localhost:5173'
-    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
-    header('Content-Type: application/json');
-
-    // Handle preflight OPTIONS request
-    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-        http_response_code(200);
-        exit();
-    }
-    require_once "dbhandler.php";
-
+    require_once 'dbhandler.php';
     $input = json_decode(file_get_contents("php://input"), true);
-    if (!$input || !isset($input['module_id']) || !isset($input['title']) || !isset($input['content'])) {
+    if (!$input || !isset($input['module_slug']) || !isset($input['title'])) {
         http_response_code(400);
-        echo json_encode(["success" => false, "message" => "Faltan datos requeridos"]);
+        echo json_encode(["success" => false, "message" => "Faltan datos (module_slug, title)"]);
         exit;
     }
-
-    $module_id = $input['module_id'];
-    $title = $input['title'];
-    $description = $input['description'] ?? '';
-    $content = is_string($input['content']) ? $input['content'] : json_encode($input['content'], JSON_UNESCAPED_UNICODE);
-    $order_in_module = isset($input['order_in_module']) ? intval($input['order_in_module']) : 0;
-
-    $stmt = $conn->prepare("INSERT INTO topics (module_id, title, description, content, order_in_module) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("ssssi", $module_id, $title, $description, $content, $order_in_module);
-    if ($stmt->execute()) {
-        echo json_encode(["success" => true, "topic_id" => $stmt->insert_id]);
-    } else {
+    try {
+        $module_slug = $input['module_slug'];
+        $title = $input['title'];
+        $description = $input['description'] ?? '';
+        $content = isset($input['content']) 
+            ? (is_string($input['content']) ? $input['content'] : json_encode($input['content'], JSON_UNESCAPED_UNICODE))
+            : '';
+            
+        $order_in_module = isset($input['order_in_module']) ? (int)$input['order_in_module'] : 0;
+        $active = isset($input['active']) ? (int)$input['active'] : 1;
+        $sql = "INSERT INTO topics (module_slug, title, description, content, order_in_module, active, created_at) 
+                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
+        
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) throw new Exception("Error preparando INSERT: " . $conn->error);
+        // Types: s (slug), s (title), s (desc), s (content), i (order), i (active)
+        $stmt->bind_param("ssssii", $module_slug, $title, $description, $content, $order_in_module, $active);
+        if (!$stmt->execute()) throw new Exception("Error ejecutando INSERT: " . $stmt->error);
+        $newId = $stmt->insert_id;
+        $stmt->close();
+        echo json_encode([
+            "success" => true, 
+            "message" => "Tema creado exitosamente",
+            "id" => $newId
+        ]);
+    } catch (Exception $e) {
         http_response_code(500);
-        echo json_encode(["success" => false, "message" => "Error al insertar el tópico"]);
+        $msg = "Error al crear tema.";
+        if (isset($environment) && $environment === 'development') $msg .= " " . $e->getMessage();
+        echo json_encode(["success" => false, "message" => $msg]);
     }
-    $stmt->close();
-    $conn->close();
 ?>
