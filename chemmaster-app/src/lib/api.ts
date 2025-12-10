@@ -2,7 +2,7 @@ import { Topic, Module, AllContentResponse } from '../types/cms';
 
 const BASE_URL = import.meta.env.PROD 
   ? 'https://spectcr.com/API/ChemMaster/' 
-  : 'http://localhost/API/ChemMaster/';
+  : 'http://chemmaster.com/API/';
 
 const request = async <T>(endpoint: string, options?: RequestInit): Promise<T> => {
   const response = await fetch(`${BASE_URL}${endpoint}`, {
