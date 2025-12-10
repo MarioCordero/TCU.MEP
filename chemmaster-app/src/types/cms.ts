@@ -1,61 +1,74 @@
 // -------------------------------------------------------------------------------- //
-// ------------------------These are the types used in the CMS--------------------- //
+// ------------------------ Modelos de Base de Datos (API) ------------------------ //
 // -------------------------------------------------------------------------------- //
 
+/**
+ * Representa un Tema (Topic) tal como viene de la base de datos.
+ */
 export interface Topic {
-  id?: number
-  title: string
-  description?: string
-  content: any
-  order_in_module?: number
+  id: number;              // En SQL los IDs suelen ser numéricos
+  module_id: number;       // Foreign Key
+  title: string;
+  description?: string;
+  content: string;         // HTML o Markdown string
+  order_in_module: number;
+  active: number | boolean; // PHP a veces devuelve 1/0 o true/false
 }
 
-export interface CMSTopic {
-  id: string
-  title: string
-  description: string
-  content: string
-  icon: string
-  order: number
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
+/**
+ * Representa un Submódulo (si aplica en tu lógica actual).
+ */
+export interface Submodule {
+  id: number;
+  title: string;
+  description: string;
+  icon?: string;
+  topics: Topic[];
+  order: number;
+  active: number | boolean;
 }
 
-export interface CMSSubmodule {
-  id: string
-  title: string
-  description: string
-  icon: string
-  topics: CMSTopic[]
-  order: number
-  isActive: boolean
+/**
+ * Representa un Módulo Educativo (Grados 10 u 11).
+ */
+export interface Module {
+  id: number;
+  title: string;
+  description: string;
+  icon?: string;
+  color?: string;          // Hex code para UI
+  
+  // Estandarización: Usamos el nombre de la DB o el de frontend, pero no ambos mezclados.
+  // Asumiré 'grade_level' como el oficial de la DB.
+  grade_level: "10" | "11"; 
+  
+  submodules?: Submodule[];
+  topics?: Topic[];        // Un módulo puede tener temas directos
+  order: number;
+  
+  // El campo conflictivo: Lo definimos flexible para la entrada, 
+  // pero intentaremos tratarlo como boolean en la UI.
+  active: number | boolean; 
+
+  features?: string[];     // JSON parseado
+  tools?: string[];        // JSON parseado
+  
+  created_at?: string;
+  updated_at?: string;
 }
 
-export interface CMSModule {
-  id: string | number
-  module_id: string
-  title: string
-  description: string
-  icon: string
-  color: string
-  grade?: "10" | "11"         // Frontend field
-  grade_level?: "10" | "11"   // Database field
-  submodules?: CMSSubmodule[]
-  order?: number
-  isActive: boolean           // Frontend field (boolean)
-  active?: number | boolean | string   // Database field - add string type if needed
-  features?: string[]
-  tools?: string[]
-  topics?: Topic[]
-  created_at?: string
-  updated_at?: string
+// -------------------------------------------------------------------------------- //
+// ------------------------ Tipos de Respuesta de API ----------------------------- //
+// -------------------------------------------------------------------------------- //
+
+export interface CmsDataResponse {
+  modules: Module[];
+  lastUpdated: string;
 }
 
-export interface CMSData {
-  modules: CMSModule[]
-  lastUpdated: string
-}
+// -------------------------------------------------------------------------------- //
+// ------------------------ Tipos de UI / Estado Local ---------------------------- //
+// -------------------------------------------------------------------------------- //
 
-export type CMSEditMode = "view" | "edit" | "add"
-export type CMSContentType = "module" | "submodule" | "topic"
+export type CMSEditMode = "view" | "edit" | "add";
+export type CMSContentType = "module" | "submodule" | "topic";
