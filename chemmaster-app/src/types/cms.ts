@@ -7,7 +7,7 @@
  * Nota: Se eliminó 'active' porque no existe en la tabla actual.
  */
 export interface Topic {
-  id: number;
+  id?: number;
   module_slug: string;     // Relación con el módulo (FK: slug)
   title: string;           // ¡Faltaba este campo vital!
   description?: string;

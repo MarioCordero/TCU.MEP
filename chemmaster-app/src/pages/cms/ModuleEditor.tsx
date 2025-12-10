@@ -6,10 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/ca
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
 import { Switch } from "../../components/ui/switch"
 import { Label } from "../../components/ui/label"
-import type { CMSModule } from "../../types/cms"
+import type { Module, Topic } from "../../types/cms"
 import * as LucideIcons from "lucide-react"
-import { getApiUrl } from "../../lib/api"
-import { TopicEditor, type Topic } from "./TopicEditor"
+import { API } from "../../lib/api"
+import { TopicEditor } from "./TopicEditor"
 
 const ALLOWED_GRADES = ["10", "11"] as const
 type AllowedGrade = typeof ALLOWED_GRADES[number]
@@ -42,124 +42,39 @@ const COLOR_OPTIONS = [
 ]
 
 interface CMSModuleEditorProps {
-  module: CMSModule
-  onSave: (module: CMSModule) => void
+  module: Module
+  onSave: (module: Module) => void
 }
 
 function toAllowedGrade(value: any): AllowedGrade | undefined {
   return ALLOWED_GRADES.includes(value) ? value : undefined
 }
 
-const apiRequest = async (endpoint: string, data: any) => {
-  try {
-    const response = await fetch(getApiUrl(endpoint), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-    
-    if (!response.ok) {
-      let errorDetails = "";
-      try {
-        const errorText = await response.text();
-        errorDetails = errorText ? ` - ${errorText}` : "";
-      } catch (e) {
-        // Silent error handling
-      }
-      
-      throw new Error(`API request failed: ${response.status} ${response.statusText}${errorDetails}`)
-    }
-    
-    const contentType = response.headers.get("content-type")
-    if (!contentType || !contentType.includes("application/json")) {
-      const text = await response.text()
-      throw new Error(`Expected JSON response, got: ${contentType}. Response: ${text.substring(0, 200)}`)
-    }
-    
-    const text = await response.text()
-    if (!text.trim()) {
-      return { success: true }
-    }
-    
-    try {
-      return JSON.parse(text);
-    } catch (parseError) {
-      throw new Error(`Invalid JSON response: ${text.substring(0, 200)}`)
-    }
-    
-  } catch (error) {
-    console.error(`API Error (${endpoint}):`, error)
-    throw error
-  }
-}
-
-const moduleAPI = {
-  update: (module: CMSModule) => {
-    const moduleData = {
-      id: module.id,
-      module_id: module.module_id,
-      title: module.title,
-      description: module.description,
-      icon: module.icon,
-      color: module.color,
-      grade_level: module.grade || module.grade_level,
-      active: module.isActive ? 1 : 0,
-    };
-    
-    return apiRequest("updateModule.php", moduleData);
-  },
-  addTopic: (moduleId: string, topic: Topic) => 
-    apiRequest("addTopic.php", {
-      module_id: moduleId,
-      title: topic.title || "",
-      description: topic.description || "",
-      content: typeof topic.content === 'string' ? topic.content : JSON.stringify(topic.content || ""),
-      order_in_module: topic.order_in_module || 0,
-    }),
-  updateTopic: (topic: Topic) => {
-    if (!topic.id) {
-      throw new Error("Topic ID is required for updates");
-    }
-    
-    const payload = {
-      id: topic.id,
-      title: topic.title || "",
-      description: topic.description || "",
-      content: typeof topic.content === 'string' ? topic.content : JSON.stringify(topic.content || ""),
-      order_in_module: topic.order_in_module || 0,
-    };
-    debugger;
-
-    return apiRequest("updateTopic.php", payload);
-  },
-  deleteTopic: (topicId: number) => apiRequest("deleteTopic.php", { id: topicId }),
-}
-
-function useModuleEditor(initialModule: CMSModule) {
-  const [editedModule, setEditedModule] = useState<CMSModule>(initialModule)
-  const [originalTopics, setOriginalTopics] = useState<Topic[]>([])
+function useModuleEditor(initialModule: Module) {
+  const [editedModule, setEditedModule] = useState<Module>(initialModule)
   const [deletedTopicIds, setDeletedTopicIds] = useState<number[]>([])
   const [isEditing, setIsEditing] = useState(false)
 
   useEffect(() => {
     setEditedModule(initialModule)
-    setOriginalTopics(initialModule.topics || [])
     setDeletedTopicIds([])
   }, [initialModule])
 
   const addTopic = useCallback(() => {
     const newTopic: Topic = {
+      id: undefined,
+      module_slug: initialModule.slug,
       title: "",
       content: "",
       description: "",
-      order_in_module: (editedModule.topics?.length || 0)
+      order_in_module: (editedModule.topics?.length || 0) + 1
     }
     
     setEditedModule(prev => ({
       ...prev,
       topics: [...(prev.topics || []), newTopic]
     }))
-  }, [editedModule.topics?.length])
+  }, [editedModule.topics?.length, initialModule.slug])
 
   const updateTopic = useCallback((index: number, field: keyof Topic, value: any) => {
     setEditedModule(prev => {
@@ -184,7 +99,6 @@ function useModuleEditor(initialModule: CMSModule) {
 
   const resetToOriginal = useCallback(() => {
     setEditedModule(initialModule)
-    setOriginalTopics(initialModule.topics || [])
     setDeletedTopicIds([])
     setIsEditing(false)
   }, [initialModule])
@@ -192,7 +106,6 @@ function useModuleEditor(initialModule: CMSModule) {
   return {
     editedModule,
     setEditedModule,
-    originalTopics,
     deletedTopicIds,
     isEditing,
     setIsEditing,
@@ -340,7 +253,6 @@ function SuccessModal({ show, onClose }: SuccessModalProps) {
   )
 }
 
-// ================================ MAIN COMPONENT ================================
 export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
   const {
     editedModule,
@@ -354,49 +266,45 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
     resetToOriginal,
   } = useModuleEditor(module)
 
-  // useEffect(() => {
-  //   fetch(getApiUrl(`getModule.php?id=${module.module_id}`))
-  //     .then(res => res.json())
-  //     .then(data => {
-  //       setEditedModule(data) // Make sure 'data' includes topics and their content
-  //     })
-  //     .catch(err => {
-  //       console.error("Error fetching module/topics:", err)
-  //     })
-  // }, [module.module_id])
-
-  // Modal states
   const [showIconModal, setShowIconModal] = useState(false)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [password, setPassword] = useState("")
 
-  // LOOK
   const handleSave = async () => {
-    
     try {
-      // Update module info
-      const { topics, ...moduleWithoutTopics } = editedModule
-      await moduleAPI.update(moduleWithoutTopics as CMSModule)
+      // Update module
+      await API.UpdateModule(editedModule.id, editedModule)
 
-      // Handle topic operations in parallel
+      // Handle topic operations
       const operations: Promise<any>[] = []
 
       // Add new topics
       const newTopics = editedModule.topics?.filter(topic => !topic.id) || []
       newTopics.forEach(topic => {
-        operations.push(moduleAPI.addTopic(editedModule.module_id, topic))
+        operations.push(API.AddTopic({
+          module_slug: editedModule.slug,
+          title: topic.title || "",
+          description: topic.description,
+          content: topic.content,
+          order_in_module: topic.order_in_module
+        }))
       })
       
       // Update existing topics
       const existingTopics = editedModule.topics?.filter(topic => topic.id) || []
       existingTopics.forEach(topic => {
-        operations.push(moduleAPI.updateTopic(topic))
+        operations.push(API.UpdateTopic(topic.id!, {
+          title: topic.title || "",
+          description: topic.description,
+          content: topic.content,
+          order_in_module: topic.order_in_module
+        }))
       })
 
       // Delete removed topics
       deletedTopicIds.forEach(topicId => {
-        operations.push(moduleAPI.deleteTopic(topicId))
+        operations.push(API.DeleteTopic(topicId))
       })
 
       await Promise.all(operations)
@@ -435,7 +343,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
             <div>
               <h1 className="text-2xl font-bold text-gray-800">{isEditing ? "Editando Módulo" : "Vista de Módulo"}</h1>
               <p className="text-gray-600">
-                {/* Module description */}
+                {editedModule.title}
               </p>
             </div>
           </div>
@@ -446,9 +354,9 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
               <Label htmlFor="module-active">Activo</Label>
               <Switch
                 id="module-active"
-                checked={Boolean(editedModule.isActive)}
+                checked={editedModule.active}
                 onCheckedChange={(checked) => {
-                  setEditedModule({ ...editedModule, isActive: checked });
+                  setEditedModule({ ...editedModule, active: checked });
                 }}
                 disabled={!isEditing}
               />
@@ -505,7 +413,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                 <div className="relative">
                   <Input
                     id="icon"
-                    value={editedModule.icon}
+                    value={editedModule.icon || ""}
                     onChange={(e) => setEditedModule({ ...editedModule, icon: e.target.value })}
                     disabled={!isEditing}
                     className="mt-1"
@@ -527,7 +435,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                 <IconModal
                   show={showIconModal}
                   onClose={() => setShowIconModal(false)}
-                  currentIcon={editedModule.icon}
+                  currentIcon={editedModule.icon || ""}
                   onIconChange={(icon) => setEditedModule({ ...editedModule, icon })}
                   disabled={!isEditing}
                 />
@@ -539,7 +447,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
               <Label htmlFor="description">Descripción</Label>
               <Textarea
                 id="description"
-                value={editedModule.description}
+                value={editedModule.description || ""}
                 onChange={(e) => setEditedModule({ ...editedModule, description: e.target.value })}
                 disabled={!isEditing}
                 className="mt-1"
@@ -551,8 +459,8 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
             <div>
               <Label htmlFor="grade">Grado</Label>
               <Select
-                value={editedModule.grade}
-                onValueChange={(value: AllowedGrade) => setEditedModule({ ...editedModule, grade: value })}
+                value={editedModule.grade_level}
+                onValueChange={(value: AllowedGrade) => setEditedModule({ ...editedModule, grade_level: value })}
                 disabled={!isEditing}
               >
                 <SelectTrigger className="mt-1 bg-gray-100">
@@ -605,8 +513,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                 + Añadir tópico
               </Button>
               
-              {/* Topics List - Now using the separated component */}
-              {/* LOOK */}
+              {/* Topics List */}
               {(editedModule.topics || []).map((topic, idx) => (
                 <TopicEditor
                   key={`topic-${idx}-${topic.id || 'new'}`}
