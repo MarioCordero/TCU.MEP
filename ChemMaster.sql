@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.2
+-- version 5.2.1deb3
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1:3306
--- Generation Time: Dec 09, 2025 at 11:49 PM
--- Server version: 11.8.3-MariaDB-log
--- PHP Version: 7.2.34
+-- Host: localhost:3306
+-- Generation Time: Dec 10, 2025 at 10:41 PM
+-- Server version: 8.0.44-0ubuntu0.24.04.1
+-- PHP Version: 8.3.6
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `u518943843_ChemMaster`
+-- Database: `ChemMaster`
 --
 
 -- --------------------------------------------------------
@@ -28,15 +28,15 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `activities` (
-  `id` int(11) NOT NULL,
-  `topic_id` int(11) NOT NULL,
-  `type` enum('quiz','match','word_soup','fill_blank','drag_drop') NOT NULL,
-  `question` text DEFAULT NULL,
-  `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`content`)),
-  `order_in_topic` int(11) DEFAULT 0,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `id` int NOT NULL,
+  `topic_id` int NOT NULL,
+  `type` enum('quiz','match','word_soup','fill_blank','drag_drop') COLLATE utf8mb4_general_ci NOT NULL,
+  `question` text COLLATE utf8mb4_general_ci,
+  `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `order_in_topic` int DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ;
 
 -- --------------------------------------------------------
 
@@ -45,23 +45,23 @@ CREATE TABLE `activities` (
 --
 
 CREATE TABLE `modules` (
-  `id` int(11) NOT NULL,
-  `module_id` varchar(64) NOT NULL,
-  `grade_level` enum('10','11') NOT NULL,
-  `title` varchar(255) NOT NULL,
-  `description` text DEFAULT NULL,
-  `icon` varchar(100) DEFAULT NULL,
-  `color` varchar(64) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `active` tinyint(1) NOT NULL DEFAULT 1
+  `id` int NOT NULL,
+  `slug` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `grade_level` enum('10','11') COLLATE utf8mb4_general_ci NOT NULL,
+  `title` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `description` text COLLATE utf8mb4_general_ci,
+  `icon` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `active` tinyint(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `modules`
 --
 
-INSERT INTO `modules` (`id`, `module_id`, `grade_level`, `title`, `description`, `icon`, `color`, `created_at`, `updated_at`, `active`) VALUES
+INSERT INTO `modules` (`id`, `slug`, `grade_level`, `title`, `description`, `icon`, `color`, `created_at`, `updated_at`, `active`) VALUES
 (1, 'periodic-table', '11', 'Tabla Periódica', 'La tabla periódica de los elementos es una forma de organizar y categorizar los elementos químicos conocidos hasta el momento. La tabla periódica que se utiliza de manera más extendida es la diseñada por el ruso Dmitri Mendeleev, la cual organiza los elementos en orden creciente de su número atómico', 'Table2', 'from-purple-500 to-purple-600', '2025-08-27 22:40:43', '2025-11-03 15:56:28', 0),
 (2, 'atomic-structure', '10', 'El átomo', 'El átomo es la unidad fundamental de los elementos químicos, su nombre fue dado por el filósofo griego Demócrito de Abdera y su significado es “sin secciones”, haciendo alusión a su razonamiento de que si separamos por partes de la materia, eventualmente se llegará a una unidad fundamental que no seamos capaz de seguir seccionando. A día de hoy se sabe que un átomo puede ser divido en componentes más pequeños gracias a los constantes avances en la investigación científica', 'Atom', 'from-green-500 to-green-600', '2025-08-27 22:40:43', '2025-10-29 19:44:13', 0),
 (3, 'electronic-config', '10', 'Configuración Electrónica', 'La configuración electrónica es la forma en que se representa la estructuración y ordenamiento de los electrones dentro de un átomo. Este ordenamiento viene dado por las aportaciones de Bohr en su modelo atómico, en dónde explicaba que los electrones se encontraban en capas una sobre la otra de acuerdo su nivel energético.\n\nAhora, con respecto a cuantos electrones hay en cada capa y en nivel energético de la misma solo se puede saber al introducir todos los datos necesarios en la famosa ecuación de Schrödinger, por lo que desde el área de la química se limita su estudio a las soluciones de dicha ecuación que ya han sido publicadas a lo largo de la historia.', 'Orbit', 'from-orange-500 to-orange-600', '2025-08-27 22:40:43', '2025-10-17 05:48:44', 1),
@@ -83,22 +83,22 @@ INSERT INTO `modules` (`id`, `module_id`, `grade_level`, `title`, `description`,
 --
 
 CREATE TABLE `topics` (
-  `id` int(11) NOT NULL,
-  `module_id` varchar(64) NOT NULL,
-  `title` varchar(255) NOT NULL,
-  `description` text DEFAULT NULL,
-  `content` text DEFAULT NULL,
-  `order_in_module` int(11) DEFAULT 0,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `id` int NOT NULL,
+  `module_slug` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `title` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `description` text COLLATE utf8mb4_general_ci,
+  `content` longtext COLLATE utf8mb4_general_ci,
+  `order_in_module` int DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `topics`
 --
 
-INSERT INTO `topics` (`id`, `module_id`, `title`, `description`, `content`, `order_in_module`, `created_at`, `updated_at`) VALUES
-(8, 'periodic-table', 'Nombres y símbolos de los elementos químicos', '', '<p>Los elementos de la tabla periódica son representados por símbolos formados por dos letras, dichas letras forman a su vez parte del nombre de dicho elemento. Diversos elementos presentan nombres o símbolos que no parecen tener relación entre sí en el idioma español, sin embargo, vienen de sus nombres originales en latín, griego, ingles, árabe u alemán. A continuación se muestran los elementos cuyos símbolos difieren de sus nombres en español.</p><p></p>', 0, '2025-09-09 21:57:46', '2025-10-17 05:09:48'),
+INSERT INTO `topics` (`id`, `module_slug`, `title`, `description`, `content`, `order_in_module`, `created_at`, `updated_at`) VALUES
+(8, 'periodic-table', 'Nombres y símbolos de los elementos químicos', '', '<p>Los elementos de la tabla periódica son representados por símbolos formados por dos letras, dichas letras forman a su vez parte del nombre de dicho elemento. Diversos elementos presentan nombres o símbolos que no parecen tener relación entre sí en el idioma español, sin embargo, vienen de sus nombres originales en latín, griego, ingles, árabe u alemán. A continuación se muestran los elementos cuyos símbolos difieren de sus nombres en español.</p><p></p>', 0, '2025-09-09 21:57:46', '2025-12-10 22:39:26'),
 (9, 'periodic-table', 'Divisiones de los elementos químicos', '', '<p>La tabla periódica de los elementos consta actualmente de 118 elementos conocidos, cuyo origen es tanto natural, para los elementos presentes en la corteza terrestre, como artificial, para los elementos sintetizados de manera controlada. La tabla periódica puede ser dividida en distintos grupos para facilitar su comprensión y estos grupos están constituidos por elementos que compartes características físicas semejantes.</p><p></p><h1><strong>Metales</strong></h1><p>Los metales son los elementos que se caracterizan por ser sólidos a temperatura ambiente (20°C ~ 25°C), presentan buena conducción de la electricidad y el calor, son maleables y dúctiles, presentan altos puntos de fusión con contadas excepciones, son fácilmente oxidables al exponerse al aire, presentan una alta densidad y sus colores son en su mayoría tonos plateados con la excepción del cobre y el oro.</p><p></p><h1><strong>No Metales</strong></h1><p>Los no metales son los elementos que se caracterizan por opuestos a los metales, principalmente en que naturalmente se encuentran en los tres estados base de la materia (sólido, líquido y gas), sus capacidades para conducir el calor y la electricidad son bajos, su densidad es menor, no son dúctiles ni maleables y cada uno de estos elementos presenta gran variedad de tonalidades.</p><p></p><h1><strong>Metaloides</strong></h1><p>Los metaloides son elementos con características intermedias entre los metales y los no metales, ya que no presentan la resistencia de los metales, son frágiles, su capacidad de conducir la electricidad y el calor se encuentra en un punto intermedio entre los metales y los no metales, sus coloraciones son opacas y en se encuentra en su mayoría en estado sólido.</p>', 1, '2025-10-01 00:22:19', '2025-10-17 05:09:48'),
 (11, 'periodic-table', 'Bloques de los elementos químicos', '', '<p>La tabla periódica también puede ser dividida en clases de elementos de acuerdo con ciertos criterios, tales como abundancia, densidad relativa y configuración electrónica (ver punto <strong>4</strong>). a continuación se presenta una imagen ilustrativa de la división de la tabla periódica según sus clases.</p><p></p><h1><strong>Representativos</strong></h1><p>Los elementos representativos son caracterizados por ser los de mayor abundancia tanto en el planeta tierra como en el sistema solar y el universo conocido, sus densidades relativas son muy más bajase en comparación las del resto de los elementos. Estos elementos presentan una configuración electrónica de tipo “externa”.</p><p></p><p><strong>Transición</strong></p><p>Los elementos de transición son denominados de esta forma debido a que son sumamente estables a lo largo de la tabla periódica, presentan altas densidades, dureza y puntos de fusión y ebullición. Estos elementos presentan una configuración electrónica tipo “interna”.</p><p></p><h1><strong>Transición Interna</strong></h1><p>Los elementos de transición interna son poco abundantes y su principal diferenciación con el resto de las clases es su radiactividad, el resto de sus propiedades son similares a los de transición pero presentando puntos de fusión y ebullición variables. Su configuración electrónica es tipo “interna”.</p>', 2, '2025-10-01 14:31:24', '2025-10-17 05:09:48'),
 (14, 'clasificacion_materia', 'Sustancias Puras', 'fb', '<p>Son la parte fundamental de la materia macroscópica, son de composición fija e invariable manteniendo sus propiedades físicas constantes, se dividen en elementos y compuestos.</p><p></p><p><strong>Elementos</strong></p><p>Son sustancias puras que se caracterizan por estar conformadas por un solo tipo de átomos. Son sustancias básicas que no pueden ser separadas por medios físicos o químicos. Están representados en la tabla periódica de la elementos.</p><p></p><h2><strong>Compuestos</strong></h2><p>Son sustancias conformadas por dos o más elementos en proporciones definidas. Estos no pueden ser separados por medios físicos pero sí por medios químicos. Están representados por las denominadas formulas químicas.</p>', 0, '2025-10-06 22:21:53', '2025-10-17 04:56:03'),
@@ -131,14 +131,14 @@ ALTER TABLE `activities`
 --
 ALTER TABLE `modules`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `module_id` (`module_id`);
+  ADD UNIQUE KEY `module_id` (`slug`);
 
 --
 -- Indexes for table `topics`
 --
 ALTER TABLE `topics`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `module_id` (`module_id`);
+  ADD KEY `module_id` (`module_slug`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -148,19 +148,19 @@ ALTER TABLE `topics`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `modules`
 --
 ALTER TABLE `modules`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `topics`
 --
 ALTER TABLE `topics`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- Constraints for dumped tables
@@ -176,7 +176,7 @@ ALTER TABLE `activities`
 -- Constraints for table `topics`
 --
 ALTER TABLE `topics`
-  ADD CONSTRAINT `topics_ibfk_1` FOREIGN KEY (`module_id`) REFERENCES `modules` (`module_id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `topics_ibfk_1` FOREIGN KEY (`module_slug`) REFERENCES `modules` (`slug`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
