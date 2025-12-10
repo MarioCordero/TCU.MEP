@@ -1,8 +1,12 @@
 <?php
     require_once __DIR__ . '/cors.php';
-    $whitelist = array('127.0.0.1', '::1', 'localhost');
+    $whitelist = array(
+        '127.0.0.1', 
+        '::1', 
+        'localhost', 
+        'chemmaster.com'
+    );
     $serverName = $_SERVER['SERVER_NAME'];
-
     if (in_array($serverName, $whitelist)) {
         $environment = 'development';
         ini_set('display_errors', 1);
@@ -17,7 +21,10 @@
 
     if (!file_exists($configFile)) {
         http_response_code(500);
-        echo json_encode(["success" => false, "message" => "Server Error: Config file missing"]);
+        echo json_encode([
+            "success" => false, 
+            "message" => "Server Error: Config file missing. Looking for: " . basename($configFile) . " in " . $serverName
+        ]);
         exit();
     }
 
