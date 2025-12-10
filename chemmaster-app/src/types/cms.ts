@@ -7,8 +7,7 @@
  */
 export interface Topic {
   id: number;              // En SQL los IDs suelen ser numéricos
-  module_id: number;       // Foreign Key
-  title: string;
+  module_slug: string; // Antes module_id
   description?: string;
   content: string;         // HTML o Markdown string
   order_in_module: number;
