@@ -22,7 +22,7 @@ export interface Topic {
  * Representa un Módulo Educativo (Tabla 'modules').
  */
 export interface Module {
-  id: number;              // ID Numérico (PK)
+  id?: number;              // ID Numérico (PK)
   slug: string;            // ID de Texto para URL (antes module_id)
   grade_level: "10" | "11"; 
   
