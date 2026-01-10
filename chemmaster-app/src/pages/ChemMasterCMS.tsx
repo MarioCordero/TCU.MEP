@@ -2,21 +2,19 @@ import { useEffect, useState } from 'react';
 import { useApi } from '../hooks/useApi';
 import { API } from '../lib/api';
 import { Module, AllContentResponse } from '../types/cms';
-import TopicEditor from './cms/TopicEditor'; // El componente que haremos en el Paso 2
-import { Button } from '../components/ui/button'; // Usando tus componentes UI
+import TopicEditor from './cms/TopicEditor';
+import { Button } from '../components/ui/button';
 
 export default function ChemMasterCMS() {
   const { data: cmsData, loading, error, request } = useApi<AllContentResponse>();
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
 
-  // Cargar datos al iniciar
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
     const result = await request(API.GetAllContent());
-    // Si ya había un módulo seleccionado, intentamos actualizarlo con los datos nuevos
     if (selectedModule && result) {
       const updatedModule = result.modules.find(m => m.id === selectedModule.id);
       if (updatedModule) setSelectedModule(updatedModule);
@@ -37,7 +35,7 @@ export default function ChemMasterCMS() {
         </div>
         
         <div className="flex-1 overflow-y-auto p-2 space-y-6">
-          {/* Grado 10 */}
+          {/* Tenth grade */}
           <div>
             <h3 className="px-3 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Décimo Grado</h3>
             <div className="space-y-1">
@@ -57,7 +55,7 @@ export default function ChemMasterCMS() {
             </div>
           </div>
 
-          {/* Grado 11 */}
+          {/* Eleventh grade */}
           <div>
             <h3 className="px-3 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Undécimo Grado</h3>
             <div className="space-y-1">
