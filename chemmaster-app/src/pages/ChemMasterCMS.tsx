@@ -16,7 +16,6 @@ export default function ChemMasterCMS() {
 
   const loadData = async () => {
     const result = await request(API.GetAllContent());
-    // Si ya había un módulo seleccionado, lo actualizamos con los datos nuevos para ver cambios reflejados
     if (selectedModule && result) {
       const updatedModule = result.modules.find(m => m.id === selectedModule.id);
       if (updatedModule) setSelectedModule(updatedModule);
@@ -29,14 +28,12 @@ export default function ChemMasterCMS() {
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden">
       
-      {/* 1. SIDEBAR SEPARADO */}
       <CMSSidebar 
         modules={cmsData?.modules || []} 
         selectedModule={selectedModule} 
         onSelect={setSelectedModule} 
       />
 
-      {/* 2. MAIN CONTENT */}
       <main className="flex-1 overflow-y-auto p-8">
         {selectedModule ? (
           <div className="max-w-4xl mx-auto">
