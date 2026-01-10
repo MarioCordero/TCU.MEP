@@ -1,4 +1,4 @@
-name: Integrar ChemMaster a SPECT (Padre)
+name: Integrar ChemMaster a SPECT
 
 on:
   workflow_dispatch: # Se activa solo cuando oprimes el botón en Actions
@@ -17,10 +17,10 @@ jobs:
       - name: Checkout Parent Repo (SPECT)
         uses: actions/checkout@v4
         with:
-          repository: TU_USUARIO/NOMBRE_REPO_PADRE # <--- CAMBIA ESTO (ej: mario/spectcr-web)
+          repository: spectcr/spectcr.com
           token: ${{ secrets.PAT_TOKEN }}
           path: parent-repo
-          ref: main # O la rama que uses en el padre
+          ref: main
 
       # 3. Sincronizar BACKEND (API)
       # Copia API/ChemMaster del hijo a API/ChemMaster del padre
