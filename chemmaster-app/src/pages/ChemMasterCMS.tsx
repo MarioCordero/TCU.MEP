@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useApi } from '../hooks/useApi';
 import { API } from '../lib/api';
 import { Module, AllContentResponse } from '../types/cms';
-import TopicEditor from './cms/TopicEditor';
+import TopicEditor from '../components/cms/TopicEditor';
+import CMSSidebar from '../components/cms/Sidebar';
 import { Button } from '../components/ui/button';
 
 export default function ChemMasterCMS() {
@@ -15,6 +16,7 @@ export default function ChemMasterCMS() {
 
   const loadData = async () => {
     const result = await request(API.GetAllContent());
+    // Si ya había un módulo seleccionado, lo actualizamos con los datos nuevos para ver cambios reflejados
     if (selectedModule && result) {
       const updatedModule = result.modules.find(m => m.id === selectedModule.id);
       if (updatedModule) setSelectedModule(updatedModule);
@@ -25,59 +27,16 @@ export default function ChemMasterCMS() {
   if (error) return <div className="p-10 text-red-600">Error Crítico: {error}</div>;
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 overflow-hidden">
       
-      {/* SIDEBAR: Lista de Módulos */}
-      <aside className="w-80 bg-white border-r flex flex-col">
-        <div className="p-4 border-b bg-gray-50">
-          <h1 className="text-xl font-bold text-slate-800">ChemMaster CMS</h1>
-          <p className="text-xs text-gray-500">Gestor de Contenido</p>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto p-2 space-y-6">
-          {/* Tenth grade */}
-          <div>
-            <h3 className="px-3 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Décimo Grado</h3>
-            <div className="space-y-1">
-              {cmsData?.modules.filter(m => m.grade_level === "10").map(module => (
-                <button
-                  key={module.id}
-                  onClick={() => setSelectedModule(module)}
-                  className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                    selectedModule?.id === module.id 
-                      ? 'bg-blue-100 text-blue-700 font-medium' 
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  {module.title}
-                </button>
-              ))}
-            </div>
-          </div>
+      {/* 1. SIDEBAR SEPARADO */}
+      <CMSSidebar 
+        modules={cmsData?.modules || []} 
+        selectedModule={selectedModule} 
+        onSelect={setSelectedModule} 
+      />
 
-          {/* Eleventh grade */}
-          <div>
-            <h3 className="px-3 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Undécimo Grado</h3>
-            <div className="space-y-1">
-              {cmsData?.modules.filter(m => m.grade_level === "11").map(module => (
-                <button
-                  key={module.id}
-                  onClick={() => setSelectedModule(module)}
-                  className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                    selectedModule?.id === module.id 
-                      ? 'bg-blue-100 text-blue-700 font-medium' 
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  {module.title}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      {/* MAIN CONTENT: Editor de Tópicos */}
+      {/* 2. MAIN CONTENT */}
       <main className="flex-1 overflow-y-auto p-8">
         {selectedModule ? (
           <div className="max-w-4xl mx-auto">
@@ -95,15 +54,15 @@ export default function ChemMasterCMS() {
               </div>
             </div>
 
-            {/* Aquí inyectamos el Editor de Tópicos */}
+            {/* Editor de Temas */}
             <TopicEditor 
               moduleSlug={selectedModule.slug} 
               topics={selectedModule.topics || []}
-              onUpdate={loadData} // Callback para recargar todo cuando cambie algo
+              onUpdate={loadData}
             />
-
           </div>
         ) : (
+          /* Estado Vacío */
           <div className="h-full flex flex-col items-center justify-center text-gray-400">
             <p className="text-xl">⬅ Selecciona un módulo para editar su contenido</p>
           </div>
