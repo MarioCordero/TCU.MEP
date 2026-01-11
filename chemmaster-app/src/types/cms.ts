@@ -9,7 +9,7 @@
 export interface Topic {
   id?: number;
   module_slug: string;     // Relación con el módulo (FK: slug)
-  title: string;           // ¡Faltaba este campo vital!
+  title: string;
   description?: string;
   content: string;         // HTML o contenido rico (LONGTEXT en DB)
   order_in_module: number;
@@ -64,3 +64,54 @@ export interface AllContentResponse {
 
 export type CMSEditMode = "view" | "edit" | "add";
 export type CMSContentType = "module" | "topic"; // Simplificado (quitamos submodule si no se usa)
+
+// Color option for module styling
+export interface ColorOption {
+  value: string;
+  label: string;
+  preview: string;
+}
+
+// Props for CMSModuleEditor component
+export interface CMSModuleEditorProps {
+  module: Module;
+  onSave: (module: Module) => void;
+}
+
+// Props for IconModal component
+export interface IconModalProps {
+  show: boolean;
+  onClose: () => void;
+  currentIcon: string;
+  onIconChange: (icon: string) => void;
+  disabled: boolean;
+}
+
+// Props for ConfirmModal component
+export interface ConfirmModalProps {
+  show: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  password: string;
+  onPasswordChange: (password: string) => void;
+}
+
+// Props for SuccessModal component
+export interface SuccessModalProps {
+  show: boolean;
+  onClose: () => void;
+}
+
+// Return type for useModuleEditor hook
+export interface UseModuleEditorReturn {
+  editedModule: Module;
+  setEditedModule: (module: Module) => void;
+  deletedTopicIds: number[];
+  isEditing: boolean;
+  setIsEditing: (editing: boolean) => void;
+  addTopic: () => void;
+  updateTopic: (index: number, field: keyof Topic, value: any) => void;
+  removeTopic: (index: number) => void;
+  resetToOriginal: () => void;
+  hasChanges: boolean;
+}

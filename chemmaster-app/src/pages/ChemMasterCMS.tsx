@@ -3,8 +3,8 @@ import { useApi } from '../hooks/useApi';
 import { API } from '../lib/api';
 import { Module, AllContentResponse } from '../types/cms';
 import TopicEditor from '../components/cms/TopicEditor';
+import { CMSModuleEditor } from '../components/cms/ModuleEditor';
 import CMSSidebar from '../components/cms/Sidebar';
-import { Button } from '../components/ui/button';
 
 export default function ChemMasterCMS() {
   const { data: cmsData, loading, error, request } = useApi<AllContentResponse>();
@@ -34,29 +34,26 @@ export default function ChemMasterCMS() {
         onSelect={setSelectedModule} 
       />
 
-      <main className="flex-1 overflow-y-auto p-8">
+      <main className="flex-1 overflow-y-auto">
         {selectedModule ? (
-          <div className="max-w-4xl mx-auto">
-            {/* Cabecera del Módulo */}
-            <div className="flex justify-between items-end mb-8 border-b pb-4">
-              <div>
-                <span className="text-sm font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                  {selectedModule.slug}
-                </span>
-                <h2 className="text-3xl font-bold text-gray-800 mt-2">{selectedModule.title}</h2>
-                <p className="text-gray-500">{selectedModule.description}</p>
-              </div>
-              <div className="text-right">
-                 <Button variant="outline" onClick={() => loadData()}>🔄 Recargar</Button>
-              </div>
-            </div>
-
-            {/* Editor de Temas */}
-            <TopicEditor 
-              moduleSlug={selectedModule.slug} 
-              topics={selectedModule.topics || []}
-              onUpdate={loadData}
+          <div className="space-y-8">
+            {/* Module Editor */}
+            <CMSModuleEditor 
+              module={selectedModule}
+              onSave={(updatedModule) => {
+                setSelectedModule(updatedModule);
+                loadData();
+              }}
             />
+
+            {/* Topic Editor */}
+            <div className="border-t pt-8">
+              <TopicEditor 
+                moduleSlug={selectedModule.slug} 
+                topics={selectedModule.topics || []}
+                onUpdate={loadData}
+              />
+            </div>
           </div>
         ) : (
           /* Estado Vacío */
