@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import { Textarea } from "../../components/ui/textarea"
@@ -12,79 +12,116 @@ import * as LucideIcons from "lucide-react"
 import { API } from "../../lib/api"
 import { useModuleEditor } from "../../hooks/useModuleEditor"
 
+// Icon modal (Choose an icon from lucide.dev)
 function IconModal({ show, onClose, currentIcon, onIconChange }: IconModalProps) {
+  const [searchTerm, setSearchTerm] = useState("")
+  const allIconNames = useMemo(() => {
+    return Object.keys(LucideIcons).filter((key) => {
+      return key !== "icons" && key !== "createLucideIcon" && /^[A-Z]/.test(key)
+    })
+  }, [])
+
+  const filteredIcons = allIconNames.filter((name) =>
+    name.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const renderIcon = (iconName: string, size = 24) => {
+    const IconComponent = (LucideIcons as any)[iconName]
+    return IconComponent ? <IconComponent size={size} /> : null
+  }
+
   if (!show) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl w-full">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-bold">Selecciona un icono</h2>
-          <Button variant="ghost" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col h-[80vh]">
+
+        <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
+          <div>
+            <h2 className="text-lg font-bold text-gray-800">Galería de Iconos</h2>
+            <p className="text-xs text-gray-500">
+              {allIconNames.length} iconos disponibles
+            </p>
+          </div>
+          <Button variant="ghost" size="sm" onClick={onClose} className="rounded-full h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600">
             <LucideIcons.X className="h-5 w-5" />
           </Button>
         </div>
 
-        <div className="mb-4">
-          <p className="text-sm text-gray-600 mb-2">
-            Busca y copia el nombre del icono en{" "}
-            <a
-              href="https://lucide.dev/icons/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 underline"
-            >
-              lucide.dev/icons
-            </a>{" "}
-            y pégalo abajo.
-          </p>
-          <iframe
-            src="https://lucide.dev/icons/"
-            title="Lucide Icon Browser"
-            className="w-full h-96 border rounded"
-          />
+        <div className="p-4 border-b bg-white sticky top-0 z-10">
+          <div className="relative">
+            <LucideIcons.Search className="absolute left-3 top-3 text-gray-400 h-4 w-4" />
+            <Input 
+              autoFocus
+              placeholder="Buscar icono (ej: user, chart, atom, wifi...)" 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 text-lg py-6 border-2 focus:border-blue-500"
+            />
+          </div>
         </div>
 
-        <div className="mt-4">
-          <Label htmlFor="iconName" className="mb-1 block">
-            Nombre del icono
-          </Label>
-          <div className="flex gap-2">
-            <Input
-              id="iconName"
-              value={currentIcon}
-              onChange={(e) => onIconChange(e.target.value)}
-              placeholder="Ejemplo: BookOpen"
-              autoFocus
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={async () => {
-                try {
-                  const text = await navigator.clipboard.readText()
-                  onIconChange(text)
-                } catch {
-                  alert("No se pudo acceder al portapapeles. Pega manualmente el nombre del icono.")
-                }
-              }}
-              title="Pegar nombre del icono"
-            >
-              <LucideIcons.ClipboardPaste className="h-4 w-4" />
-            </Button>
-          </div>
-          <Button className="bg-black text-white block w-1/4 m-auto mt-2.5" onClick={onClose}>
-            Usar este icono
-          </Button>
+        <div className="flex-1 overflow-y-auto p-6 bg-slate-50">
+          {filteredIcons.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">
+              <LucideIcons.Frown className="h-12 w-12 mx-auto mb-2 opacity-50" />
+              <p>No se encontraron iconos para "{searchTerm}"</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
+              {filteredIcons.slice(0, 100).map((iconName) => (
+                <button
+                  key={iconName}
+                  onClick={() => {
+                    onIconChange(iconName)
+                  }}
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 group ${
+                    currentIcon === iconName
+                      ? "bg-blue-600 text-white shadow-lg scale-105 border-blue-600"
+                      : "bg-white border-gray-200 hover:border-blue-400 hover:shadow-md hover:-translate-y-1 text-gray-600"
+                  }`}
+                  title={iconName}
+                >
+                  <div className="mb-2 transition-transform group-hover:scale-110">
+                    {renderIcon(iconName, 28)}
+                  </div>
+                  <span className={`text-[10px] truncate w-full text-center ${currentIcon === iconName ? "text-blue-100" : "text-gray-400 group-hover:text-blue-600"}`}>
+                    {iconName}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {filteredIcons.length > 100 && (
+            <div className="mt-6 text-center text-xs text-gray-400 italic">
+              Mostrando 100 de {filteredIcons.length} resultados. Sigue escribiendo para filtrar mejor.
+            </div>
+          )}
+        </div>
+
+        <div className="p-4 border-t bg-white flex justify-between items-center">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+                Icono actual: 
+                <span className="font-bold flex items-center gap-2 bg-gray-100 px-2 py-1 rounded">
+                    {currentIcon && renderIcon(currentIcon, 16)} {currentIcon || "Ninguno"}
+                </span>
+            </div>
+            <div className="flex gap-2">
+                <Button variant="outline" onClick={onClose}>Cancelar</Button>
+                <Button className="bg-black text-white hover:bg-gray-800" onClick={onClose}>
+                    Listo
+                </Button>
+            </div>
         </div>
       </div>
     </div>
   )
 }
 
+// Confirm save modal (asks for password TODO: Check password before saving)
 function ConfirmModal({ show, onClose, onConfirm, password, onPasswordChange }: ConfirmModalProps) {
   if (!show) return null
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
@@ -112,9 +149,9 @@ function ConfirmModal({ show, onClose, onConfirm, password, onPasswordChange }: 
   )
 }
 
+// Success modal (shows after successful save)
 function SuccessModal({ show, onClose }: SuccessModalProps) {
   if (!show) return null
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-center">
@@ -128,6 +165,7 @@ function SuccessModal({ show, onClose }: SuccessModalProps) {
   )
 }
 
+// Main CMSModuleEditor component
 export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
   const {
     editedModule,
@@ -169,27 +207,36 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
     handleSave()
   }
 
-  return (
-    <div className="overflow-y-auto">
-      {/* HEADER */}
-      <div className="bg-white border-b border-gray-200 p-6">
+    return (
+    <div className="overflow-y-auto bg-white">
+      {/* HEADER - Enhanced styling */}
+      <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-8 border-b-4 border-blue-500 shadow-md">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className={`p-3 bg-gradient-to-r ${editedModule.color} rounded-xl`}>
-              {/* Icon placeholder */}
+          <div className="flex items-center gap-6">
+            <div className={`p-4 bg-gradient-to-br ${editedModule.color} rounded-2xl shadow-lg transform hover:scale-105 transition-transform`}>
+              {editedModule.icon ? (
+                (() => {
+                  const IconComponent = (LucideIcons as any)[editedModule.icon]
+                  return IconComponent ? <IconComponent className="h-8 w-8 text-white" /> : <LucideIcons.BookOpen className="h-8 w-8 text-white" />
+                })()
+              ) : (
+                <LucideIcons.BookOpen className="h-8 w-8 text-white" />
+              )}
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">
-                {isEditing ? "Editando Módulo" : "Vista de Módulo"}
+              <h1 className="text-3xl font-bold">
+                {isEditing ? "✏️ Editando Módulo" : "👁️ Vista de Módulo"}
               </h1>
-              <p className="text-gray-600">{editedModule.title}</p>
+              <p className="text-gray-300 mt-1">{editedModule.title}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             {/* Module Active State Switch */}
-            <div className="flex items-center gap-2 mr-4">
-              <Label htmlFor="module-active">Activo</Label>
+            <div className="flex items-center gap-3 bg-slate-700 px-4 py-2 rounded-lg">
+              <Label htmlFor="module-active" className="text-white font-medium">
+                {editedModule.active ? "🟢 Activo" : "🔴 Inactivo"}
+              </Label>
               <Switch
                 id="module-active"
                 checked={editedModule.active}
@@ -202,8 +249,13 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
 
             {/* Edit/Save Controls */}
             {isEditing ? (
-              <>
-                <Button variant="outline" onClick={handleCancel}>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={handleCancel}
+                  className="bg-gray-600 hover:bg-gray-700 text-white border-0"
+                >
+                  <LucideIcons.X className="h-4 w-4 mr-2" />
                   Cancelar
                 </Button>
                 <Button
@@ -211,13 +263,18 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                   onClick={() => setShowConfirmModal(true)}
                   disabled={!hasChanges}
                   title={!hasChanges ? "No hay cambios para guardar" : ""}
+                  className="bg-green-600 hover:bg-green-700 disabled:opacity-50"
                 >
                   <LucideIcons.Save className="h-4 w-4 mr-2" />
                   Guardar
                 </Button>
-              </>
+              </div>
             ) : (
-              <Button variant="black" onClick={() => setIsEditing(true)}>
+              <Button 
+                variant="black" 
+                onClick={() => setIsEditing(true)}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
                 <LucideIcons.Edit3 className="h-4 w-4 mr-2" />
                 Editar
               </Button>
@@ -228,20 +285,24 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
       {/* END HEADER */}
 
       {/* CONTENT */}
-      <div className="p-6 space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <LucideIcons.Target className="h-5 w-5" />
-              Información del Módulo
+      <div className="p-8 space-y-6">
+        <Card className="border-0 shadow-lg rounded-xl overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-200">
+            <CardTitle className="flex items-center gap-3 text-xl text-gray-800">
+              <div className="p-2 bg-blue-600 rounded-lg">
+                <LucideIcons.Settings className="h-5 w-5 text-white" />
+              </div>
+              Configuración del Módulo
             </CardTitle>
           </CardHeader>
 
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6 pt-6">
             {/* Title and Icon */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="title">Título del Módulo</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="title" className="text-sm font-semibold text-gray-700">
+                  📝 Título del Módulo
+                </Label>
                 <Input
                   id="title"
                   value={editedModule.title}
@@ -249,14 +310,17 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                     setEditedModule({ ...editedModule, title: e.target.value })
                   }
                   disabled={!isEditing}
-                  className="mt-1"
+                  className="mt-1 border-2 border-gray-200 focus:border-blue-500 rounded-lg"
                   placeholder="Ej: Estructura Atómica"
                 />
               </div>
 
-              <div>
-                <Label htmlFor="icon">Icono</Label>
-                <div className="relative">
+              <div className="space-y-2">
+                <Label htmlFor="icon" className="text-sm font-semibold text-gray-700">
+                  🎨 Icono
+                </Label>
+                
+                <div className="relative mt-1">
                   <Input
                     id="icon"
                     value={editedModule.icon || ""}
@@ -264,16 +328,18 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                       setEditedModule({ ...editedModule, icon: e.target.value })
                     }
                     disabled={!isEditing}
-                    className="mt-1"
+                    className="border-2 border-gray-200 focus:border-blue-500 rounded-lg pr-12" 
                     placeholder="Nombre del icono (ej: Atom, BookOpen)"
                   />
+                  
                   {isEditing && (
                     <Button
                       type="button"
-                      size="sm"
-                      variant="outline"
-                      className="absolute right-2 top-2"
+                      size="icon"
+                      variant="ghost"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-md"
                       onClick={() => setShowIconModal(true)}
+                      title="Buscar icono"
                     >
                       <LucideIcons.Search className="h-4 w-4" />
                     </Button>
@@ -293,8 +359,10 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
             </div>
 
             {/* Description */}
-            <div>
-              <Label htmlFor="description">Descripción</Label>
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-sm font-semibold text-gray-700">
+                📄 Descripción
+              </Label>
               <Textarea
                 id="description"
                 value={editedModule.description || ""}
@@ -305,36 +373,41 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                   })
                 }
                 disabled={!isEditing}
-                className="mt-1"
+                className="mt-1 border-2 border-gray-200 focus:border-blue-500 rounded-lg"
                 rows={3}
                 placeholder="Descripción breve del módulo"
               />
             </div>
 
-            {/* Grade Selector */}
-            <div>
-              <Label htmlFor="grade">Grado</Label>
-              <Select
-                value={editedModule.grade_level}
-                onValueChange={(value: AllowedGrade) =>
-                  setEditedModule({ ...editedModule, grade_level: value })
-                }
-                disabled={!isEditing}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Selecciona el grado" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10° Grado</SelectItem>
-                  <SelectItem value="11">11° Grado</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Grade Selector */}
+              <div className="space-y-2">
+                <Label htmlFor="grade" className="text-sm font-semibold text-gray-700">
+                  🎓 Grado
+                </Label>
+                <Select
+                  value={editedModule.grade_level}
+                  onValueChange={(value: AllowedGrade) =>
+                    setEditedModule({ ...editedModule, grade_level: value })
+                  }
+                  disabled={!isEditing}
+                >
+                  <SelectTrigger className="mt-1 border-2 border-gray-200 focus:border-blue-500 rounded-lg">
+                    <SelectValue placeholder="Selecciona el grado" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg">                    <SelectItem value="10">10° Grado</SelectItem>
+                    <SelectItem value="11">11° Grado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Color Selector */}
-            <div>
-              <Label>Color del Módulo</Label>
-              <div className="grid grid-cols-4 gap-2 mt-3">
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-700">
+                🎨 Color del Módulo
+              </Label>
+              <div className="grid grid-cols-4 gap-3">
                 {COLOR_OPTIONS.map((color) => (
                   <button
                     key={color.value}
@@ -344,19 +417,19 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                       setEditedModule({ ...editedModule, color: color.value })
                     }
                     disabled={!isEditing}
-                    className={`p-3 rounded-lg border-2 transition-all ${
+                    className={`p-4 rounded-xl border-3 transition-all transform hover:scale-110 ${
                       editedModule.color === color.value
-                        ? "border-gray-800 scale-105"
-                        : "border-gray-200 hover:border-gray-400"
+                        ? "border-gray-900 shadow-lg scale-105 ring-2 ring-blue-400"
+                        : "border-gray-300 hover:border-gray-400 shadow-sm"
                     } ${
                       !isEditing
-                        ? "cursor-not-allowed opacity-50"
+                        ? "cursor-not-allowed opacity-40"
                         : "cursor-pointer"
                     }`}
                     title={color.label}
                   >
-                    <div className={`w-full h-8 rounded ${color.preview}`} />
-                    <div className="text-xs mt-1 text-center text-gray-700">
+                    <div className={`w-full h-10 rounded-lg ${color.preview} shadow-md`} />
+                    <div className="text-xs mt-2 text-center font-medium text-gray-700">
                       {color.label}
                     </div>
                   </button>
