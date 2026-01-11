@@ -149,10 +149,10 @@ export default function TopicEditorModal({
               <ReactQuill 
                 theme="snow"
                 value={editedTopic.content}
-                onChange={(content) => setEditedTopic({ ...editedTopic, content: content })}
+                onChange={(content: string) => setEditedTopic({ ...editedTopic, content: content })}
                 modules={modules}
                 formats={formats}
-                className="h-[350px] mb-12" // Altura fija para el editor + espacio para toolbar
+                className="h-[350px] mb-12"
                 placeholder="Escribe aquí... puedes pegar imágenes directamente."
               />
             </div>
