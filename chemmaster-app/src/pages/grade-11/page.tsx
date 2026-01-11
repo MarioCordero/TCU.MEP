@@ -4,8 +4,8 @@ import { Button } from "../../components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
 import { SearchBar } from '../../components/ui/searchbar'
-import { getApiUrl } from "../../lib/api"
-
+import { API } from "../../lib/api"
+import { Module } from "../../types/cms"
 import {
   Droplet,
   Waves,
@@ -21,6 +21,7 @@ import {
   Microscope,
   Gamepad2,
   X,
+  Play,
 } from "lucide-react"
 
 const ICONS = {
@@ -38,25 +39,7 @@ const ICONS = {
   Microscope,
   Gamepad2,
   X,
-};
-
-type Feature = {
-  name: string;
-  icon: keyof typeof ICONS;
-  description: string;
-};
-
-type Module = {
-  id: number;
-  module_id: string;
-  grade_level: string;
-  title: string;
-  description: string;
-  icon: keyof typeof ICONS;
-  color: string;
-  difficulty?: string;
-  features: Feature[];
-  tools: string[];
+  Play,
 };
 
 export default function GradeElevenPage() {
@@ -66,14 +49,20 @@ export default function GradeElevenPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(getApiUrl("cmsData.php"))
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) setModules(data.modules)
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
+    loadModules()
   }, [])
+
+  const loadModules = async () => {
+    try {
+      setLoading(true)
+      const data = await API.GetModules("11")
+      setModules(data)
+    } catch (error) {
+      console.error("Error loading modules:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
@@ -127,7 +116,7 @@ export default function GradeElevenPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {modules.map((module) => {
-              const IconComponent = ICONS[module.icon];
+              const IconComponent = ICONS[module.icon as keyof typeof ICONS];
               return (
                 <Card
                   key={module.id}
@@ -157,7 +146,7 @@ export default function GradeElevenPage() {
               {(() => {
                 const module = modules.find((mod) => mod.id === selectedModule)
                 if (!module) return null
-                const IconComponent = ICONS[module.icon];
+                const IconComponent = ICONS[module.icon as keyof typeof ICONS];
                 return (
                   <div>
                     <div className={`bg-gradient-to-r ${module.color} text-white p-6 rounded-t-2xl`}>
@@ -181,31 +170,16 @@ export default function GradeElevenPage() {
                     </div>
 
                     <div className="p-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div className="grid grid-cols-1 gap-6 mb-6">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-800 mb-4">Lo que deberás aprender</h3>
-                          <div className="space-y-3">
-                            {module.features.map((feature: Feature, index: number) => {
-                              const FeatureIcon = ICONS[feature.icon];
-                              return (
-                                <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                                  <div className="p-2 bg-gray-200 rounded-lg">
-                                    {FeatureIcon ? <FeatureIcon className="h-4 w-4 text-gray-600" /> : null}
-                                  </div>
-                                  <div>
-                                    <div className="font-medium text-gray-800">{feature.name}</div>
-                                    <div className="text-sm text-gray-600">{feature.description}</div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
+                          <h3 className="text-lg font-semibold text-gray-800 mb-4">Descripción del módulo</h3>
+                          <p className="text-gray-600">{module.description}</p>
                         </div>
 
                         <div>
                           <h3 className="text-lg font-semibold text-gray-800 mb-4">Herramientas Incluidas</h3>
                           <div className="grid grid-cols-2 gap-3">
-                            {module.tools.map((tool: string, index: number) => (
+                            {module.tools?.map((tool: string, index: number) => (
                               <div key={index} className="p-3 bg-emerald-50 rounded-lg text-center">
                                 <div className="text-sm font-medium text-emerald-800">{tool}</div>
                               </div>
@@ -222,4 +196,5 @@ export default function GradeElevenPage() {
         )}
       </div>
     </div>
-  )}
+  )
+}

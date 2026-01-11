@@ -1,70 +1,73 @@
-name: Deploy ChemMaster App and API to webDevelopment
+name: Integrar ChemMaster a SPECT
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'chemmaster-app/**'
-      - 'API/**'
+  workflow_dispatch: # Se activa solo cuando oprimes el botón en Actions
 
 jobs:
-  deploy-chemmaster:
+  sync-to-parent:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout source repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      # 1. Descargar el código del HIJO (Fuente)
+      - name: Checkout Child Repo (TCU.MEP)
+        uses: actions/checkout@v4
+        with:
+          path: child-repo
 
-    - name: Clone target repository (webDevelopment branch)
-      run: |
-        git clone --branch webDevelopment https://x-access-token:${{ secrets.DEPLOY_TOKEN }}@github.com/spectcr/spectcr.com.git target-repo
-        cd target-repo
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
+      # 2. Descargar el código del PADRE (Destino)
+      - name: Checkout Parent Repo (SPECT)
+        uses: actions/checkout@v4
+        with:
+          repository: spectcr/spectcr.com
+          token: ${{ secrets.PAT_TOKEN }}
+          path: parent-repo
+          ref: main
 
-    - name: Clean ChemMaster folders in target repo
-      run: |
-        # Clean React app folder
-        rm -rf target-repo/SPECT-Website/src/ChemMaster/*
-        mkdir -p target-repo/SPECT-Website/src/ChemMaster
-        
-        # Clean API folder
-        rm -rf target-repo/API/ChemMaster/*
-        mkdir -p target-repo/API/ChemMaster
+      # 3. Sincronizar BACKEND (API)
+      # Copia API/ChemMaster del hijo a API/ChemMaster del padre
+      - name: Sync Backend (API)
+        run: |
+          echo "Sincronizando API PHP..."
+          # -a: archive (mantiene permisos/fechas), -v: verbose, --delete: borra en destino lo que no exista en origen
+          rsync -av --delete --exclude 'Config/development.ini' child-repo/API/ChemMaster/ parent-repo/API/ChemMaster/
 
-    - name: Copy specific chemmaster-app files to ChemMaster
-      run: |
-        DEST_DIR="target-repo/SPECT-Website/src/ChemMaster"
+      # 4. Sincronizar FRONTEND (Carpetas Clave)
+      # Copiamos solo las carpetas internas. NO copiamos main.tsx ni index.html
+      # para no romper el punto de entrada del padre (ChemMaster.tsx).
+      - name: Sync Frontend Directories
+        run: |
+          echo "Sincronizando Frontend React..."
+          
+          # Definir ruta base destino
+          DEST_BASE="parent-repo/SPECT-Website/src/ChemMaster"
+          
+          # Lista de carpetas a sincronizar
+          # Nota: Agregué 'hooks' y 'lib' basándome en tu estructura
+          FOLDERS=("assets" "components" "config" "hooks" "lib" "pages" "screens" "types")
 
-        # Copy node_modules
-        if [ -d "chemmaster-app/node_modules" ]; then
-          cp -r chemmaster-app/node_modules "$DEST_DIR/"
-        fi
+          for folder in "${folders[@]}"; do
+            src="child-repo/chemmaster-app/src/$folder/"
+            dest="$DEST_BASE/$folder/"
+            
+            # Si la carpeta existe en el origen, sincronizarla
+            if [ -d "$src" ]; then
+              mkdir -p "$dest"
+              rsync -av --delete "$src" "$dest"
+            fi
+          done
 
-        # Copy src folders
-        for folder in assets components config lib pages types screens; do
-          if [ -d "chemmaster-app/src/$folder" ]; then
-            cp -r "chemmaster-app/src/$folder" "$DEST_DIR/"
+      # 5. Guardar cambios en el PADRE
+      - name: Commit and Push to Parent
+        run: |
+          cd parent-repo
+          git config user.name "GitHub Action Bot"
+          git config user.email "actions@github.com"
+          
+          # Verificamos si hay cambios antes de hacer commit
+          if [[ -n $(git status -s) ]]; then
+            git add .
+            git commit -m "feat(integration): Actualización automática desde ChemMaster App (Hijo)"
+            git push origin main # O la rama que uses
+            echo "✅ Cambios subidos correctamente al Padre"
+          else
+            echo "✨ No hubo cambios necesarios, todo está sincronizado."
           fi
-        done
-
-        # Copy ChemMaster.tsx
-        if [ -f "chemmaster-app/src/ChemMaster.tsx" ]; then
-          cp "chemmaster-app/src/ChemMaster.tsx" "$DEST_DIR/"
-        fi
-
-    - name: Copy API files
-      run: |
-        # Copy API files if API directory exists
-        if [ -d "API" ]; then
-          cp -r API/* target-repo/API/ChemMaster/
-        fi
-
-    - name: Commit and push changes
-      run: |
-        cd target-repo
-        git add SPECT-Website/src/ChemMaster API/ChemMaster
-        git commit -m "📦 Update ChemMaster app and API from MarioCordero/TCU.MEP@${{ github.sha }}" || echo "No changes to commit"
-        git push origin webDevelopment

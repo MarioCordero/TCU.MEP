@@ -4,7 +4,8 @@ import { Button } from "../../components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
 import { SearchBar } from '../../components/ui/searchbar'
-import { getApiUrl } from "../../lib/api"
+import { API } from "../../lib/api"
+import { Module } from "../../types/cms"
 import {
   ArrowLeft,
   Table2,
@@ -70,19 +71,6 @@ type Feature = {
   description: string;
 };
 
-type Module = {
-  id: number;
-  module_id: string;
-  grade_level: string;
-  title: string;
-  description: string;
-  icon: keyof typeof ICONS;
-  color: string;
-  difficulty?: string;
-  features: Feature[];
-  tools: string[];
-};
-
 export default function GradeTenPage() {
   const navigate = useNavigate()
   const [selectedModule, setSelectedModule] = useState<number | null>(null)
@@ -90,22 +78,28 @@ export default function GradeTenPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(getApiUrl("cmsData.php"))
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) setModules(data.modules)
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
+    loadModules()
   }, [])
 
-  const handleModuleStart = (moduleId: string) => {
+  const loadModules = async () => {
+    try {
+      setLoading(true)
+      const data = await API.GetModules("10")
+      setModules(data)
+    } catch (error) {
+      console.error("Error loading modules:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleModuleStart = (moduleSlug: string) => {
     const screenMap: Record<string, string> = {
       "periodic-table": "tabla-periodica",
       "atomic-structure": "estructura-atomica", 
       "electronic-config": "configuracion-electronica"
     }
-    const screen = screenMap[moduleId]
+    const screen = screenMap[moduleSlug]
     if (screen) {
       navigate(`/${screen}`)
     }
@@ -171,7 +165,7 @@ export default function GradeTenPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {modules.map((module) => {
-              const IconComponent = ICONS[module.icon];
+              const IconComponent = ICONS[module.icon as keyof typeof ICONS];
               return (
                 <Card
                   key={module.id}
@@ -185,18 +179,6 @@ export default function GradeTenPage() {
                       >
                         {IconComponent && <IconComponent className="h-6 w-6 text-white" />}
                       </div>
-                      <Badge
-                        variant="outline"
-                        className={`text-xs ${
-                          module.difficulty === "Básico"
-                            ? "border-green-300 text-green-700 bg-green-50"
-                            : module.difficulty === "Intermedio"
-                              ? "border-yellow-300 text-yellow-700 bg-yellow-50"
-                              : "border-red-300 text-red-700 bg-red-50"
-                        }`}
-                      >
-                        {module.difficulty}
-                      </Badge>
                     </div>
                     <CardTitle className="text-lg font-semibold text-gray-800 mb-2">{module.title}</CardTitle>
                     <CardDescription className="text-gray-600 text-sm">{module.description}</CardDescription>
@@ -214,7 +196,7 @@ export default function GradeTenPage() {
               {(() => {
                 const module = modules.find((mod) => mod.id === selectedModule)
                 if (!module) return null
-                const IconComponent = ICONS[module.icon];
+                const IconComponent = ICONS[module.icon as keyof typeof ICONS];
                 return (
                   <div>
                     <div className={`bg-gradient-to-r ${module.color} text-white p-6 rounded-t-2xl`}>
@@ -238,31 +220,16 @@ export default function GradeTenPage() {
                     </div>
 
                     <div className="p-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div className="grid grid-cols-1 gap-6 mb-6">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-800 mb-4">Lo que deberás aprender</h3>
-                          <div className="space-y-3">
-                            {module.features.map((feature: Feature, index: number) => {
-                              const FeatureIcon = ICONS[feature.icon];
-                              return (
-                                <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                                  <div className="p-2 bg-gray-200 rounded-lg">
-                                    {FeatureIcon ? <FeatureIcon className="h-4 w-4 text-gray-600" /> : null}
-                                  </div>
-                                  <div>
-                                    <div className="font-medium text-gray-800">{feature.name}</div>
-                                    <div className="text-sm text-gray-600">{feature.description}</div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
+                          <h3 className="text-lg font-semibold text-gray-800 mb-4">Descripción del módulo</h3>
+                          <p className="text-gray-600">{module.description}</p>
                         </div>
 
                         <div>
                           <h3 className="text-lg font-semibold text-gray-800 mb-4">Herramientas Incluidas</h3>
                           <div className="grid grid-cols-2 gap-3">
-                            {module.tools.map((tool: string, index: number) => (
+                            {module.tools?.map((tool: string, index: number) => (
                               <div key={index} className="p-3 bg-purple-50 rounded-lg text-center">
                                 <div className="text-sm font-medium text-purple-800">{tool}</div>
                               </div>
@@ -270,6 +237,14 @@ export default function GradeTenPage() {
                           </div>
                         </div>
                       </div>
+
+                      <Button 
+                        onClick={() => handleModuleStart(module.slug)}
+                        className="w-full bg-purple-600 hover:bg-purple-700"
+                      >
+                        <Play className="h-4 w-4 mr-2" />
+                        Empezar módulo
+                      </Button>
                     </div>
                   </div>
                 )

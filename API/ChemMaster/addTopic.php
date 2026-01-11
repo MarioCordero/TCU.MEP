@@ -1,37 +1,58 @@
 <?php
-    header('Access-Control-Allow-Origin: *'); // Or specify your domain: 'http://localhost:5173'
-    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
-    header('Content-Type: application/json');
-
-    // Handle preflight OPTIONS request
-    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-        http_response_code(200);
-        exit();
-    }
-    require_once "dbhandler.php";
-
+    require_once 'dbhandler.php';
     $input = json_decode(file_get_contents("php://input"), true);
-    if (!$input || !isset($input['module_id']) || !isset($input['title']) || !isset($input['content'])) {
+    if (!$input || !isset($input['module_id']) || !isset($input['title'])) {
         http_response_code(400);
-        echo json_encode(["success" => false, "message" => "Faltan datos requeridos"]);
+        echo json_encode(["success" => false, "message" => "Faltan datos (module_id, title)"]);
         exit;
     }
+    try {
+        $module_id = (int)$input['module_id'];
+        $title = $input['title'];
+        $description = $input['description'] ?? '';
+        $content = isset($input['content']) 
+            ? (is_string($input['content']) ? $input['content'] : json_encode($input['content'], JSON_UNESCAPED_UNICODE))
+            : '';
+            
+        $order_in_module = isset($input['order_in_module']) ? (int)$input['order_in_module'] : 0;
+        
+        // Verify module exists
+        $checkModule = $conn->prepare("SELECT id FROM modules WHERE id = ?");
+        $checkModule->bind_param("i", $module_id);
+        $checkModule->execute();
+        $checkResult = $checkModule->get_result();
+        if ($checkResult->num_rows === 0) {
+            http_response_code(404);
+            echo json_encode(["success" => false, "message" => "El módulo no existe"]);
+            $checkModule->close();
+            exit;
+        }
+        $checkModule->close();
+        
+        $sql = "INSERT INTO topics (module_id, title, description, content, order_in_module, created_at) 
+                VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
+        
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) throw new Exception("Error preparando INSERT: " . $conn->error);
 
-    $module_id = $input['module_id'];
-    $title = $input['title'];
-    $description = $input['description'] ?? '';
-    $content = is_string($input['content']) ? $input['content'] : json_encode($input['content'], JSON_UNESCAPED_UNICODE);
-    $order_in_module = isset($input['order_in_module']) ? intval($input['order_in_module']) : 0;
+        // Types: i (module_id), s (title), s (desc), s (content), i (order)
+        $stmt->bind_param("isssi", $module_id, $title, $description, $content, $order_in_module);
 
-    $stmt = $conn->prepare("INSERT INTO topics (module_id, title, description, content, order_in_module) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("ssssi", $module_id, $title, $description, $content, $order_in_module);
-    if ($stmt->execute()) {
-        echo json_encode(["success" => true, "topic_id" => $stmt->insert_id]);
-    } else {
+        if (!$stmt->execute()) throw new Exception("Error ejecutando INSERT: " . $stmt->error);
+
+        $newId = $stmt->insert_id;
+        $stmt->close();
+
+        echo json_encode([
+            "success" => true, 
+            "message" => "Tema creado exitosamente",
+            "id" => $newId
+        ]);
+
+    } catch (Exception $e) {
         http_response_code(500);
-        echo json_encode(["success" => false, "message" => "Error al insertar el tópico"]);
+        $msg = "Error al crear tema.";
+        if (isset($environment) && $environment === 'development') $msg .= " " . $e->getMessage();
+        echo json_encode(["success" => false, "message" => $msg]);
     }
-    $stmt->close();
-    $conn->close();
 ?>
