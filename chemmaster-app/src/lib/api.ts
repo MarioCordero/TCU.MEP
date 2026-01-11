@@ -45,6 +45,12 @@ export const API = {
 
   GetModules: (grade: string) => request<Module[]>(`getModules.php?grade=${grade}`),
 
+  AddModule: (data: { slug: string, grade_level: string, title: string, description?: string, icon?: string, color?: string, active?: number }) => 
+    request<{ success: boolean; id: number; slug: string }>('addModule.php', { 
+      method: 'POST', 
+      body: JSON.stringify(data) 
+    }),
+
   UpdateModule: (id: number, data: Partial<Module>) => 
     request<{ success: boolean }>('updateModule.php', { 
       method: 'PUT', 
