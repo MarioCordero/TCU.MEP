@@ -1,7 +1,7 @@
 name: Integrar ChemMaster a SPECT
 
 on:
-  workflow_dispatch: # Se activa solo cuando oprimes el botón en Actions
+  workflow_dispatch: # Se activa manualmente con el botón en Actions
 
 jobs:
   sync-to-parent:
@@ -18,40 +18,39 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: spectcr/spectcr.com
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ secrets.DEPLOY_TOKEN }}  # <--- ¡AQUÍ ESTÁ EL CAMBIO!
           path: parent-repo
           ref: main
 
       # 3. Sincronizar BACKEND (API)
-      # Copia API/ChemMaster del hijo a API/ChemMaster del padre
       - name: Sync Backend (API)
         run: |
-          echo "Sincronizando API PHP..."
-          # -a: archive (mantiene permisos/fechas), -v: verbose, --delete: borra en destino lo que no exista en origen
+          echo "🧪 Sincronizando API PHP..."
+          # -a: archive, -v: verbose, --delete: borra en destino lo que no exista en origen
           rsync -av --delete --exclude 'Config/development.ini' child-repo/API/ChemMaster/ parent-repo/API/ChemMaster/
 
       # 4. Sincronizar FRONTEND (Carpetas Clave)
-      # Copiamos solo las carpetas internas. NO copiamos main.tsx ni index.html
-      # para no romper el punto de entrada del padre (ChemMaster.tsx).
       - name: Sync Frontend Directories
         run: |
-          echo "Sincronizando Frontend React..."
+          echo "⚛️ Sincronizando Frontend React..."
           
-          # Definir ruta base destino
+          # Ruta base en el padre
           DEST_BASE="parent-repo/SPECT-Website/src/ChemMaster"
           
-          # Lista de carpetas a sincronizar
-          # Nota: Agregué 'hooks' y 'lib' basándome en tu estructura
+          # Lista de carpetas a copiar
           FOLDERS=("assets" "components" "config" "hooks" "lib" "pages" "screens" "types")
 
-          for folder in "${folders[@]}"; do
+          for folder in "${FOLDERS[@]}"; do
             src="child-repo/chemmaster-app/src/$folder/"
             dest="$DEST_BASE/$folder/"
             
-            # Si la carpeta existe en el origen, sincronizarla
+            # Verificamos si la carpeta existe en el hijo antes de copiar
             if [ -d "$src" ]; then
+              echo "✅ Procesando: $folder"
               mkdir -p "$dest"
               rsync -av --delete "$src" "$dest"
+            else
+              echo "⚠️ Saltando: $folder (No existe en el origen)"
             fi
           done
 
@@ -59,15 +58,17 @@ jobs:
       - name: Commit and Push to Parent
         run: |
           cd parent-repo
-          git config user.name "GitHub Action Bot"
-          git config user.email "actions@github.com"
           
-          # Verificamos si hay cambios antes de hacer commit
+          # Configurar identidad del bot para este commit
+          git config user.name "ChemMaster Bot"
+          git config user.email "bot@spectcr.com"
+          
+          # Verificar si hubo cambios reales
           if [[ -n $(git status -s) ]]; then
             git add .
-            git commit -m "feat(integration): Actualización automática desde ChemMaster App (Hijo)"
-            git push origin main # O la rama que uses
-            echo "✅ Cambios subidos correctamente al Padre"
+            git commit -m "feat(integration): Actualización automática desde ChemMaster App"
+            git push origin main
+            echo "🚀 ÉXITO: Cambios subidos correctamente al repositorio Padre."
           else
-            echo "✨ No hubo cambios necesarios, todo está sincronizado."
+            echo "✨ NADA QUE HACER: Todo está sincronizado."
           fi
