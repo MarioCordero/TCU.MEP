@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: spectcr/spectcr.com
-          token: ${{ secrets.DEPLOY_TOKEN }}  # <--- ¡AQUÍ ESTÁ EL CAMBIO!
+          token: ${{ secrets.DEPLOY_TOKEN }}
           path: parent-repo
           ref: main
 
