@@ -8,29 +8,29 @@
     }
     $id = (int)$input['id'];
     try {
-        $sqlGetSlug = "SELECT slug FROM modules WHERE id = ?";
-        $stmtSlug = $conn->prepare($sqlGetSlug);
-        $stmtSlug->bind_param("i", $id);
-        $stmtSlug->execute();
-        $resSlug = $stmtSlug->get_result();
-        
-        if ($resSlug->num_rows === 0) {
-            http_response_code(404);
-            echo json_encode(["success" => false, "message" => "El módulo con ID $id no existe"]);
-            exit;
-        }
-
-        $row = $resSlug->fetch_assoc();
-        $slug = $row['slug']; 
-        $stmtSlug->close();
-
-        $sqlCheck = "SELECT COUNT(*) as total FROM topics WHERE module_slug = ?";
+        // Verify module exists
+        $sqlCheck = "SELECT id FROM modules WHERE id = ?";
         $stmtCheck = $conn->prepare($sqlCheck);
-        $stmtCheck->bind_param("s", $slug);
+        $stmtCheck->bind_param("i", $id);
         $stmtCheck->execute();
         $resCheck = $stmtCheck->get_result();
-        $countData = $resCheck->fetch_assoc();
+        
+        if ($resCheck->num_rows === 0) {
+            http_response_code(404);
+            echo json_encode(["success" => false, "message" => "El módulo con ID $id no existe"]);
+            $stmtCheck->close();
+            exit;
+        }
         $stmtCheck->close();
+
+        // Check if module has associated topics using module_id
+        $sqlCountTopics = "SELECT COUNT(*) as total FROM topics WHERE module_id = ?";
+        $stmtCountTopics = $conn->prepare($sqlCountTopics);
+        $stmtCountTopics->bind_param("i", $id);
+        $stmtCountTopics->execute();
+        $resCountTopics = $stmtCountTopics->get_result();
+        $countData = $resCountTopics->fetch_assoc();
+        $stmtCountTopics->close();
 
         if ($countData['total'] > 0) {
             http_response_code(409); 
@@ -40,6 +40,8 @@
             ]);
             exit;
         }
+
+        // Delete the module
         $sqlDelete = "DELETE FROM modules WHERE id = ?";
         $stmtDelete = $conn->prepare($sqlDelete);
         $stmtDelete->bind_param("i", $id);
@@ -47,7 +49,7 @@
         if ($stmtDelete->execute()) {
             echo json_encode([
                 "success" => true, 
-                "message" => "Módulo eliminado correctamente (no tenía dependencias)"
+                "message" => "Módulo eliminado correctamente"
             ]);
         } else {
             throw new Exception("Error al ejecutar DELETE: " . $stmtDelete->error);
