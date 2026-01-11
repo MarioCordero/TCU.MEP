@@ -25,7 +25,7 @@ const request = async <T>(endpoint: string, options?: RequestInit): Promise<T> =
 export const API = {
   GetTopics: (slug: string) => request<Topic[]>(`getTopics.php?slug=${slug}`),
 
-  AddTopic: (data: { module_slug: string, title: string, description?: string, content: string, order_in_module: number }) => 
+  AddTopic: (data: { module_id: number, title: string, description?: string, content: string, order_in_module: number }) => 
     request<{ success: boolean; id: number }>('addTopic.php', { 
       method: 'POST', 
       body: JSON.stringify(data) 

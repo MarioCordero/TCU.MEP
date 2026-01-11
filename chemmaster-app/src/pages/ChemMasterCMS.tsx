@@ -19,7 +19,26 @@ export default function ChemMasterCMS() {
     const result = await request(API.GetAllContent());
     if (selectedModule && result) {
       const updatedModule = result.modules.find(m => m.id === selectedModule.id);
-      if (updatedModule) setSelectedModule(updatedModule);
+      if (updatedModule) {
+        setSelectedModule(updatedModule);
+      } else {
+        // If the selected module was deleted, clear selection
+        setSelectedModule(null);
+      }
+    }
+  };
+
+  const handleModuleAdded = async (newModule: Module) => {
+    // Refresh the entire data
+    await loadData();
+  };
+
+  const handleModuleDeleted = async (moduleId: number) => {
+    // Refresh the entire data
+    await loadData();
+    // Clear selection if the deleted module was selected
+    if (selectedModule?.id === moduleId) {
+      setSelectedModule(null);
     }
   };
 
@@ -32,7 +51,9 @@ export default function ChemMasterCMS() {
       <CMSSidebar 
         modules={cmsData?.modules || []} 
         selectedModule={selectedModule} 
-        onSelect={setSelectedModule} 
+        onSelect={setSelectedModule}
+        onModuleAdded={handleModuleAdded}
+        onModuleDeleted={handleModuleDeleted}
       />
 
       <main className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-100">
@@ -51,11 +72,11 @@ export default function ChemMasterCMS() {
 
             {/* Topic Editor */}
             <div className="bg-white rounded-xl shadow-lg overflow-hidden p-8 border-t-4 border-t-blue-500">
-              <TopicEditor 
-                moduleSlug={selectedModule.slug} 
-                topics={selectedModule.topics || []}
-                onUpdate={loadData}
-              />
+            <TopicEditor 
+              moduleId={selectedModule.id!} 
+              topics={selectedModule.topics || []}
+              onUpdate={loadData}
+            />
             </div>
           </div>
         ) : (

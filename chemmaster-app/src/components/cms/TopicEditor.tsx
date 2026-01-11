@@ -10,7 +10,7 @@ import * as LucideIcons from 'lucide-react';
 import TopicEditorModal from './TopicEditorModal';
 
 interface Props {
-  moduleSlug: string;
+  moduleId: number;
   topics: Topic[];
   onUpdate: () => void;
 }
@@ -20,13 +20,13 @@ function AddTopicModal({
   show, 
   onClose, 
   onSave, 
-  moduleSlug,
+  moduleId,
   topicsCount
 }: { 
   show: boolean; 
   onClose: () => void; 
   onSave: () => void;
-  moduleSlug: string;
+  moduleId: number;
   topicsCount: number;
 }) {
   const [title, setTitle] = useState("");
@@ -42,7 +42,7 @@ function AddTopicModal({
     setIsAdding(true);
     try {
       await API.AddTopic({
-        module_slug: moduleSlug,
+        module_id: moduleId,
         title: title,
         description: description,
         content: "<p>Contenido inicial...</p>",
@@ -157,7 +157,7 @@ function AddTopicModal({
   );
 }
 
-export default function TopicEditor({ moduleSlug, topics, onUpdate }: Props) {
+export default function TopicEditor({ moduleId, topics, onUpdate }: Props) {
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
   const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -292,7 +292,7 @@ export default function TopicEditor({ moduleSlug, topics, onUpdate }: Props) {
         show={showAddModal}
         onClose={() => setShowAddModal(false)}
         onSave={handleAddComplete}
-        moduleSlug={moduleSlug}
+        moduleId={moduleId}
         topicsCount={topics.length}
       />
 

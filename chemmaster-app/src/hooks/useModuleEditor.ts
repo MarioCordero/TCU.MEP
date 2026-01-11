@@ -21,7 +21,7 @@ export function useModuleEditor(initialModule: Module): UseModuleEditorReturn {
   const addTopic = useCallback(() => {
     const newTopic: Topic = {
       id: undefined,
-      module_slug: initialModule.slug,
+      module_id: initialModule.id!,
       title: "",
       content: "",
       description: "",
@@ -32,7 +32,7 @@ export function useModuleEditor(initialModule: Module): UseModuleEditorReturn {
       ...prev,
       topics: [...(prev.topics || []), newTopic]
     }))
-  }, [editedModule.topics?.length, initialModule.slug])
+  }, [editedModule.topics?.length, initialModule.id])
 
   const updateTopic = useCallback((index: number, field: keyof Topic, value: any) => {
     setEditedModule(prev => {

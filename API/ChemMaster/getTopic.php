@@ -1,20 +1,24 @@
 <?php
     require_once 'dbhandler.php';
-    $slug = $_GET['slug'] ?? null;
-    if (!$slug) {
+    $module_id = $_GET['module_id'] ?? null;
+    
+    if (!$module_id) {
         http_response_code(400); 
-        echo json_encode(["success" => false, "message" => "Falta el slug del módulo"]);
+        echo json_encode(["success" => false, "message" => "Falta el parámetro module_id"]);
         exit;
     }
+    
     try {
-        $sql = "SELECT * FROM topics WHERE module_slug = ? ORDER BY order_in_module ASC";
+        $module_id = (int)$module_id;
+        $sql = "SELECT * FROM topics WHERE module_id = ? ORDER BY order_in_module ASC";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("s", $slug); 
+        $stmt->bind_param("i", $module_id); 
         $stmt->execute();
         $result = $stmt->get_result();
         $topics = [];
         while ($row = $result->fetch_assoc()) {
             $row['id'] = (int)$row['id'];
+            $row['module_id'] = (int)$row['module_id'];
             $row['order_in_module'] = (int)$row['order_in_module'];
             if (isset($row['active'])) $row['active'] = (bool)$row['active'];
             $topics[] = $row;

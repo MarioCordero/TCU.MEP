@@ -1,14 +1,7 @@
-// -------------------------------------------------------------------------------- //
-// ------------------------ Modelos de Base de Datos (API) ------------------------ //
-// -------------------------------------------------------------------------------- //
-
-/**
- * Representa un Tema (Topic) tal como viene de la base de datos 'topics'.
- * Nota: Se eliminó 'active' porque no existe en la tabla actual.
- */
+// Representa un Tema (Topic) tal como viene de la base de datos 'topics'.
 export interface Topic {
   id?: number;
-  module_slug: string;     // Relación con el módulo (FK: slug)
+  module_id: number;       // Relación con el módulo (FK: module_id)
   title: string;
   description?: string;
   content: string;         // HTML o contenido rico (LONGTEXT en DB)
@@ -18,12 +11,10 @@ export interface Topic {
   updated_at?: string;
 }
 
-/**
- * Representa un Módulo Educativo (Tabla 'modules').
- */
+// Representa un Módulo Educativo (Tabla 'modules').
 export interface Module {
   id?: number;              // ID Numérico (PK)
-  slug: string;            // ID de Texto para URL (antes module_id)
+  slug: string;            // ID de Texto para URL
   grade_level: "10" | "11"; 
   
   title: string;
@@ -31,7 +22,7 @@ export interface Module {
   icon?: string;           // Nombre del icono (ej: "Atom", "Beaker")
   color?: string;          // Clases de Tailwind (ej: "from-blue-500 to-blue-600")
   
-  active: boolean;         // El PHP ahora devuelve true/false
+  active: boolean;         // El PHP devuelve true/false
 
   // Campos JSON decodificados
   features?: string[];     
@@ -44,41 +35,27 @@ export interface Module {
   updated_at?: string;
 }
 
-// -------------------------------------------------------------------------------- //
-// ------------------------ Respuestas de la API ---------------------------------- //
-// -------------------------------------------------------------------------------- //
-
-/**
- * Respuesta del endpoint 'getAllContent.php'
- * Contiene todo el árbol de navegación.
- */
+// Respuesta del endpoint 'getAllContent.php'
 export interface AllContentResponse {
   modules: Module[];
   lastUpdated: string;
   total_modules: number;
 }
 
-// -------------------------------------------------------------------------------- //
-// ------------------------ Tipos de UI / Estado Local ---------------------------- //
-// -------------------------------------------------------------------------------- //
-
 export type CMSEditMode = "view" | "edit" | "add";
-export type CMSContentType = "module" | "topic"; // Simplificado (quitamos submodule si no se usa)
+export type CMSContentType = "module" | "topic";
 
-// Color option for module styling
 export interface ColorOption {
   value: string;
   label: string;
   preview: string;
 }
 
-// Props for CMSModuleEditor component
 export interface CMSModuleEditorProps {
   module: Module;
   onSave: (module: Module) => void;
 }
 
-// Props for IconModal component
 export interface IconModalProps {
   show: boolean;
   onClose: () => void;
@@ -87,7 +64,6 @@ export interface IconModalProps {
   disabled: boolean;
 }
 
-// Props for ConfirmModal component
 export interface ConfirmModalProps {
   show: boolean;
   onClose: () => void;
@@ -96,13 +72,11 @@ export interface ConfirmModalProps {
   onPasswordChange: (password: string) => void;
 }
 
-// Props for SuccessModal component
 export interface SuccessModalProps {
   show: boolean;
   onClose: () => void;
 }
 
-// Return type for useModuleEditor hook
 export interface UseModuleEditorReturn {
   editedModule: Module;
   setEditedModule: (module: Module) => void;
