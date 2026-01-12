@@ -6,10 +6,8 @@ import { Textarea } from "../ui/textarea"
 import { Label } from "../ui/label"
 import * as LucideIcons from "lucide-react"
 import { API } from "../../lib/api"
-
-// 1. IMPORTAR REACT QUILL Y ESTILOS
-import ReactQuill from 'react-quill'
-import 'react-quill/dist/quill.snow.css'
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 
 interface TopicEditorModalProps {
   show: boolean
@@ -31,15 +29,13 @@ export default function TopicEditorModal({
     setEditedTopic(topic)
   }, [topic])
 
-  // 2. CONFIGURAR LA BARRA DE HERRAMIENTAS (TOOLBAR)
-  // Aquí definimos qué botones aparecen. 'image' y 'video' son clave.
   const modules = {
     toolbar: [
       [{ 'header': [1, 2, 3, false] }],
       ['bold', 'italic', 'underline', 'strike'],
       [{ 'color': [] }, { 'background': [] }],
       [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      ['link', 'image', 'video'], // <--- Permite insertar multimedia
+      ['link', 'image', 'video'],
       ['clean']
     ],
   }
