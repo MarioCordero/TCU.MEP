@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Topic } from "../../types/cms"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
@@ -6,8 +6,10 @@ import { Textarea } from "../ui/textarea"
 import { Label } from "../ui/label"
 import * as LucideIcons from "lucide-react"
 import { API } from "../../lib/api"
-import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.snow.css';
+import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
+import { useCreateBlockNote } from "@blocknote/react";
+import { BlockNoteView } from "@blocknote/mantine";
+import "@blocknote/mantine/style.css";
 
 interface TopicEditorModalProps {
   show: boolean
@@ -25,41 +27,40 @@ export default function TopicEditorModal({
   const [editedTopic, setEditedTopic] = useState<Topic | null>(topic)
   const [isSaving, setIsSaving] = useState(false)
 
+  const editor: BlockNoteEditor = useCreateBlockNote({
+    // Aquí podrías agregar la lógica de subida de imágenes a tu PHP en el futuro
+    /* uploadFile: async (file) => { ... } */
+  });
+
   useEffect(() => {
-    setEditedTopic(topic)
-  }, [topic])
-
-  const modules = {
-    toolbar: [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'color': [] }, { 'background': [] }],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      ['link', 'image', 'video'],
-      ['clean']
-    ],
-  }
-
-  const formats = [
-    'header',
-    'bold', 'italic', 'underline', 'strike',
-    'color', 'background',
-    'list', 'bullet',
-    'link', 'image', 'video'
-  ]
+    if (!topic) return;
+    setEditedTopic(topic);  
+    async function loadContent() {
+      try {
+        const blocks = JSON.parse(topic.content); 
+        editor.replaceBlocks(editor.document, blocks);
+      } catch (e) {
+        editor.replaceBlocks(editor.document, [
+          { type: "paragraph", content: "Comienza a escribir aquí..." }
+        ]);
+      }
+    } 
+    loadContent();
+  }, [topic, editor]);
 
   const handleSave = async () => {
     if (!editedTopic || !editedTopic.id) return
-    
     setIsSaving(true)
+    const jsonContent = JSON.stringify(editor.document);
     try {
       await API.UpdateTopic(editedTopic.id, {
         title: editedTopic.title,
         description: editedTopic.description,
-        content: editedTopic.content,
+        content: jsonContent,
         order_in_module: editedTopic.order_in_module
       })
-      onSave(editedTopic)
+      
+      onSave({ ...editedTopic, content: jsonContent });
       onClose()
     } catch (error) {
       alert("Error al guardar: " + error)
@@ -72,11 +73,16 @@ export default function TopicEditorModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col h-[90vh]">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col h-[90vh]">
         
         {/* Header */}
         <div className="p-6 border-b bg-gradient-to-r from-blue-50 to-indigo-50 flex justify-between items-center shrink-0">
-          <h2 className="text-2xl font-bold text-gray-800">Editar Tópico</h2>
+          <div className="flex items-center gap-3">
+            <div className="bg-blue-600 p-2 rounded-lg">
+              <LucideIcons.Layout className="h-5 w-5 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800">Editor de Contenido Avanzado</h2>
+          </div>
           <Button 
             variant="ghost" 
             size="sm" 
@@ -88,34 +94,34 @@ export default function TopicEditorModal({
         </div>
 
         {/* Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50/30">
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Title */}
-            <div>
+            <div className="md:col-span-2">
               <Label htmlFor="modal-title" className="text-sm font-semibold text-gray-700">
-                📝 Título
+                📝 Título del Tópico
               </Label>
               <Input
                 id="modal-title"
                 value={editedTopic.title}
                 onChange={(e) => setEditedTopic({ ...editedTopic, title: e.target.value })}
-                className="mt-2"
-                placeholder="Título del tópico"
+                className="mt-2 bg-white"
+                placeholder="Ej: Estructura del Núcleo Atómico"
               />
             </div>
 
             {/* Order */}
             <div>
               <Label htmlFor="modal-order" className="text-sm font-semibold text-gray-700">
-                🔢 Orden
+                🔢 Posición en Escalera
               </Label>
               <Input
                 id="modal-order"
                 type="number"
                 value={editedTopic.order_in_module}
                 onChange={(e) => setEditedTopic({ ...editedTopic, order_in_module: parseInt(e.target.value) })}
-                className="mt-2"
+                className="mt-2 bg-white"
                 min={0}
               />
             </div>
@@ -124,57 +130,60 @@ export default function TopicEditorModal({
           {/* Description */}
           <div>
             <Label htmlFor="modal-description" className="text-sm font-semibold text-gray-700">
-              📄 Descripción Corta
+              📄 Resumen Ejecutivo
             </Label>
             <Textarea
               id="modal-description"
               value={editedTopic.description || ""}
               onChange={(e) => setEditedTopic({ ...editedTopic, description: e.target.value })}
-              className="mt-2"
-              placeholder="Descripción breve..."
+              className="mt-2 bg-white"
+              placeholder="Escribe un breve resumen que aparecerá en la tarjeta..."
               rows={2}
             />
           </div>
 
-          {/* RICH TEXT EDITOR */}
-          <div className="flex flex-col h-[400px]">
-            <Label className="text-sm font-semibold text-gray-700 mb-2">
-              💻 Contenido Multimedia
+          {/* BLOCKNOTE EDITOR */}
+          <div className="flex flex-col flex-1 min-h-[500px]">
+            <Label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+              <LucideIcons.FileJson className="h-4 w-4" /> 
+              Cuerpo del Tópico (Estilo Notion)
             </Label>
-            <div className="flex-1 bg-white">
-              <ReactQuill 
-                theme="snow"
-                value={editedTopic.content}
-                onChange={(content: string) => setEditedTopic({ ...editedTopic, content: content })}
-                modules={modules}
-                formats={formats}
-                className="h-[350px] mb-12"
-                placeholder="Escribe aquí... puedes pegar imágenes directamente."
+            
+            {/* Contenedor del Editor */}
+            <div className="flex-1 bg-white border rounded-xl shadow-inner p-2 overflow-hidden">
+              <BlockNoteView 
+                editor={editor} 
+                theme="light" 
+                className="h-full min-h-[450px]"
+                // Esto habilita la interfaz de usuario de Mantine
               />
             </div>
+            <p className="text-xs text-gray-400 mt-2 italic">
+              Tip: Escribe "/" para insertar imágenes, videos o listas.
+            </p>
           </div>
 
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t bg-gray-50 flex justify-end gap-3 shrink-0">
+        <div className="p-6 border-t bg-white flex justify-end gap-3 shrink-0">
           <Button variant="outline" onClick={onClose} disabled={isSaving}>
-            Cancelar
+            Descartar
           </Button>
           <Button 
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-blue-600 hover:bg-blue-700 text-white min-w-[140px]"
             onClick={handleSave}
             disabled={isSaving}
           >
             {isSaving ? (
               <>
                 <LucideIcons.Loader className="h-4 w-4 mr-2 animate-spin" />
-                Guardando...
+                Sincronizando...
               </>
             ) : (
               <>
                 <LucideIcons.Save className="h-4 w-4 mr-2" />
-                Guardar cambios
+                Publicar Cambios
               </>
             )}
           </Button>
