@@ -34,17 +34,18 @@ export default function TopicEditorModal({
 
   useEffect(() => {
     if (!topic) return;
-    setEditedTopic(topic);  
+    setEditedTopic(topic);
+    
     async function loadContent() {
       try {
-        const blocks = JSON.parse(topic.content); 
+        const blocks = JSON.parse(topic.content);
         editor.replaceBlocks(editor.document, blocks);
       } catch (e) {
-        editor.replaceBlocks(editor.document, [
-          { type: "paragraph", content: "Comienza a escribir aquí..." }
-        ]);
+        const blocks = await editor.tryParseHTMLToBlocks(topic.content);
+        editor.replaceBlocks(editor.document, blocks);
       }
-    } 
+    }
+    
     loadContent();
   }, [topic, editor]);
 
