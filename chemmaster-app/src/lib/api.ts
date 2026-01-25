@@ -16,6 +16,7 @@ const request = async <T>(endpoint: string, options?: RequestInit): Promise<T> =
     throw new Error(json.message || `Error en la API: ${endpoint}`);
   }
 
+  // Mapeo de respuestas comunes
   if (json.topics) return json.topics as T;
   if (json.modules) return json.modules as T;
   if (json.data) return json.data as T;
@@ -23,6 +24,24 @@ const request = async <T>(endpoint: string, options?: RequestInit): Promise<T> =
 }
 
 export const API = {
+  // --- Endpoint de Imágenes ---
+  UploadImage: async (file: File): Promise<{ success: boolean; url: string }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${BASE_URL}upload.php`, {
+      method: 'POST',
+      body: formData,
+      // Importante: No ponemos headers de Content-Type aquí, 
+      // el navegador lo hace automáticamente con el boundary necesario.
+    });
+
+    const json = await response.json();
+    if (!json.success) throw new Error(json.message || "Error al subir imagen");
+    return json;
+  },
+
+  // --- Endpoints de Tópicos ---
   GetTopics: (slug: string) => request<Topic[]>(`getTopics.php?slug=${slug}`),
 
   AddTopic: (data: { module_id: number, title: string, description?: string, content: string, order_in_module: number }) => 
@@ -43,6 +62,7 @@ export const API = {
       body: JSON.stringify({ id }) 
     }),
 
+  // --- Endpoints de Módulos ---
   GetModules: (grade: string) => request<Module[]>(`getModules.php?grade=${grade}`),
 
   AddModule: (data: { slug: string, grade_level: string, title: string, description?: string, icon?: string, color?: string, active?: number }) => 
