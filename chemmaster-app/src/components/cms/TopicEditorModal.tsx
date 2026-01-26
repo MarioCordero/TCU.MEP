@@ -4,14 +4,14 @@ import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 import { Textarea } from "../ui/textarea"
 import { Label } from "../ui/label"
+import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
 import * as LucideIcons from "lucide-react"
 import { API } from "../../lib/api"
-import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
 import { BlockNoteView } from "@blocknote/mantine";
 import { useCreateBlockNote } from "@blocknote/react";
 import "@blocknote/mantine/style.css";
 import { AlertModal } from "../ui/modal";
-import { extractImageUrls } from "../../lib/utils";
+import { extractFileUrls } from "../../lib/utils";
 
 interface TopicEditorModalProps {
   show: boolean
@@ -73,35 +73,34 @@ export default function TopicEditorModal({ show, topic, onClose, onSave }: Topic
     setIsSaving(true)
 
     try {
-      // Delete images that are no longer used
+      // Delete files that are no longer used
       let oldUrls: string[] = [];
       try {
         const oldBlocks = JSON.parse(topic?.content || "[]");
-        oldUrls = extractImageUrls(oldBlocks);
+        oldUrls = extractFileUrls(oldBlocks);
       } catch (e) {
-        console.warn("No se pudo analizar el contenido anterior para limpieza de imágenes.");
+        console.warn("No se pudo analizar el contenido anterior para limpieza de archivos.");
       }
       const currentBlocks = editor.document;
-      const newUrls = extractImageUrls(currentBlocks);
-      const imagesToDelete = oldUrls.filter(url => {
-         if (url.startsWith("blob:")) return false;
-         return !newUrls.includes(url);
+      const newUrls = extractFileUrls(currentBlocks);
+      const filesToDelete = oldUrls.filter(url => {
+        if (url.startsWith("blob:")) return false;
+        return !newUrls.includes(url);
       });
-      if (imagesToDelete.length > 0) {
-        await Promise.all(imagesToDelete.map(url => {
+      if (filesToDelete.length > 0) {
+        await Promise.all(filesToDelete.map(url => {
             const filename = url.split('/').pop();
             if (filename) return API.DeleteFile(filename);
             return Promise.resolve();
         }));
       }
 
-      // Save images and update content
+      // Save files and update content
       const currentBlocksCopy = JSON.parse(JSON.stringify(editor.document));
       let hasMissingFiles = false;
-      let firstErrorBlockId: string | null = null;
 
       for (const block of currentBlocksCopy) {
-        if (block.type === "image" && block.props.url.startsWith("blob:")) {
+        if ((block.type === "image" || block.type === "video" || block.type === "file") && block.props?.url?.startsWith("blob:")) {
           const file = pendingImages.get(block.props.url);
           if (file) {
             const response = await API.UploadImage(file);
@@ -115,8 +114,8 @@ export default function TopicEditorModal({ show, topic, onClose, onSave }: Topic
 
       if (hasMissingFiles) {
         setErrorAlert({
-           show: true,
-           msg: "⚠️ ATENCIÓN: Al recuperar el borrador, se perdieron las referencias a las imágenes locales.\n\nPor seguridad del navegador, las imágenes no se guardan en el historial.\n\nPor favor, borra los bloques de imagen rotos y vuelve a arrastrar las fotos."
+          show: true,
+          msg: "⚠️ ATENCIÓN: Al recuperar el borrador, se perdieron las referencias a los archivos locales.\n\nPor seguridad del navegador, los archivos no se guardan en el historial.\n\nPor favor, borra los bloques de archivo rotos y vuelve a arrastrar los archivos."
         });
         setIsSaving(false);
         return;
