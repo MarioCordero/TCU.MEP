@@ -11,6 +11,7 @@ import { BlockNoteView } from "@blocknote/mantine";
 import { useCreateBlockNote } from "@blocknote/react";
 import "@blocknote/mantine/style.css";
 import { AlertModal } from "../ui/modal";
+import { extractImageUrls } from "../../lib/utils";
 
 interface TopicEditorModalProps {
   show: boolean
@@ -72,17 +73,41 @@ export default function TopicEditorModal({ show, topic, onClose, onSave }: Topic
     setIsSaving(true)
 
     try {
-      const blocksToSave = JSON.parse(JSON.stringify(editor.document));
-      let hasMissingFiles = false;
+      // Delete images that are no longer used
+      let oldUrls: string[] = [];
+      try {
+        const oldBlocks = JSON.parse(topic?.content || "[]");
+        oldUrls = extractImageUrls(oldBlocks);
+      } catch (e) {
+        console.warn("No se pudo analizar el contenido anterior para limpieza de imágenes.");
+      }
+      const currentBlocks = editor.document;
+      const newUrls = extractImageUrls(currentBlocks);
+      const imagesToDelete = oldUrls.filter(url => {
+         if (url.startsWith("blob:")) return false;
+         return !newUrls.includes(url);
+      });
+      if (imagesToDelete.length > 0) {
+        console.log("🧹 Limpiando imágenes huérfanas:", imagesToDelete);
+        await Promise.all(imagesToDelete.map(url => {
+            const filename = url.split('/').pop();
+            if (filename) return API.DeleteFile(filename);
+            return Promise.resolve();
+        }));
+      }
 
-      for (const block of blocksToSave) {
+      // Save images and update content
+      const currentBlocksCopy = JSON.parse(JSON.stringify(editor.document));
+      let hasMissingFiles = false;
+      let firstErrorBlockId: string | null = null;
+
+      for (const block of currentBlocksCopy) {
         if (block.type === "image" && block.props.url.startsWith("blob:")) {
-          
           const file = pendingImages.get(block.props.url);
-          
           if (file) {
             const response = await API.UploadImage(file);
-            block.props.url = response.url; 
+            editor.updateBlock(block.id, { props: { url: response.url } });
+            block.props.url = response.url;
           } else {
             hasMissingFiles = true;
           }
@@ -98,7 +123,7 @@ export default function TopicEditorModal({ show, topic, onClose, onSave }: Topic
         return;
       }
 
-      const finalJson = JSON.stringify(blocksToSave);
+      const finalJson = JSON.stringify(currentBlocksCopy);
       await API.UpdateTopic(editedTopic.id, {
         ...editedTopic,
         content: finalJson
