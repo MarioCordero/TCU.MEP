@@ -269,12 +269,12 @@ export default function AddModuleModal({ show, onClose, onModuleAdded }: AddModu
                   <div className="space-y-3">
                     <Label className="text-sm font-semibold text-slate-700">Nivel Académico</Label>
                     <Select value={formData.grade_level} onValueChange={(value) => setFormData({ ...formData, grade_level: value })}>
-                      <SelectTrigger className="bg-white h-11 border-slate-200">
+                      <SelectTrigger className="bg-white h-11 border-slate-200 cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="10">Décimo Grado (10°)</SelectItem>
-                        <SelectItem value="11">Undécimo Grado (11°)</SelectItem>
+                      <SelectContent className="z-[100] bg-white border-slate-200 shadow-xl">
+                        <SelectItem className="cursor-pointer" value="10">Décimo Grado (10°)</SelectItem>
+                        <SelectItem className="cursor-pointer" value="11">Undécimo Grado (11°)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
