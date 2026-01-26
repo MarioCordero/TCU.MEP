@@ -88,7 +88,6 @@ export default function TopicEditorModal({ show, topic, onClose, onSave }: Topic
          return !newUrls.includes(url);
       });
       if (imagesToDelete.length > 0) {
-        console.log("🧹 Limpiando imágenes huérfanas:", imagesToDelete);
         await Promise.all(imagesToDelete.map(url => {
             const filename = url.split('/').pop();
             if (filename) return API.DeleteFile(filename);
