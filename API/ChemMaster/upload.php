@@ -3,8 +3,8 @@
     $uploadDir = __DIR__ . '/uploads/';
     if (!file_exists($uploadDir)) {
         mkdir($uploadDir, 0755, true);
+        chmod($uploadDir, 0755);
     }
-
     try {
         if (!isset($_FILES['file'])) {
             http_response_code(400);
@@ -22,7 +22,14 @@
         }
 
         $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-        $allowed = array('jpg', 'jpeg', 'png', 'gif', 'webp', 'svg');
+        $allowed = array('jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'pdf', 'mp4', 'webm', 'mp3', 'wav', 'ogg', 'docx', 'doc', 'xlsx', 'xls', 'pptx', 'ppt', 'txt', 'zip', 'rar');
+
+        $maxSize = 50 * 1024 * 1024;
+        if ($file['size'] > $maxSize) {
+            http_response_code(400);
+            echo json_encode(["success" => false, "message" => "El archivo es demasiado grande (Máx 50MB)"]);
+            exit;
+        }
 
         if (!in_array($fileExt, $allowed)) {
             http_response_code(400);
@@ -41,7 +48,7 @@
 
             echo json_encode([
                 "success" => true,
-                "message" => "Imagen subida correctamente",
+                "message" => "Archivo subido correctamente",
                 "url" => $publicUrl
             ]);
 
