@@ -8,6 +8,7 @@ import { Textarea } from '../../components/ui/textarea';
 import { Label } from '../../components/ui/label';
 import * as LucideIcons from 'lucide-react';
 import TopicEditorModal from './TopicEditorModal';
+import { Modal, AlertModal } from '../../components/ui/modal';
 
 interface Props {
   moduleId: number;
@@ -163,6 +164,30 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: Props) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
 
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{show: boolean, topicId: number | null}>({
+    show: false,
+    topicId: null
+  });
+
+  const requestDelete = (id: number) => {
+    setDeleteConfirmation({ show: true, topicId: id });
+  };
+
+  const confirmDelete = async () => {
+    const id = deleteConfirmation.topicId;
+    if (!id) return;
+    setIsDeleting(id);
+    setDeleteConfirmation({ show: false, topicId: null });
+    try {
+      await API.DeleteTopic(id);
+      onUpdate();
+    } catch (error) {
+      alert("Error al borrar: " + error);
+    } finally {
+      setIsDeleting(null);
+    }
+  };
+
   // --- DELETE ---
   const handleDelete = async (id: number) => {
     if (!window.confirm("¿Seguro que quieres borrar este tema?")) return;
@@ -276,10 +301,10 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: Props) {
                   size="sm"
                   disabled={isDeleting === topic.id || !topic.id}
                   className="bg-red-500 hover:bg-red-600 text-white disabled:opacity-70 transition"
-                  onClick={() => topic.id && handleDelete(topic.id)}
+                  onClick={() => topic.id && requestDelete(topic.id)} // <--- CAMBIO AQUÍ
                 >
                   <LucideIcons.Trash2 className="h-4 w-4 mr-1" />
-                  {isDeleting === topic.id ? 'Borrando...' : 'Borrar'}
+                  {isDeleting === topic.id ? '...' : 'Borrar'}
                 </Button>
               </div>
             </div>
@@ -303,6 +328,41 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: Props) {
         onClose={() => setShowEditModal(false)}
         onSave={handleSaveEdit}
       />
+
+      <Modal
+        isOpen={deleteConfirmation.show}
+        onClose={() => setDeleteConfirmation({ show: false, topicId: null })}
+        maxWidth="max-w-md"
+      >
+        <div className="p-6 text-center">
+            {/* Icono de Advertencia */}
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 mb-6 ring-8 ring-white shadow-lg">
+                <LucideIcons.Trash2 className="h-8 w-8 text-red-600" />
+            </div>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-2">¿Eliminar este tópico?</h3>
+            <p className="text-sm text-gray-500 mb-8">
+                Esta acción no se puede deshacer. El tópico y todo su contenido serán eliminados permanentemente de la base de datos.
+            </p>
+
+            <div className="flex gap-3 justify-center w-full">
+                <Button 
+                    variant="outline" 
+                    onClick={() => setDeleteConfirmation({ show: false, topicId: null })}
+                    className="flex-1 py-3"
+                >
+                    Cancelar
+                </Button>
+                <Button 
+                    variant="destructive" 
+                    onClick={confirmDelete}
+                    className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-200"
+                >
+                    Sí, eliminar
+                </Button>
+            </div>
+        </div>
+      </Modal>
     </div>
   );
 }
