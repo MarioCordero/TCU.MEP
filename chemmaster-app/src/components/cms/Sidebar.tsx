@@ -3,7 +3,8 @@ import { Module } from '../../types/cms'
 import { Button } from '../ui/button'
 import * as LucideIcons from 'lucide-react'
 import AddModuleModal from './AddModuleModal'
-import DeleteModuleModal from './DeleteModuleModal'
+import { Modal } from '../ui/modal' // ✅ Importamos el Modal genérico
+import { API } from '../../lib/api' // ✅ Necesitamos la API para borrar aquí mismo
 
 interface Props {
   modules: Module[]
@@ -21,7 +22,26 @@ export default function CMSSidebar({
   onModuleDeleted
 }: Props) {
   const [showAddModal, setShowAddModal] = useState(false)
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
+  
+  // Estado para controlar qué módulo se está borrando
+  const [moduleToDelete, setModuleToDelete] = useState<Module | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  // Función para ejecutar el borrado real
+  const handleConfirmDelete = async () => {
+    if (!moduleToDelete || !moduleToDelete.id) return;
+    
+    setIsDeleting(true);
+    try {
+      await API.DeleteModule(moduleToDelete.id);
+      onModuleDeleted?.(moduleToDelete.id); // Avisamos al padre para que actualice la lista
+      setModuleToDelete(null); // Cerramos el modal
+    } catch (error) {
+      alert("Error al eliminar módulo: " + error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const renderModuleList = (grade: "10" | "11") => {
     const filtered = modules.filter(m => m.grade_level === grade)
@@ -38,76 +58,84 @@ export default function CMSSidebar({
               : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
           }`}
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${selectedModule?.id === module.id ? 'bg-white' : 'bg-gray-300'}`} />
-          {module.title}
+          {/* Indicador de seleccionado */}
+          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${selectedModule?.id === module.id ? 'bg-white' : 'bg-gray-300'}`} />
+          
+          <span className="truncate">{module.title}</span>
         </button>
         
-        {/* Delete button appears on hover */}
+        {/* Delete button (aparece en hover) */}
         <button
-          onClick={() => module.id && setShowDeleteConfirm(module.id)}
-          disabled={!module.id}
-          className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed rounded"
+          onClick={(e) => {
+            e.stopPropagation(); // Evitar que seleccione el módulo al dar click en borrar
+            setModuleToDelete(module);
+          }}
+          className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-red-100 hover:text-red-600 text-gray-400 rounded-md"
           title="Eliminar módulo"
         >
-          <LucideIcons.Trash2 className="h-4 w-4 text-red-600" />
+          <LucideIcons.Trash2 className="h-4 w-4" />
         </button>
       </div>
     ))
   }
 
-  const selectedDeleteModule = modules.find(m => m.id === showDeleteConfirm)
-
   return (
     <>
       <aside className="w-80 bg-gradient-to-b from-white to-gray-50 border-r border-gray-200 flex flex-col h-full shadow-sm">
+        {/* Header */}
         <div className="p-5 border-b border-gray-200 bg-gradient-to-br from-blue-50 to-blue-100">
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">⚗</span>
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-sm">
+              <LucideIcons.FlaskConical className="h-5 w-5 text-white" />
             </div>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">ChemMaster CMS</h1>
+            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">ChemMaster</h1>
           </div>
-          <p className="text-xs text-gray-500 ml-10">Gestor de Contenido</p>
+          <p className="text-xs text-blue-600/70 ml-10 font-medium">CMS & Content Manager</p>
         </div>
         
         {/* Add Module Button */}
-        <div className="p-3 border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50">
+        <div className="p-3 border-b border-gray-200 bg-white">
           <Button 
             onClick={() => setShowAddModal(true)}
-            className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white flex items-center justify-center gap-2"
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all"
             size="sm"
           >
-            <LucideIcons.Plus className="h-4 w-4" />
-            Agregar Módulo
+            <LucideIcons.Plus className="h-4 w-4 mr-2" />
+            Nuevo Módulo
           </Button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-3 space-y-7">
+        {/* Lists */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-7 custom-scrollbar">
           <div>
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-3 px-2">
               <span className="text-lg">📚</span>
-              <h3 className="text-xs font-bold text-gray-700 uppercase tracking-widest">Décimo Grado</h3>
-              <span className="ml-auto text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">{modules.filter(m => m.grade_level === "10").length}</span>
+              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">Décimo Grado</h3>
+              <span className="ml-auto text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200 font-bold">
+                {modules.filter(m => m.grade_level === "10").length}
+              </span>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               {renderModuleList("10")}
             </div>
           </div>
 
           <div className="border-t border-gray-200 pt-4">
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-3 px-2">
               <span className="text-lg">🔬</span>
-              <h3 className="text-xs font-bold text-gray-700 uppercase tracking-widest">Undécimo Grado</h3>
-              <span className="ml-auto text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">{modules.filter(m => m.grade_level === "11").length}</span>
+              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">Undécimo Grado</h3>
+              <span className="ml-auto text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200 font-bold">
+                {modules.filter(m => m.grade_level === "11").length}
+              </span>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               {renderModuleList("11")}
             </div>
           </div>
         </div>
       </aside>
 
-      {/* Modals */}
+      {/* Modal de Agregar (Existente) */}
       <AddModuleModal 
         show={showAddModal} 
         onClose={() => setShowAddModal(false)} 
@@ -116,15 +144,57 @@ export default function CMSSidebar({
         }}
       />
 
-      <DeleteModuleModal 
-        show={showDeleteConfirm !== null}
-        moduleId={showDeleteConfirm}
-        module={selectedDeleteModule}
-        onClose={() => setShowDeleteConfirm(null)}
-        onModuleDeleted={(moduleId) => {
-          onModuleDeleted?.(moduleId)
-        }}
-      />
+      <Modal
+        isOpen={!!moduleToDelete}
+        onClose={() => setModuleToDelete(null)}
+        maxWidth="max-w-md"
+      >
+        <div className="p-6 text-center">
+            {/* Icono de Advertencia */}
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 mb-6 ring-8 ring-white shadow-lg">
+                <LucideIcons.Trash2 className="h-8 w-8 text-red-600" />
+            </div>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              ¿Eliminar "{moduleToDelete?.title}"?
+            </h3>
+            
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6 text-left">
+              <p className="text-sm text-amber-800 flex gap-2">
+                <LucideIcons.AlertTriangle className="h-5 w-5 flex-shrink-0" />
+                <span>
+                  <b>¡Cuidado!</b> Al eliminar este módulo, también borrarás <u>todos los tópicos</u> que contiene.
+                </span>
+              </p>
+            </div>
+
+            <div className="flex gap-3 justify-center w-full">
+                <Button 
+                    variant="outline" 
+                    onClick={() => setModuleToDelete(null)}
+                    disabled={isDeleting}
+                    className="flex-1 py-3"
+                >
+                    Cancelar
+                </Button>
+                <Button 
+                    variant="destructive" 
+                    onClick={handleConfirmDelete}
+                    disabled={isDeleting}
+                    className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-200"
+                >
+                    {isDeleting ? (
+                      <>
+                        <LucideIcons.Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Borrando...
+                      </>
+                    ) : (
+                      "Sí, eliminar todo"
+                    )}
+                </Button>
+            </div>
+        </div>
+      </Modal>
     </>
   )
 }

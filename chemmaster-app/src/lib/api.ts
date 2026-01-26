@@ -23,6 +23,29 @@ const request = async <T>(endpoint: string, options?: RequestInit): Promise<T> =
 }
 
 export const API = {
+  UploadImage: async (file: File): Promise<{ success: boolean; url: string }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${BASE_URL}upload.php`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    const json = await response.json();
+    if (!json.success) throw new Error(json.message || "Error al subir imagen");
+    return json;
+  },
+
+  DeleteFile: async (filename: string): Promise<any> => {
+    const response = await fetch(`${BASE_URL}deleteFile.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ filename }),
+    });
+    return response.json();
+  },
+
   GetTopics: (slug: string) => request<Topic[]>(`getTopics.php?slug=${slug}`),
 
   AddTopic: (data: { module_id: number, title: string, description?: string, content: string, order_in_module: number }) => 

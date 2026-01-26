@@ -6,15 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/ca
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
 import { Switch } from "../../components/ui/switch"
 import { Label } from "../../components/ui/label"
-import type { CMSModuleEditorProps, IconModalProps, ConfirmModalProps, SuccessModalProps } from "../../types/cms"
+import type { CMSModuleEditorProps, IconModalProps } from "../../types/cms"
 import { AllowedGrade, COLOR_OPTIONS } from "../../lib/constants"
 import * as LucideIcons from "lucide-react"
 import { API } from "../../lib/api"
 import { useModuleEditor } from "../../hooks/useModuleEditor"
+import { Modal, AlertModal } from "../../components/ui/modal"
 
-// Icon modal (Choose an icon from lucide.dev)
 function IconModal({ show, onClose, currentIcon, onIconChange }: IconModalProps) {
   const [searchTerm, setSearchTerm] = useState("")
+
   const allIconNames = useMemo(() => {
     return Object.keys(LucideIcons).filter((key) => {
       return key !== "icons" && key !== "createLucideIcon" && /^[A-Z]/.test(key)
@@ -30,142 +31,123 @@ function IconModal({ show, onClose, currentIcon, onIconChange }: IconModalProps)
     return IconComponent ? <IconComponent size={size} /> : null
   }
 
-  if (!show) return null
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col h-[80vh]">
-
-        <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
-          <div>
-            <h2 className="text-lg font-bold text-gray-800">Galería de Iconos</h2>
-            <p className="text-xs text-gray-500">
-              {allIconNames.length} iconos disponibles
-            </p>
-          </div>
-          <Button variant="ghost" size="sm" onClick={onClose} className="rounded-full h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600">
-            <LucideIcons.X className="h-5 w-5" />
-          </Button>
-        </div>
-
-        <div className="p-4 border-b bg-white sticky top-0 z-10">
+    <Modal
+      isOpen={show}
+      onClose={onClose}
+      title="Galería de Iconos"
+      maxWidth="max-w-5xl"
+    >
+      <div className="flex flex-col h-[70vh]">
+        <div className="p-6 border-b bg-white sticky top-0 z-10 shadow-sm">
           <div className="relative">
-            <LucideIcons.Search className="absolute left-3 top-3 text-gray-400 h-4 w-4" />
-            <Input 
+            <LucideIcons.Search className="absolute left-4 top-4 text-slate-400 h-5 w-5" />
+            <Input
               autoFocus
-              placeholder="Buscar icono (ej: user, chart, atom, wifi...)" 
+              placeholder="Buscar icono..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 text-lg py-6 border-2 focus:border-blue-500"
+              className="pl-12 text-lg h-14 border-slate-200 focus:border-blue-500 bg-slate-50 focus:bg-white rounded-xl"
             />
           </div>
+          <p className="text-xs text-slate-400 mt-3 ml-1 font-medium">
+            {filteredIcons.length} iconos disponibles
+          </p>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 bg-slate-50">
+        <div className="flex-1 overflow-y-auto p-8 bg-slate-50/50 custom-scrollbar">
           {filteredIcons.length === 0 ? (
-            <div className="text-center py-10 text-gray-400">
-              <LucideIcons.Frown className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>No se encontraron iconos para "{searchTerm}"</p>
+            <div className="text-center py-20 text-slate-300">
+              <LucideIcons.Frown className="h-16 w-16 mx-auto mb-4 opacity-50" />
+              <p className="text-lg">No encontramos resultados</p>
             </div>
           ) : (
-            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-4">
               {filteredIcons.slice(0, 100).map((iconName) => (
                 <button
                   key={iconName}
-                  onClick={() => {
-                    onIconChange(iconName)
-                  }}
-                  className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 group ${
-                    currentIcon === iconName
-                      ? "bg-blue-600 text-white shadow-lg scale-105 border-blue-600"
-                      : "bg-white border-gray-200 hover:border-blue-400 hover:shadow-md hover:-translate-y-1 text-gray-600"
-                  }`}
+                  onClick={() => { onIconChange(iconName); onClose(); }}
+                  className={`flex flex-col items-center justify-center p-4 rounded-2xl border transition-all duration-200 group h-28 ${currentIcon === iconName
+                      ? "bg-blue-600 text-white shadow-xl shadow-blue-200 scale-105 border-blue-600 ring-2 ring-blue-200 ring-offset-2"
+                      : "bg-white border-slate-100 hover:border-blue-300 hover:shadow-lg hover:-translate-y-1 text-slate-500"
+                    }`}
                   title={iconName}
                 >
-                  <div className="mb-2 transition-transform group-hover:scale-110">
-                    {renderIcon(iconName, 28)}
+                  <div className="mb-3 transition-transform group-hover:scale-110">
+                    {renderIcon(iconName, 26)}
                   </div>
-                  <span className={`text-[10px] truncate w-full text-center ${currentIcon === iconName ? "text-blue-100" : "text-gray-400 group-hover:text-blue-600"}`}>
+                  <span className={`text-[10px] font-medium truncate w-full text-center ${currentIcon === iconName ? "text-blue-100" : "text-slate-400 group-hover:text-blue-600"}`}>
                     {iconName}
                   </span>
                 </button>
               ))}
             </div>
           )}
-
-          {filteredIcons.length > 100 && (
-            <div className="mt-6 text-center text-xs text-gray-400 italic">
-              Mostrando 100 de {filteredIcons.length} resultados. Sigue escribiendo para filtrar mejor.
-            </div>
-          )}
-        </div>
-
-        <div className="p-4 border-t bg-white flex justify-between items-center">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-                Icono actual: 
-                <span className="font-bold flex items-center gap-2 bg-gray-100 px-2 py-1 rounded">
-                    {currentIcon && renderIcon(currentIcon, 16)} {currentIcon || "Ninguno"}
-                </span>
-            </div>
-            <div className="flex gap-2">
-                <Button variant="outline" onClick={onClose}>Cancelar</Button>
-                <Button className="bg-black text-white hover:bg-gray-800" onClick={onClose}>
-                    Listo
-                </Button>
-            </div>
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }
 
-// Confirm save modal (asks for password TODO: Check password before saving)
-function ConfirmModal({ show, onClose, onConfirm, password, onPasswordChange }: ConfirmModalProps) {
-  if (!show) return null
+function ConfirmSaveModal({ show, onClose, onConfirm }: { show: boolean, onClose: () => void, onConfirm: (pass: string) => void }) {
+  const [password, setPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleConfirm = () => {
+    setIsLoading(true);
+    onConfirm(password);
+    setPassword("");
+    setIsLoading(false);
+  }
+
+  const modalFooter = (
+    <>
+      <Button variant="ghost" onClick={onClose} disabled={isLoading}>Cancelar</Button>
+      <Button
+        onClick={handleConfirm}
+        disabled={!password || isLoading}
+        className="bg-blue-600 hover:bg-blue-700 text-white min-w-[120px]"
+      >
+        {isLoading ? <LucideIcons.Loader2 className="h-4 w-4 animate-spin" /> : "Confirmar"}
+      </Button>
+    </>
+  )
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
-        <h2 className="text-lg font-bold mb-4">Confirmar guardado</h2>
-        <p className="mb-4 text-gray-700">
-          Por favor, ingresa tu contraseña para confirmar el guardado del módulo.
-        </p>
-        <Input
-          type="password"
-          placeholder="Contraseña"
-          value={password}
-          onChange={(e) => onPasswordChange(e.target.value)}
-          className="mb-4"
-        />
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button variant="black" onClick={onConfirm}>
-            Confirmar
-          </Button>
+    <Modal isOpen={show} onClose={onClose} title="Confirmar Cambios" maxWidth="max-w-md" footer={modalFooter}>
+      <div className="p-8 flex flex-col items-center text-center space-y-6">
+        <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center ring-8 ring-blue-50/50">
+          <LucideIcons.LockKeyhole className="h-8 w-8 text-blue-600" />
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-slate-600">
+            Estás a punto de guardar cambios sensibles en la estructura del módulo.
+          </p>
+          <p className="text-sm text-slate-400">
+            Por favor, ingresa tu contraseña de administrador para continuar.
+          </p>
+        </div>
+
+        <div className="w-full">
+          <Label className="sr-only">Contraseña</Label>
+          <div className="relative">
+            <LucideIcons.Key className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
+            <Input
+              type="password"
+              placeholder="Contraseña..."
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="pl-10 h-12 text-lg border-slate-200 focus:border-blue-500 bg-slate-50 focus:bg-white transition-colors"
+              autoFocus
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }
 
-// Success modal (shows after successful save)
-function SuccessModal({ show, onClose }: SuccessModalProps) {
-  if (!show) return null
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-center">
-        <h2 className="text-lg font-bold mb-4 text-green-700">¡Guardado exitoso!</h2>
-        <p className="mb-4 text-gray-700">El módulo fue actualizado correctamente.</p>
-        <Button variant="black" onClick={onClose} className="mx-auto">
-          Cerrar
-        </Button>
-      </div>
-    </div>
-  )
-}
-
-// Main CMSModuleEditor component
 export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
   const {
     editedModule,
@@ -178,42 +160,52 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
 
   const [showIconModal, setShowIconModal] = useState(false)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
-  const [showSuccessModal, setShowSuccessModal] = useState(false)
-  const [password, setPassword] = useState("")
 
-  const handleSave = async () => {
+  const [alertConfig, setAlertConfig] = useState<{
+    show: boolean;
+    title: string;
+    msg: string;
+    variant: "success" | "destructive" | "default";
+  }>({ show: false, title: "", msg: "", variant: "default" });
+
+  const handleSave = async (password: string) => {
+    // TODO: Aquí validar la contraseña contra una API si fuera necesario
+    // if (password !== "admin") { ... mostrar error ... return; }
+    setShowConfirmModal(false);
     try {
-      if (!editedModule.id) {
-        throw new Error("Module ID is missing")
-      }
-      await API.UpdateModule(editedModule.id, editedModule)
-      setIsEditing(false)
-      setShowSuccessModal(true)
-      onSave?.(editedModule)
+      if (!editedModule.id) throw new Error("Falta el ID del módulo");
+
+      await API.UpdateModule(editedModule.id, editedModule);
+
+      setIsEditing(false);
+      onSave?.(editedModule);
+
+      setAlertConfig({
+        show: true,
+        title: "¡Guardado Exitoso!",
+        msg: `El módulo "${editedModule.title}" ha sido actualizado correctamente en la base de datos.`,
+        variant: "success"
+      });
+
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-      console.error("Save error:", error)
-      alert(`Error al guardar: ${errorMessage}`)
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      setAlertConfig({
+        show: true,
+        title: "Error al Guardar",
+        msg: `No pudimos guardar los cambios: ${errorMessage}`,
+        variant: "destructive"
+      });
     }
   }
 
-  const handleCancel = () => {
-    resetToOriginal()
-  }
+  return (
+    <div className="overflow-y-auto bg-white h-full custom-scrollbar">
 
-  const handleConfirmSave = () => {
-    setShowConfirmModal(false)
-    setPassword("")
-    handleSave()
-  }
-
-    return (
-    <div className="overflow-y-auto bg-white">
-      {/* HEADER - Enhanced styling */}
+      {/* HEADER */}
       <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-8 border-b-4 border-blue-500 shadow-md">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <div className={`p-4 bg-gradient-to-br ${editedModule.color} rounded-2xl shadow-lg transform hover:scale-105 transition-transform`}>
+            <div className={`p-4 bg-gradient-to-br ${editedModule.color} rounded-2xl shadow-lg transform hover:scale-105 transition-transform ring-4 ring-white/10`}>
               {editedModule.icon ? (
                 (() => {
                   const IconComponent = (LucideIcons as any)[editedModule.icon]
@@ -224,215 +216,170 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
               )}
             </div>
             <div>
-              <h1 className="text-3xl font-bold">
-                {isEditing ? "✏️ Editando Módulo" : "👁️ Vista de Módulo"}
-              </h1>
-              <p className="text-gray-300 mt-1">{editedModule.title}</p>
+              <div className="flex items-center gap-3 mb-1">
+                <h1 className="text-3xl font-bold">
+                  {isEditing ? "Edición de Módulo" : "Detalles del Módulo"}
+                </h1>
+                {isEditing && <span className="bg-blue-500/20 text-blue-300 text-xs px-2 py-1 rounded-full border border-blue-500/30 font-mono">MODO EDITOR</span>}
+              </div>
+              <p className="text-slate-400 text-lg">{editedModule.title}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Module Active State Switch */}
-            <div className="flex items-center gap-3 bg-slate-700 px-4 py-2 rounded-lg">
-              <Label htmlFor="module-active" className="text-white font-medium">
-                {editedModule.active ? "🟢 Activo" : "🔴 Inactivo"}
+            <div className={`flex items-center gap-3 px-5 py-2.5 rounded-xl border transition-all ${isEditing ? 'bg-slate-800 border-slate-600' : 'bg-transparent border-transparent opacity-80'}`}>
+              <Label htmlFor="module-active" className="text-slate-300 font-medium cursor-pointer">
+                {editedModule.active ? "Estado: Activo" : "Estado: Inactivo"}
               </Label>
               <Switch
                 id="module-active"
                 checked={editedModule.active}
-                onCheckedChange={(checked) => {
-                  setEditedModule({ ...editedModule, active: checked })
-                }}
+                onCheckedChange={(checked) => setEditedModule({ ...editedModule, active: checked })}
                 disabled={!isEditing}
+                className="data-[state=checked]:bg-green-500"
               />
             </div>
 
-            {/* Edit/Save Controls */}
             {isEditing ? (
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  onClick={handleCancel}
-                  className="bg-gray-600 hover:bg-gray-700 text-white border-0"
+              <div className="flex gap-3 pl-4 border-l border-slate-700">
+                <Button
+                  variant="ghost"
+                  onClick={() => resetToOriginal()}
+                  className="text-slate-300 hover:text-white hover:bg-slate-700"
                 >
-                  <LucideIcons.X className="h-4 w-4 mr-2" />
                   Cancelar
                 </Button>
                 <Button
-                  variant="black"
                   onClick={() => setShowConfirmModal(true)}
                   disabled={!hasChanges}
-                  title={!hasChanges ? "No hay cambios para guardar" : ""}
-                  className="bg-green-600 hover:bg-green-700 disabled:opacity-50"
+                  className="bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/20 px-6"
                 >
                   <LucideIcons.Save className="h-4 w-4 mr-2" />
-                  Guardar
+                  Guardar Cambios
                 </Button>
               </div>
             ) : (
-              <Button 
-                variant="black" 
+              <Button
                 onClick={() => setIsEditing(true)}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-white text-slate-900 hover:bg-slate-100 font-semibold px-6"
               >
                 <LucideIcons.Edit3 className="h-4 w-4 mr-2" />
-                Editar
+                Editar Módulo
               </Button>
             )}
           </div>
         </div>
       </div>
-      {/* END HEADER */}
 
-      {/* CONTENT */}
-      <div className="p-8 space-y-6">
-        <Card className="border-0 shadow-lg rounded-xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-200">
-            <CardTitle className="flex items-center gap-3 text-xl text-gray-800">
-              <div className="p-2 bg-blue-600 rounded-lg">
-                <LucideIcons.Settings className="h-5 w-5 text-white" />
+      {/* CONTENT FORM */}
+      <div className="p-8 space-y-8 max-w-5xl mx-auto">
+        <Card className="border shadow-sm rounded-xl overflow-hidden bg-white">
+          <CardHeader className="bg-slate-50 border-b border-slate-100 px-8 py-6">
+            <CardTitle className="flex items-center gap-3 text-xl text-slate-800">
+              <div className="p-2 bg-white border border-slate-200 rounded-lg shadow-sm">
+                <LucideIcons.Settings2 className="h-5 w-5 text-blue-600" />
               </div>
-              Configuración del Módulo
+              Configuración General
             </CardTitle>
           </CardHeader>
 
-          <CardContent className="space-y-6 pt-6">
-            {/* Title and Icon */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="title" className="text-sm font-semibold text-gray-700">
-                  📝 Título del Módulo
-                </Label>
-                <Input
-                  id="title"
-                  value={editedModule.title}
-                  onChange={(e) =>
-                    setEditedModule({ ...editedModule, title: e.target.value })
-                  }
-                  disabled={!isEditing}
-                  className="mt-1 border-2 border-gray-200 focus:border-blue-500 rounded-lg"
-                  placeholder="Ej: Estructura Atómica"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="icon" className="text-sm font-semibold text-gray-700">
-                  🎨 Icono
-                </Label>
-                
-                <div className="relative mt-1">
+          <CardContent className="space-y-8 p-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-6">
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold text-slate-700">Título del Módulo</Label>
                   <Input
-                    id="icon"
-                    value={editedModule.icon || ""}
-                    onChange={(e) =>
-                      setEditedModule({ ...editedModule, icon: e.target.value })
-                    }
+                    value={editedModule.title}
+                    onChange={(e) => setEditedModule({ ...editedModule, title: e.target.value })}
                     disabled={!isEditing}
-                    className="border-2 border-gray-200 focus:border-blue-500 rounded-lg pr-12" 
-                    placeholder="Nombre del icono (ej: Atom, BookOpen)"
+                    className="h-12 text-lg border-slate-200 focus:border-blue-500 rounded-lg bg-slate-50 focus:bg-white transition-colors"
                   />
-                  
-                  {isEditing && (
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="ghost"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-md"
-                      onClick={() => setShowIconModal(true)}
-                      title="Buscar icono"
-                    >
-                      <LucideIcons.Search className="h-4 w-4" />
-                    </Button>
-                  )}
                 </div>
 
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold text-slate-700">Descripción</Label>
+                  <Textarea
+                    value={editedModule.description || ""}
+                    onChange={(e) => setEditedModule({ ...editedModule, description: e.target.value })}
+                    disabled={!isEditing}
+                    className="min-h-[120px] resize-none border-slate-200 focus:border-blue-500 rounded-lg bg-slate-50 focus:bg-white transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold text-slate-700">Nivel Académico</Label>
+                  <Select
+                    value={editedModule.grade_level}
+                    onValueChange={(value: AllowedGrade) => setEditedModule({ ...editedModule, grade_level: value })}
+                    disabled={!isEditing}
+                  >
+                    <SelectTrigger className="h-11 border-slate-200 focus:border-blue-500 rounded-lg bg-white cursor-pointer w-full">
+                      <SelectValue placeholder="Selecciona el grado" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-100">
+                      <SelectItem className="cursor-pointer" value="10">Décimo Grado (10°)</SelectItem>
+                      <SelectItem className="cursor-pointer" value="11">Undécimo Grado (11°)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="lg:col-span-1 space-y-3">
+                <Label className="text-sm font-semibold text-slate-700">Icono Representativo</Label>
+                <div className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-4 transition-colors ${isEditing ? 'border-slate-300 bg-slate-50 hover:bg-slate-100' : 'border-slate-200 bg-slate-50 opacity-70'}`}>
+                  <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${editedModule.color} flex items-center justify-center shadow-md`}>
+                    {editedModule.icon && (() => {
+                      const Icon = (LucideIcons as any)[editedModule.icon!];
+                      return Icon ? <Icon className="text-white w-10 h-10" /> : <LucideIcons.Box className="text-white w-10 h-10" />
+                    })()}
+                  </div>
+                  <div className="text-center w-full">
+                    <p className="text-sm font-medium text-slate-600 mb-2">{editedModule.icon || "Sin icono"}</p>
+                    {isEditing && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full bg-white hover:text-blue-600 hover:border-blue-200"
+                        onClick={() => setShowIconModal(true)}
+                      >
+                        <LucideIcons.Search className="h-4 w-4 mr-2" /> Cambiar
+                      </Button>
+                    )}
+                  </div>
+                </div>
                 <IconModal
                   show={showIconModal}
                   onClose={() => setShowIconModal(false)}
                   currentIcon={editedModule.icon || ""}
-                  onIconChange={(icon) =>
-                    setEditedModule({ ...editedModule, icon })
-                  }
-                  disabled={!isEditing}
+                  onIconChange={(icon) => setEditedModule({ ...editedModule, icon })}
                 />
               </div>
             </div>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description" className="text-sm font-semibold text-gray-700">
-                📄 Descripción
-              </Label>
-              <Textarea
-                id="description"
-                value={editedModule.description || ""}
-                onChange={(e) =>
-                  setEditedModule({
-                    ...editedModule,
-                    description: e.target.value,
-                  })
-                }
-                disabled={!isEditing}
-                className="mt-1 border-2 border-gray-200 focus:border-blue-500 rounded-lg"
-                rows={3}
-                placeholder="Descripción breve del módulo"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Grade Selector */}
-              <div className="space-y-2">
-                <Label htmlFor="grade" className="text-sm font-semibold text-gray-700">
-                  🎓 Grado
-                </Label>
-                <Select
-                  value={editedModule.grade_level}
-                  onValueChange={(value: AllowedGrade) =>
-                    setEditedModule({ ...editedModule, grade_level: value })
-                  }
-                  disabled={!isEditing}
-                >
-                  <SelectTrigger className="mt-1 border-2 border-gray-200 focus:border-blue-500 rounded-lg">
-                    <SelectValue placeholder="Selecciona el grado" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg">
-                    <SelectItem value="10">10° Grado</SelectItem>
-                    <SelectItem value="11">11° Grado</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Color Selector */}
-            <div className="space-y-3">
-              <Label className="text-sm font-semibold text-gray-700">
-                🎨 Color del Módulo
-              </Label>
-              <div className="grid grid-cols-4 gap-3">
+            <div className="pt-6 border-t border-slate-100 space-y-4">
+              <Label className="text-sm font-semibold text-slate-700 block">Tema de Color</Label>
+              <div className="grid grid-cols-4 sm:grid-cols-8 gap-4">
                 {COLOR_OPTIONS.map((color) => (
                   <button
                     key={color.value}
                     type="button"
-                    onClick={() =>
-                      isEditing &&
-                      setEditedModule({ ...editedModule, color: color.value })
-                    }
+                    onClick={() => isEditing && setEditedModule({ ...editedModule, color: color.value })}
                     disabled={!isEditing}
-                    className={`p-4 rounded-xl border-3 transition-all transform hover:scale-110 ${
-                      editedModule.color === color.value
-                        ? "border-gray-900 shadow-lg scale-105 ring-2 ring-blue-400"
-                        : "border-gray-300 hover:border-gray-400 shadow-sm"
-                    } ${
-                      !isEditing
-                        ? "cursor-not-allowed opacity-40"
-                        : "cursor-pointer"
-                    }`}
+                    className={`
+                        group relative w-full aspect-square rounded-full transition-all duration-300 focus:outline-none cursor-pointer
+                        ${editedModule.color === color.value
+                        ? 'scale-110 ring-4 ring-slate-100 shadow-lg'
+                        : 'hover:scale-110 hover:shadow-md opacity-90 hover:opacity-100'}
+                        ${!isEditing && 'cursor-not-allowed opacity-50 hover:scale-100'}
+                    `}
                     title={color.label}
                   >
-                    <div className={`w-full h-10 rounded-lg ${color.preview} shadow-md`} />
-                    <div className="text-xs mt-2 text-center font-medium text-gray-700">
-                      {color.label}
-                    </div>
+                    <div className={`w-full h-full rounded-full bg-gradient-to-br ${color.value}`} />
+                    {editedModule.color === color.value && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-2.5 h-2.5 bg-white rounded-full shadow-sm" />
+                      </div>
+                    )}
                   </button>
                 ))}
               </div>
@@ -440,21 +387,21 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
           </CardContent>
         </Card>
       </div>
-      {/* END CONTENT */}
 
-      {/* MODALS */}
-      <ConfirmModal
+      <ConfirmSaveModal
         show={showConfirmModal}
         onClose={() => setShowConfirmModal(false)}
-        onConfirm={handleConfirmSave}
-        password={password}
-        onPasswordChange={setPassword}
+        onConfirm={handleSave}
       />
 
-      <SuccessModal
-        show={showSuccessModal}
-        onClose={() => setShowSuccessModal(false)}
+      <AlertModal
+        isOpen={alertConfig.show}
+        onClose={() => setAlertConfig({ ...alertConfig, show: false })}
+        title={alertConfig.title}
+        message={alertConfig.msg}
+        variant={alertConfig.variant as any}
       />
+
     </div>
   )
 }
