@@ -5,10 +5,10 @@ import { Button } from "./button";
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title?: string; // Opcional ahora, porque a veces el diseño lo maneja diferente
+  title?: string;
   children?: React.ReactNode;
   footer?: React.ReactNode;
-  maxWidth?: string; // Para controlar el ancho (ej: max-w-2xl)
+  maxWidth?: string;
 }
 
 export function Modal({
@@ -37,22 +37,20 @@ export function Modal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      {/* Backdrop con blur más intenso */}
       <div 
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
         onClick={onClose}
       />
-
-      {/* Contenedor con animación suave */}
       <div className={`relative bg-white rounded-2xl shadow-2xl w-full ${maxWidth} overflow-hidden transform transition-all animate-in fade-in zoom-in-95 duration-200 border border-slate-100`}>
-        
-        {/* Header condicional (solo si pasas título explícito, útil para modales genéricos) */}
         {title && (
           <div className="px-6 py-4 border-b flex justify-between items-center bg-white">
             <h3 className="text-lg font-bold text-slate-800">{title}</h3>
-            <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
-              <X size={20} />
-            </button>
+            <button 
+              onClick={onClose} 
+              className="text-slate-400 hover:text-red-500 hover:bg-slate-100 rounded-full p-1 transition-all cursor-pointer"
+            >
+            <X size={20} />
+        </button>
           </div>
         )}
 
@@ -72,10 +70,6 @@ export function Modal({
   );
 }
 
-// ==========================================
-// 🎨 NUEVO DISEÑO: ALERT MODAL DE ALTO IMPACTO
-// ==========================================
-
 export function AlertModal({ 
   isOpen, 
   onClose, 
@@ -90,7 +84,6 @@ export function AlertModal({
   variant?: "default" | "destructive" | "success" | "warning";
 }) {
   
-  // Configuración de colores e iconos según variante
   const styles = {
     destructive: {
       icon: <AlertCircle className="h-10 w-10 text-red-600" />,
@@ -124,24 +117,20 @@ export function AlertModal({
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="p-6 sm:p-8 flex flex-col items-center text-center">
         
-        {/* 1. Icono circular grande */}
         <div className={`mx-auto flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full ${activeStyle.bgIcon} mb-6 ring-8 ring-white shadow-lg`}>
           {activeStyle.icon}
         </div>
 
-        {/* 2. Título Impactante */}
         <h3 className={`text-xl font-bold ${activeStyle.titleColor} mb-2`}>
           {title}
         </h3>
 
-        {/* 3. Mensaje Legible */}
         <div className="mt-2 mb-6">
           <p className="text-sm text-slate-500 leading-relaxed max-w-xs mx-auto">
             {message}
           </p>
         </div>
 
-        {/* 4. Botón de Acción Principal (Full Width) */}
         <div className="w-full">
             <Button 
                 onClick={onClose} 
