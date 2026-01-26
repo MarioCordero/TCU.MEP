@@ -38,7 +38,7 @@ export const API = {
   },
 
   DeleteFile: async (filename: string): Promise<any> => {
-    const response = await fetch(`${BASE_URL}delete_file.php`, {
+    const response = await fetch(`${BASE_URL}deleteFile.php`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ filename }),
