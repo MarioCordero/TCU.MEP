@@ -1,6 +1,5 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
 
 // Import page components
 import LandingPage from './pages/LandingPage'
@@ -18,26 +17,16 @@ import ConfiguracionElectronica from './screens/configuracion-electronica'
 // CMS Component
 import ChemMasterCMS from './pages/ChemMasterCMS'
 
-// Component to handle dynamic titles
+/**
+ * Componente auxiliar para manejar el título del documento dinámicamente.
+ * Detecta si la app está corriendo bajo el prefijo '/ChemMaster' y normaliza la ruta.
+ */
 function DocumentTitle() {
   const location = useLocation()
   
   useEffect(() => {
+    // Definimos los títulos solo una vez, usando las rutas relativas limpias
     const titles: { [key: string]: string } = {
-      '/ChemMaster': 'ChemMaster - HOME',
-      '/ChemMaster/': 'ChemMaster - HOME',
-      '/ChemMaster/grade-selector': 'ChemMaster - Selección de Grado',
-      '/ChemMaster/info': 'ChemMaster - Información',
-      '/ChemMaster/grade-10': 'ChemMaster - 10° Grado',
-      '/ChemMaster/grade-11': 'ChemMaster - 11° Grado',
-      '/ChemMaster/clasificacion-materia': 'ChemMaster - Clasificación de Materia',
-      '/ChemMaster/tabla-periodica': 'ChemMaster - Tabla Periódica',
-      '/ChemMaster/estructura-atomica': 'ChemMaster - Estructura Atómica',
-      '/ChemMaster/configuracion-electronica': 'ChemMaster - Configuración Electrónica',
-      '/ChemMaster/CMS': 'ChemMaster - CMS',
-
-      // Fallback for standalone mode
-      
       '/': 'ChemMaster - HOME',
       '/grade-selector': 'ChemMaster - Selección de Grado',
       '/info': 'ChemMaster - Información',
@@ -49,54 +38,64 @@ function DocumentTitle() {
       '/configuracion-electronica': 'ChemMaster - Configuración Electrónica',
       '/CMS': 'ChemMaster - CMS'
     }
+
+    // Lógica de limpieza: Si estamos en producción (/ChemMaster), quitamos el prefijo
+    // para buscar en el objeto 'titles'.
+    let cleanPath = location.pathname;
     
-    document.title = titles[location.pathname] || 'ChemMaster'
+    if (cleanPath.startsWith('/ChemMaster')) {
+      cleanPath = cleanPath.replace('/ChemMaster', '');
+    }
+
+    // Si la ruta quedó vacía (ej. venía de /ChemMaster), la normalizamos a '/'
+    if (cleanPath === '') {
+      cleanPath = '/';
+    }
+    
+    document.title = titles[cleanPath] || 'ChemMaster'
   }, [location.pathname])
   
   return null
 }
 
-// Props interface for sub-app integration
-interface QuimicaAppProps {
+interface AppProps {
   isLoaderComplete?: boolean;
   currentPage?: string;
-  basePath?: string; // Add basePath prop to handle parent routing
+  basePath?: string; 
 }
 
-export default function QuimicaApp({ basePath = '' }: QuimicaAppProps) {
+export default function App({ basePath = '' }: AppProps) {
   const navigate = useNavigate()
   const location = useLocation()
   
-  // Determine if we're in standalone mode or integrated mode
+  // Detecta si estamos en modo integrado (producción) o standalone (dev)
   const isIntegratedMode = location.pathname.startsWith('/ChemMaster')
   const homeRoute = isIntegratedMode ? '/ChemMaster' : '/'
   
   const handleCMSClose = () => {
-    navigate(homeRoute) // Navigate to the correct home based on context
+    navigate(homeRoute) 
   }
   
   return (
     <>
       <DocumentTitle />
       <Routes>
-        {/* Main pages - using relative paths since parent route handles the base */}
+        {/* Rutas principales */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/info" element={<InfoPage />} />
         <Route path="/grade-selector" element={<GradeSelector />} />
         <Route path="/grade-10" element={<GradeTenPage />} />
         <Route path="/grade-11" element={<GradeElevenPage />} />
         
-        {/* Screen modules */}
+        {/* Módulos de estudio (Screens) */}
         <Route path="/clasificacion-materia" element={<ClasificacionMateria />} />
         <Route path="/tabla-periodica" element={<TablaPeriodicaScreen />} />
         <Route path="/estructura-atomica" element={<EstructuraAtomica />} />
         <Route path="/configuracion-electronica" element={<ConfiguracionElectronica />} />
 
-        {/* CMS route - now with proper onClose prop */}
+        {/* Ruta del CMS */}
         <Route path="/CMS" element={<ChemMasterCMS onClose={handleCMSClose} />} />
       </Routes>
     </>
   )
 }
-
-// APLICACIÓN COMO TAL ESTA ES LA QUE VA AL SERVER DE PRODUCCIÓN
