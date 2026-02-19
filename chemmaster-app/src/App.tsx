@@ -50,7 +50,6 @@ export default function App({ basePath = '' }: AppProps) {
   return (
     <>
       <ProgressProvider>
-
         <DocumentTitle />
         <Routes>
 
