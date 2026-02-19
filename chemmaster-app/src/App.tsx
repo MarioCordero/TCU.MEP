@@ -6,9 +6,8 @@ import LandingPage from './pages/LandingPage'
 import InfoPage from './pages/InfoPage'
 import GradeSelectorPage from './pages/GradeSelectorPage'
 import GradePage from './pages/GradePage'
-
-// CMS Component
 import ChemMasterCMS from './pages/CMSPage'
+import { ProgressProvider } from './context/ProgressContext'
 
 function DocumentTitle() {
   const location = useLocation()
@@ -50,56 +49,59 @@ export default function App({ basePath = '' }: AppProps) {
   
   return (
     <>
-      <DocumentTitle />
-      <Routes>
+      <ProgressProvider>
 
-        <Route 
-          path="/" element={
-            <LandingPage 
-              onStart={() => navigate('/grade-selector')} 
-              onInfo={() => navigate('/info')}
-              onResources={() => navigate('/resources')}
-              onCms={() => navigate('/CMS')}
-            />
-          }
-        />
-        
-        <Route 
-          path="/info" element={
-            <InfoPage 
-              onBack={handleInfoBack}
-              onStart={handleInfoStart} 
-            />
-          }
-        />
+        <DocumentTitle />
+        <Routes>
 
-        <Route 
-          path="/CMS" element={
-            <ChemMasterCMS 
-              onClose={handleCMSClose}
-            />
-          }
-        />
+          <Route
+            path="/" element={
+              <LandingPage
+                onStart={() => navigate('/grade-selector')}
+                onInfo={() => navigate('/info')}
+                onResources={() => navigate('/resources')}
+                onCms={() => navigate('/CMS')}
+              />
+            }
+          />
 
-        <Route 
-          path="/grade-selector" 
-          element={
-            <GradeSelectorPage 
-              onBack={() => navigate('/')} 
-              onSelectGrade={(gradeId) => {
-                const id = gradeId.replace('grade-', ''); 
-                navigate(`/grade/${id}`); 
-              }} 
-            />
-          } 
-        />
+          <Route
+            path="/info" element={
+              <InfoPage
+                onBack={handleInfoBack}
+                onStart={handleInfoStart}
+              />
+            }
+          />
 
-        <Route 
-          path="/grade/:gradeId" 
-          element={<GradePage />} 
-        />
-        
-      </Routes>
+          <Route
+            path="/CMS" element={
+              <ChemMasterCMS
+                onClose={handleCMSClose}
+              />
+            }
+          />
+
+          <Route
+            path="/grade-selector"
+            element={
+              <GradeSelectorPage
+                onBack={() => navigate('/')}
+                onSelectGrade={(gradeId) => {
+                  const id = gradeId.replace('grade-', '');
+                  navigate(`/grade/${id}`);
+                }}
+              />
+            }
+          />
+
+          <Route
+            path="/grade/:gradeId"
+            element={<GradePage />}
+          />
+
+        </Routes>
+      </ProgressProvider>
     </>
   )
 }
