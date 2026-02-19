@@ -17,15 +17,10 @@ import ConfiguracionElectronica from './screens/configuracion-electronica'
 // CMS Component
 import ChemMasterCMS from './pages/ChemMasterCMS'
 
-/**
- * Componente auxiliar para manejar el título del documento dinámicamente.
- * Detecta si la app está corriendo bajo el prefijo '/ChemMaster' y normaliza la ruta.
- */
 function DocumentTitle() {
   const location = useLocation()
   
   useEffect(() => {
-    // Definimos los títulos solo una vez, usando las rutas relativas limpias
     const titles: { [key: string]: string } = {
       '/': 'ChemMaster - HOME',
       '/grade-selector': 'ChemMaster - Selección de Grado',
@@ -38,23 +33,15 @@ function DocumentTitle() {
       '/configuracion-electronica': 'ChemMaster - Configuración Electrónica',
       '/CMS': 'ChemMaster - CMS'
     }
-
-    // Lógica de limpieza: Si estamos en producción (/ChemMaster), quitamos el prefijo
-    // para buscar en el objeto 'titles'.
     let cleanPath = location.pathname;
-    
     if (cleanPath.startsWith('/ChemMaster')) {
       cleanPath = cleanPath.replace('/ChemMaster', '');
     }
-
-    // Si la ruta quedó vacía (ej. venía de /ChemMaster), la normalizamos a '/'
     if (cleanPath === '') {
       cleanPath = '/';
     }
-    
     document.title = titles[cleanPath] || 'ChemMaster'
   }, [location.pathname])
-  
   return null
 }
 
@@ -67,9 +54,7 @@ interface AppProps {
 export default function App({ basePath = '' }: AppProps) {
   const navigate = useNavigate()
   const location = useLocation()
-  
-  // Detecta si estamos en modo integrado (producción) o standalone (dev)
-  const isIntegratedMode = location.pathname.startsWith('/ChemMaster')
+  const isIntegratedMode = location.pathname.startsWith('/ChemMaster') // It detects if the app is running inside the integrated mode by checking the pathname. If it starts with /ChemMaster, we consider it as integrated mode.
   const homeRoute = isIntegratedMode ? '/ChemMaster' : '/'
   
   const handleCMSClose = () => {
@@ -80,20 +65,15 @@ export default function App({ basePath = '' }: AppProps) {
     <>
       <DocumentTitle />
       <Routes>
-        {/* Rutas principales */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/info" element={<InfoPage />} />
         <Route path="/grade-selector" element={<GradeSelector />} />
         <Route path="/grade-10" element={<GradeTenPage />} />
         <Route path="/grade-11" element={<GradeElevenPage />} />
-        
-        {/* Módulos de estudio (Screens) */}
         <Route path="/clasificacion-materia" element={<ClasificacionMateria />} />
         <Route path="/tabla-periodica" element={<TablaPeriodicaScreen />} />
         <Route path="/estructura-atomica" element={<EstructuraAtomica />} />
         <Route path="/configuracion-electronica" element={<ConfiguracionElectronica />} />
-
-        {/* Ruta del CMS */}
         <Route path="/CMS" element={<ChemMasterCMS onClose={handleCMSClose} />} />
       </Routes>
     </>
