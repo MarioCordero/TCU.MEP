@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 // Import page components
 import LandingPage from './pages/LandingPage'
 import InfoPage from './pages/InfoPage'
+import GradeSelectorPage from './pages/GradeSelectorPage'
 
 // CMS Component
 import ChemMasterCMS from './pages/CMSPage'
@@ -65,27 +66,46 @@ export default function App({ basePath = '' }: AppProps) {
       <DocumentTitle />
       <Routes>
 
-        <Route path="/" element={
-          <LandingPage 
-            onStart={() => navigate('/grade-selector')} 
-            onInfo={() => navigate('/info')}
-            onResources={() => navigate('/resources')}
-            onCms={() => navigate('/CMS')}
-          />
-        }/>
+        <Route 
+          path="/" element={
+            <LandingPage 
+              onStart={() => navigate('/grade-selector')} 
+              onInfo={() => navigate('/info')}
+              onResources={() => navigate('/resources')}
+              onCms={() => navigate('/CMS')}
+            />
+          }
+        />
         
-        <Route path="/info" element={
-          <InfoPage 
-            onBack={handleInfoBack}
-            onStart={handleInfoStart} 
-          />
-        }/>
+        <Route 
+          path="/info" element={
+            <InfoPage 
+              onBack={handleInfoBack}
+              onStart={handleInfoStart} 
+            />
+          }
+        />
 
-        <Route path="/CMS" element={
-          <ChemMasterCMS 
-            onBack={handleCMSClose}
-          />
-        }/>
+        <Route 
+          path="/CMS" element={
+            <ChemMasterCMS 
+              onBack={handleCMSClose}
+            />
+          }
+        />
+
+        <Route 
+          path="/grade-selector" 
+          element={
+            <GradeSelectorPage 
+              onBack={() => navigate('/')} 
+              onSelectGrade={(gradeId) => {
+                const id = gradeId.replace('grade-', ''); 
+                navigate(`/grade/${id}`); 
+              }} 
+            />
+          } 
+        />
         
       </Routes>
     </>
