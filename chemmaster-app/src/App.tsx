@@ -6,7 +6,7 @@ import LandingPage from './pages/LandingPage'
 import InfoPage from './pages/InfoPage'
 
 // CMS Component
-import ChemMasterCMS from './pages/ChemMasterCMS'
+import ChemMasterCMS from './pages/CMSPage'
 
 function DocumentTitle() {
   const location = useLocation()
