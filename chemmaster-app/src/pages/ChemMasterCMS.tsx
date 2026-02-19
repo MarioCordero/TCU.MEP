@@ -7,7 +7,11 @@ import { CMSModuleEditor } from '../components/cms/ModuleEditor';
 import CMSSidebar from '../components/cms/Sidebar';
 import * as LucideIcons from "lucide-react"
 
-export default function ChemMasterCMS() {
+interface ChemMasterCMSProps {
+  onClose?: () => void;
+}
+
+export default function ChemMasterCMS({ onClose }: ChemMasterCMSProps) {
   const { data: cmsData, loading, error, request } = useApi<AllContentResponse>();
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
 

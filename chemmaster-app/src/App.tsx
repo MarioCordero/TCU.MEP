@@ -4,15 +4,6 @@ import { useEffect } from 'react'
 // Import page components
 import LandingPage from './pages/LandingPage'
 import InfoPage from './pages/InfoPage'
-import GradeSelector from './pages/GradeSelector'
-import GradeTenPage from './pages/grade-10/page'
-import GradeElevenPage from './pages/grade-11/page'
-
-// Import screen components
-import ClasificacionMateria from './screens/clasificacion-materia'
-import TablaPeriodicaScreen from './screens/tabla-periodica'
-import EstructuraAtomica from './screens/estructura-atomica'
-import ConfiguracionElectronica from './screens/configuracion-electronica'
 
 // CMS Component
 import ChemMasterCMS from './pages/ChemMasterCMS'
@@ -67,13 +58,6 @@ export default function App({ basePath = '' }: AppProps) {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/info" element={<InfoPage />} />
-        <Route path="/grade-selector" element={<GradeSelector />} />
-        <Route path="/grade-10" element={<GradeTenPage />} />
-        <Route path="/grade-11" element={<GradeElevenPage />} />
-        <Route path="/clasificacion-materia" element={<ClasificacionMateria />} />
-        <Route path="/tabla-periodica" element={<TablaPeriodicaScreen />} />
-        <Route path="/estructura-atomica" element={<EstructuraAtomica />} />
-        <Route path="/configuracion-electronica" element={<ConfiguracionElectronica />} />
         <Route path="/CMS" element={<ChemMasterCMS onClose={handleCMSClose} />} />
       </Routes>
     </>
