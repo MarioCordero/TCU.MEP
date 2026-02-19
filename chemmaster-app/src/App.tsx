@@ -64,10 +64,23 @@ export default function App({ basePath = '' }: AppProps) {
     <>
       <DocumentTitle />
       <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/info" element={<InfoPage onBack={handleInfoBack} onStart={handleInfoStart} />} />
-        {/* <Route path="/grade/:gradeId" element={<GradePage />} /> */}
-        <Route path="/CMS" element={<ChemMasterCMS onClose={handleCMSClose} />} />
+
+        <Route path="/" element={
+          <LandingPage 
+            onStart={() => navigate('/grade-selector')} 
+            onInfo={() => navigate('/info')}
+            onResources={() => navigate('/resources')}
+            onCms={() => navigate('/CMS')}
+          />
+        }/>
+        
+        <Route path="/info" element={
+          <InfoPage 
+            onBack={handleInfoBack}
+            onStart={handleInfoStart} 
+          />
+        }/>
+        
       </Routes>
     </>
   )
