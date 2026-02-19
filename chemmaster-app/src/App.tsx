@@ -51,13 +51,22 @@ export default function App({ basePath = '' }: AppProps) {
   const handleCMSClose = () => {
     navigate(homeRoute) 
   }
+
+  const handleInfoBack = () => {
+    navigate(homeRoute)
+  }
+
+  const handleInfoStart = () => {
+    navigate('/grade-selector')
+  }
   
   return (
     <>
       <DocumentTitle />
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/info" element={<InfoPage />} />
+        <Route path="/info" element={<InfoPage onBack={handleInfoBack} onStart={handleInfoStart} />} />
+        {/* <Route path="/grade/:gradeId" element={<GradePage />} /> */}
         <Route path="/CMS" element={<ChemMasterCMS onClose={handleCMSClose} />} />
       </Routes>
     </>
