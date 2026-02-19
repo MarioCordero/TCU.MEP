@@ -80,6 +80,12 @@ export default function App({ basePath = '' }: AppProps) {
             onStart={handleInfoStart} 
           />
         }/>
+
+        <Route path="/CMS" element={
+          <ChemMasterCMS 
+            onBack={handleCMSClose}
+          />
+        }/>
         
       </Routes>
     </>

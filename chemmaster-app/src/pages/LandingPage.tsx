@@ -52,16 +52,8 @@ export default function LandingHome({ onStart, onInfo, onResources, onCms }: Lan
         >
           <button
             type="button"
-            onClick={onResources}
-            className="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium bg-cyan-500/10 backdrop-blur-sm border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-400 transition-colors"
-          >
-            <Compass className="h-4 w-4 mr-2" />
-            Explorar
-          </button>
-          <button
-            type="button"
             onClick={onCms}
-            className="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium bg-violet-500/10 backdrop-blur-sm border border-violet-500/30 text-violet-400 hover:bg-violet-500/20 hover:border-violet-400 transition-colors"
+            className="cursor-pointer inline-flex items-center px-4 py-2 rounded-md text-sm font-medium bg-violet-500/10 backdrop-blur-sm border border-violet-500/30 text-violet-400 hover:bg-violet-500/20 hover:border-violet-400 transition-colors"
           >
             <Settings className="h-4 w-4 mr-2" />
             CMS
@@ -141,13 +133,13 @@ export default function LandingHome({ onStart, onInfo, onResources, onCms }: Lan
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="mt-10 md:mt-14 grid grid-cols-3 gap-3 md:gap-6 max-w-md mx-auto px-4">
           <motion.div whileHover={{ scale: 1.05, y: -5 }} className="text-center p-3 md:p-4 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
             <motion.div className="text-2xl md:text-3xl font-black bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent" animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 0 }}>
-              12
+              N {/*GET HOW MANY MODULES THERE ARE*/}
             </motion.div>
             <div className="text-xs md:text-sm text-white/50">Modulos</div>
           </motion.div>
           <motion.div whileHover={{ scale: 1.05, y: -5 }} className="text-center p-3 md:p-4 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
             <motion.div className="text-2xl md:text-3xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent" animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}>
-              50+
+              N {/*GET HOW MANY ACTIVITIES THERE ARE*/}
             </motion.div>
             <div className="text-xs md:text-sm text-white/50">Actividades</div>
           </motion.div>
@@ -165,7 +157,7 @@ export default function LandingHome({ onStart, onInfo, onResources, onCms }: Lan
             onClick={onResources}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-full text-white/60 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
+            className="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-full text-white/60 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
           >
             <Compass className="h-4 w-4" />
             <span className="text-sm">Explora mas recursos externos</span>
