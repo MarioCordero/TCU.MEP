@@ -3,11 +3,11 @@
 import { useParams, useNavigate } from "react-router-dom"
 import React, { useEffect, useState } from "react"
 import { Module } from "../types/cms"
-import { API } from "../lib/api" // <--- Tu nueva librería
+import { API } from "../lib/api"
 import { GradeModulePath } from "../components/grade-selection/GradeModulePath"
 import { SelectedTopic } from "../types/gradeSelector"
 import { useProgressContext } from "../hooks/useProgressContext"
-// import TopicLearningPage from "./TopicLearningPage" // Asegúrate de que la ruta sea correcta
+// import TopicLearningPage from "./TopicLearningPage" // The page that shows the topic content and marks it as completed when the user finishes it
 
 export default function GradePage() {
   const { gradeId } = useParams<{ gradeId: string }>()
