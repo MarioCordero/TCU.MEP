@@ -38,7 +38,7 @@ jobs:
           DEST_BASE="parent-repo/SPECT-Website/src/ChemMaster"
           
           # Lista de carpetas a copiar
-          FOLDERS=("assets" "components" "config" "hooks" "lib" "pages" "screens" "types")
+          FOLDERS=("assets" "components" "context" "hooks" "lib" "pages" "types")
 
           for folder in "${FOLDERS[@]}"; do
             src="child-repo/chemmaster-app/src/$folder/"
@@ -53,6 +53,22 @@ jobs:
               echo "⚠️ Saltando: $folder (No existe en el origen)"
             fi
           done
+
+      # 4.1 Sincronizar App.tsx
+      - name: Sync App.tsx
+        run: |
+          echo "⚛️ Sincronizando App.tsx..."
+          
+          src="child-repo/chemmaster-app/src/App.tsx"
+          dest="parent-repo/SPECT-Website/src/ChemMaster/App.tsx"
+          
+          if [ -f "$src" ]; then
+            echo "✅ Copiando: App.tsx"
+            mkdir -p "$(dirname "$dest")"
+            cp "$src" "$dest"
+          else
+            echo "⚠️ App.tsx no encontrado en el origen"
+          fi
 
       # 5. Guardar cambios en el PADRE
       - name: Commit and Push to Parent
