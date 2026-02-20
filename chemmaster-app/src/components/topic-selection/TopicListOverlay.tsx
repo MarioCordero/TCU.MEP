@@ -2,10 +2,10 @@
 
 import React from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Button } from "../ui/button"
+import { Badge } from "../ui/badge"
 import { X, Sparkles, Star, Rocket, CheckCircle2, BookOpen, Play, ChevronRight } from "lucide-react"
-import { getIconComponent } from "./iconMap"
+import { getIconComponent } from "../../lib/iconMap"
 import { ModuleDetailModalProps } from "../../types/gradeSelector"
 
 // This hook needs to be imported from wherever it's defined in your project
