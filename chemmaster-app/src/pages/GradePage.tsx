@@ -4,23 +4,22 @@ import { useParams, useNavigate } from "react-router-dom"
 import React, { useEffect, useState } from "react"
 import { Module } from "@/types/cms"
 import { GradeModulePath } from "@/components/grade-selection/GradeModulePath"
-import { SelectedTopic } from "@/components/grade-selection/types"
+import { SelectedTopic } from "@/types/gradeSelector"
 import { useProgressContext } from "@/hooks/useProgressContext"
 
 export default function GradePage() {
-  const { gradeId } = useParams<{ gradeId: string }>() // Gets the gradeId from the URL params
+  const { gradeId } = useParams<{ gradeId: string }>()
   const navigate = useNavigate()
   const [modules, setModules] = useState<Module[]>([])
-  const [selectedModule, setSelectedModule] = useState<string | null>(null)
+  const [selectedModule, setSelectedModule] = useState<number | null>(null)
   const [selectedTopic, setSelectedTopic] = useState<SelectedTopic | null>(null)
   const [showCompletion, setShowCompletion] = useState(false)
 
   const { getModuleProgress, resetGradeProgress } = useProgressContext()
 
-  // Mock data loading effect - In a real app, this would fetch from your PHP backend
   useEffect(() => {
     if (gradeId) {
-      alert(`🚀 Grado seleccionado: ${gradeId}° Año`);
+      alert(`🚀 Grado seleccionado: ${gradeId}° Año`)
 
       const dummyModules: Module[] = [
         {
@@ -102,19 +101,15 @@ export default function GradePage() {
     }
   }, [gradeId])
 
-  // 2. Cálculos de progreso (Usando el id! para evitar errores de TypeScript)
-  const moduleProgress: Record<string | number, number> = {}
-  modules.forEach((mod) => {
-    // Usamos el ID como string para la llave del objeto
-    const mid = mod.id! 
-    moduleProgress[mid] = getModuleProgress(gradeId!, mid, mod.topics?.length || 0)
-  })
-
   const overallProgress = modules.length > 0
-    ? Math.round(Object.values(moduleProgress).reduce((sum, p) => sum + p, 0) / modules.length)
+    ? Math.round(
+        modules.reduce((sum, mod) => {
+          const progress = getModuleProgress(gradeId!, mod.id, mod.topics?.length || 0)
+          return sum + progress
+        }, 0) / modules.length
+      )
     : 0
 
-  // Handlers
   const handleSelectTopic = (topic: SelectedTopic) => {
     setSelectedTopic(topic)
     setSelectedModule(null)
@@ -122,13 +117,12 @@ export default function GradePage() {
 
   const handleBackFromTopic = () => {
     const updatedAllComplete = modules.every(
-      (mod) => getModuleProgress(gradeId!, mod.id!, mod.topics?.length || 0) === 100
+      (mod) => getModuleProgress(gradeId!, mod.id, mod.topics?.length || 0) === 100
     )
     if (updatedAllComplete && !showCompletion) setShowCompletion(true)
     setSelectedTopic(null)
   }
 
-  // --- RENDER ---
   return (
     <GradeModulePath
       gradeId={gradeId || ""}
@@ -146,7 +140,6 @@ export default function GradePage() {
         resetGradeProgress(gradeId!)
         setShowCompletion(false)
       }}
-      moduleProgress={moduleProgress}
     />
   )
 }
