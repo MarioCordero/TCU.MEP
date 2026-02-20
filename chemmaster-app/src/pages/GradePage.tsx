@@ -2,10 +2,10 @@
 
 import { useParams, useNavigate } from "react-router-dom"
 import React, { useEffect, useState } from "react"
-import { Module } from "@/types/cms"
-import { GradeModulePath } from "@/components/grade-selection/GradeModulePath"
-import { SelectedTopic } from "@/types/gradeSelector"
-import { useProgressContext } from "@/hooks/useProgressContext"
+import { Module } from "../types/cms"
+import { GradeModulePath } from "../components/grade-selection/GradeModulePath"
+import { SelectedTopic } from "../types/gradeSelector"
+import { useProgressContext } from "../hooks/useProgressContext"
 
 export default function GradePage() {
   const { gradeId } = useParams<{ gradeId: string }>()
