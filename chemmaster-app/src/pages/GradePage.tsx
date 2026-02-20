@@ -19,8 +19,6 @@ export default function GradePage() {
 
   useEffect(() => {
     if (gradeId) {
-      alert(`🚀 Grado seleccionado: ${gradeId}° Año`)
-
       const dummyModules: Module[] = [
         {
           id: 1,
