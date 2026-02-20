@@ -8,6 +8,6 @@ export interface TopicRowProps {
   index: number
   moduleColor: string
   gradeId: string
-  moduleId: string
-  onSelectTopic: (topicId: string, topicTitle: string, topicContent: string) => void
+  moduleId: number
+  onSelectTopic: (topicId: number, topicTitle: string, topicContent: string) => void
 }
