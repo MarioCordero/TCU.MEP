@@ -1,6 +1,10 @@
 API/config.ini
 API/config/production.ini
 API/config/development.ini
+<<<<<<< HEAD
+.vscode/*
+=======
 /.vscode
 API/ChemMaster/config.ini
 API/ChemMaster/Config/development.ini
+>>>>>>> main

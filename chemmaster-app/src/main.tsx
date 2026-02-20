@@ -34,7 +34,7 @@ if (import.meta.env.DEV) {
   };
 }
 
-createRoot(document.getElementById('root')).render(
+createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Router>
       <App />
