@@ -1,20 +1,43 @@
 "use client"
 
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "../ui/button"
 import { X, Sparkles, Star, Rocket } from "lucide-react"
 import { getIconComponent } from "../../lib/iconMap"
 import { useProgressContext } from "@/hooks/useProgressContext"
+import { API } from "../../lib/api"
 import TopicRow from "./TopicRow"
 import { Module } from "../../types/gradeSelector"
 import { ModuleDetailModalProps } from "../../types/gradeSelector"
+import { Topic } from "../../types/cms"
 
 export function ModuleDetailModal({ module, onClose, gradeId, onSelectTopic }: ModuleDetailModalProps) {
   const IconComponent = getIconComponent(module.icon)
   const { getModuleProgress, getCompletedTopicsCount } = useProgressContext()
+  const [topics, setTopics] = useState<Topic[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const progress = getModuleProgress(gradeId, module.id, module.topics?.length || 0)
+  useEffect(() => {
+    const fetchTopics = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const fetchedTopics = await API.GetTopics(module.id)
+        setTopics(fetchedTopics)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Error al cargar los temas")
+        console.error("Error fetching topics:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchTopics()
+  }, [module.slug])
+
+  const progress = getModuleProgress(gradeId, module.id, topics.length)
   const completedCount = getCompletedTopicsCount(gradeId, module.id)
 
   return (
@@ -59,12 +82,12 @@ export function ModuleDetailModal({ module, onClose, gradeId, onSelectTopic }: M
           <div className="flex items-center gap-3 md:gap-6">
             <div className="flex items-center gap-1.5 text-white/90 text-xs md:text-sm">
               <Sparkles className="h-3.5 w-3.5 md:h-4 md:w-4" />
-              <span>{module.topics?.length || 0} Temas</span>
+              <span>{topics.length} Temas</span>
             </div>
             <div className="flex items-center gap-1.5 text-white/90 text-xs md:text-sm">
               <Star className="h-3.5 w-3.5 md:h-4 md:w-4 text-yellow-400 fill-yellow-400" />
               <span>
-                {completedCount}/{module.topics?.length || 0} completados
+                {completedCount}/{topics.length} completados
               </span>
             </div>
           </div>
@@ -86,19 +109,39 @@ export function ModuleDetailModal({ module, onClose, gradeId, onSelectTopic }: M
             Ruta de Aprendizaje
           </h3>
 
-          <div className="space-y-2 md:space-y-4">
-            {module.topics?.map((topic, index) => (
-              <TopicRow
-                key={topic.id}
-                topic={topic}
-                index={index}
-                moduleColor={module.color || "from-gray-500 to-gray-400"}
-                gradeId={gradeId}
-                moduleId={module.id}
-                onSelectTopic={onSelectTopic}
-              />
-            ))}
-          </div>
+          {loading && (
+            <div className="text-center py-8 text-white/60">
+              Cargando temas...
+            </div>
+          )}
+
+          {error && (
+            <div className="text-center py-8 text-red-400">
+              {error}
+            </div>
+          )}
+
+          {!loading && !error && topics.length === 0 && (
+            <div className="text-center py-8 text-white/60">
+              No hay temas disponibles
+            </div>
+          )}
+
+          {!loading && !error && topics.length > 0 && (
+            <div className="space-y-2 md:space-y-4">
+              {topics.map((topic, index) => (
+                <TopicRow
+                  key={topic.id}
+                  topic={topic}
+                  index={index}
+                  moduleColor={module.color || "from-gray-500 to-gray-400"}
+                  gradeId={gradeId}
+                  moduleId={module.id}
+                  onSelectTopic={onSelectTopic}
+                />
+              ))}
+            </div>
+          )}
 
           <div className="h-6 md:hidden" />
         </div>

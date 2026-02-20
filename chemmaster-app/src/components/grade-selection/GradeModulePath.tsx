@@ -13,7 +13,7 @@ import {
   Compass,
 } from "lucide-react"
 import { StairStep } from "./StairStep"
-import { ModuleDetailModal } from "./ModuleDetailModal"
+import { ModuleDetailModal } from "../topic-selection/TopicListOverlay"
 import { CompletionModal } from "./CompletionModal"
 import { GradeModulePathProps } from "../../types/gradeSelector"
 

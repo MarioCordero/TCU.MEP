@@ -46,7 +46,7 @@ export const API = {
     return response.json();
   },
 
-  GetTopics: (id: number) => request<Topic[]>(`getTopics.php?id=${id}`),
+  GetTopics: (id: number) => request<Topic[]>(`getTopics.php?module_id=${id}`),
 
   AddTopic: (data: { module_id: number, title: string, description?: string, content: string, order_in_module: number }) => 
     request<{ success: boolean; id: number }>('addTopic.php', { 
