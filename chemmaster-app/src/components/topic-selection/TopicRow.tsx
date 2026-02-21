@@ -6,7 +6,6 @@ import { Button } from "../ui/button"
 import { Badge } from "../ui/badge"
 import { CheckCircle2, ChevronRight, Play, BookOpen } from "lucide-react"
 import { useProgressContext } from "@/hooks/useProgressContext"
-import { Topic } from "../../types/topicSelector"
 import { TopicRowProps } from "../../types/topicSelector"
 
 export default function TopicRow({
@@ -20,16 +19,12 @@ export default function TopicRow({
   const { isTopicCompleted } = useProgressContext()
   const completed = isTopicCompleted(gradeId, moduleId, topic.id)
 
-  const handleSelect = () => {
-    onSelectTopic(topic.id, topic.title, topic.content)
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      onClick={handleSelect}
+      onClick={onSelectTopic}
       className="cursor-pointer"
     >
       {/* Mobile Design - Compact Cards */}
@@ -96,7 +91,7 @@ export default function TopicRow({
               size="sm"
               onClick={(e) => {
                 e.stopPropagation()
-                handleSelect()
+                onSelectTopic()
               }}
               className={`bg-gradient-to-r ${moduleColor} text-white hover:opacity-90`}
             >

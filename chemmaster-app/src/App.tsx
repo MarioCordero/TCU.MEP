@@ -6,6 +6,7 @@ import LandingPage from './pages/LandingPage'
 import InfoPage from './pages/InfoPage'
 import GradeSelectorPage from './pages/GradeSelectorPage'
 import GradePage from './pages/GradePage'
+import TopicPage from './pages/TopicPage'
 import ChemMasterCMS from './pages/CMSPage'
 import { ProgressProvider } from './context/ProgressContext'
 
@@ -97,6 +98,11 @@ export default function App({ basePath = '' }: AppProps) {
           <Route
             path="/grade/:gradeId"
             element={<GradePage />}
+          />
+
+          <Route
+            path="/grade/:gradeId/module/:moduleId/topic/:topicId"
+            element={<TopicPage />}
           />
 
         </Routes>

@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "../ui/button"
 import { X, Sparkles, Star, Rocket } from "lucide-react"
@@ -13,6 +14,7 @@ import { ModuleDetailModalProps } from "../../types/gradeSelector"
 import { Topic } from "../../types/cms"
 
 export function ModuleDetailModal({ module, onClose, gradeId, onSelectTopic }: ModuleDetailModalProps) {
+  const navigate = useNavigate()
   const IconComponent = getIconComponent(module.icon)
   const { getModuleProgress, getCompletedTopicsCount } = useProgressContext()
   const [topics, setTopics] = useState<Topic[]>([])
@@ -35,10 +37,15 @@ export function ModuleDetailModal({ module, onClose, gradeId, onSelectTopic }: M
     }
 
     fetchTopics()
-  }, [module.slug])
+  }, [module.id])
 
   const progress = getModuleProgress(gradeId, module.id, topics.length)
   const completedCount = getCompletedTopicsCount(gradeId, module.id)
+
+  const handleTopicSelect = (topic: Topic) => {
+    // Navigate to the topic page
+    navigate(`/grade/${gradeId}/module/${module.id}/topic/${topic.id}`)
+  }
 
   return (
     <motion.div
@@ -137,7 +144,7 @@ export function ModuleDetailModal({ module, onClose, gradeId, onSelectTopic }: M
                   moduleColor={module.color || "from-gray-500 to-gray-400"}
                   gradeId={gradeId}
                   moduleId={module.id}
-                  onSelectTopic={onSelectTopic}
+                  onSelectTopic={() => handleTopicSelect(topic)}
                 />
               ))}
             </div>
