@@ -2,8 +2,8 @@
 
 import React from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Button } from "../ui/button"
+import { Badge } from "../ui/badge"
 import {
   ArrowLeft,
   Star,
@@ -13,7 +13,7 @@ import {
   Compass,
 } from "lucide-react"
 import { StairStep } from "./StairStep"
-import { ModuleDetailModal } from "./ModuleDetailModal"
+import { ModuleDetailModal } from "../topic-selection/TopicListOverlay"
 import { CompletionModal } from "./CompletionModal"
 import { GradeModulePathProps } from "../../types/gradeSelector"
 

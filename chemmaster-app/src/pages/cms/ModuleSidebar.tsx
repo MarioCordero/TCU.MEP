@@ -3,10 +3,10 @@ import { Badge } from "../../components/ui/badge"
 import { Input } from "../../components/ui/input"
 import { Button } from "../../components/ui/button"
 import { Plus, Search, Settings } from "lucide-react"
-import type { CMSModule } from "../../types/cms"
+import type { Module } from "../../types/cms"
 
 interface ModuleSidebarProps {
-  modules: CMSModule[]
+  modules: Module[]
   onModuleSelect?: (id: number) => void
   showAddModule?: boolean
   onAddModule?: () => void

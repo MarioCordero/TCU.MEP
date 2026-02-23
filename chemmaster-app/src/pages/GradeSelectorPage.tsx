@@ -2,9 +2,9 @@
 
 import React, { useState } from "react"
 import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import Header from "@/components/common/Header"
+import { Button } from "../components/ui/button"
+import { Badge } from "../components/ui/badge"
+import Header from "../components/common/Header"
 import {
   Atom,
   Table2,
@@ -25,6 +25,7 @@ interface GradeSelectorPageProps {
 export default function GradeSelectorPage({ onBack, onSelectGrade }: GradeSelectorPageProps) {
   const [hoveredGrade, setHoveredGrade] = useState<string | null>(null)
 
+  // Const values, than can be fecthed from an API in the future, but for now are hardcoded for simplicity
   const grades = [
     {
       id: "grade-10" as const,

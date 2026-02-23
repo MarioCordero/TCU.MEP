@@ -2,109 +2,51 @@
 
 import { useParams, useNavigate } from "react-router-dom"
 import React, { useEffect, useState } from "react"
-import { Module } from "@/types/cms"
-import { GradeModulePath } from "@/components/grade-selection/GradeModulePath"
-import { SelectedTopic } from "@/types/gradeSelector"
-import { useProgressContext } from "@/hooks/useProgressContext"
+import { Module } from "../types/cms"
+import { API } from "../lib/api"
+import { GradeModulePath } from "../components/grade-selection/GradeModulePath"
+import { SelectedTopic } from "../types/gradeSelector"
+import { useProgressContext } from "../hooks/useProgressContext"
+// import TopicLearningPage from "./TopicLearningPage" // The page that shows the topic content and marks it as completed when the user finishes it
 
 export default function GradePage() {
   const { gradeId } = useParams<{ gradeId: string }>()
   const navigate = useNavigate()
   const [modules, setModules] = useState<Module[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [selectedModule, setSelectedModule] = useState<number | null>(null)
   const [selectedTopic, setSelectedTopic] = useState<SelectedTopic | null>(null)
   const [showCompletion, setShowCompletion] = useState(false)
-
   const { getModuleProgress, resetGradeProgress } = useProgressContext()
 
   useEffect(() => {
-    if (gradeId) {
-      const dummyModules: Module[] = [
-        {
-          id: 1,
-          slug: "periodic-table",
-          grade_level: gradeId as "10" | "11",
-          title: "Tabla Periódica",
-          description: "Explora los elementos y sus propiedades químicas.",
-          icon: "Table2",
-          color: "from-violet-500 to-purple-600",
-          active: true,
-          topics: [
-            {
-              id: 1,
-              module_id: 1,
-              title: "Historia de la Tabla Periódica",
-              description: "Origen y evolución del sistema periódico",
-              content: "<p>Contenido sobre la historia de la tabla periódica</p>",
-              order_in_module: 1,
-              created_at: "2024-01-01T00:00:00Z",
-              updated_at: "2024-01-01T00:00:00Z"
-            },
-            {
-              id: 2,
-              module_id: 1,
-              title: "Grupos y Períodos",
-              description: "Clasificación de elementos",
-              content: "<p>Contenido sobre grupos y períodos</p>",
-              order_in_module: 2,
-              created_at: "2024-01-01T00:00:00Z",
-              updated_at: "2024-01-01T00:00:00Z"
-            }
-          ]
-        },
-        {
-          id: 2,
-          slug: "chemical-bonds",
-          grade_level: gradeId as "10" | "11",
-          title: "Enlaces Químicos",
-          description: "Iónico, covalente y metálico paso a paso.",
-          icon: "Atom",
-          color: "from-cyan-500 to-blue-600",
-          active: true,
-          topics: [
-            {
-              id: 3,
-              module_id: 2,
-              title: "Estructura de Lewis",
-              description: "Representación de electrones de valencia",
-              content: "<p>Contenido sobre estructura de Lewis</p>",
-              order_in_module: 1,
-              created_at: "2024-01-01T00:00:00Z",
-              updated_at: "2024-01-01T00:00:00Z"
-            },
-            {
-              id: 4,
-              module_id: 2,
-              title: "Enlaces Iónicos",
-              description: "Transferencia de electrones",
-              content: "<p>Contenido sobre enlaces iónicos</p>",
-              order_in_module: 2,
-              created_at: "2024-01-01T00:00:00Z",
-              updated_at: "2024-01-01T00:00:00Z"
-            },
-            {
-              id: 5,
-              module_id: 2,
-              title: "Enlaces Covalentes",
-              description: "Compartición de electrones",
-              content: "<p>Contenido sobre enlaces covalentes</p>",
-              order_in_module: 3,
-              created_at: "2024-01-01T00:00:00Z",
-              updated_at: "2024-01-01T00:00:00Z"
-            }
-          ]
-        }
-      ]
-      setModules(dummyModules)
+    const fetchGradeContent = async () => {
+      if (!gradeId) return
+      
+      try {
+        setLoading(true)
+        setError(null)
+        const data = await API.GetModules(gradeId)
+        setModules(data)
+      } catch (err: any) {
+        console.error("API Error:", err)
+        setError(err.message || "No se pudieron cargar los módulos")
+      } finally {
+        setLoading(false)
+      }
     }
+    fetchGradeContent()
   }, [gradeId])
+
+  const moduleProgress: Record<string | number, number> = {}
+  modules.forEach((mod) => {
+    moduleProgress[mod.id] = getModuleProgress(gradeId!, mod.id, mod.topics?.length || 0)
+  })
 
   const overallProgress = modules.length > 0
     ? Math.round(
-        modules.reduce((sum, mod) => {
-          const progress = getModuleProgress(gradeId!, mod.id, mod.topics?.length || 0)
-          return sum + progress
-        }, 0) / modules.length
+        Object.values(moduleProgress).reduce((sum, p) => sum + p, 0) / modules.length
       )
     : 0
 
@@ -120,6 +62,47 @@ export default function GradePage() {
     if (updatedAllComplete && !showCompletion) setShowCompletion(true)
     setSelectedTopic(null)
   }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center text-white gap-4">
+        <div className="w-12 h-12 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+        <p className="text-white/60 animate-pulse">Cargando currículo...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center text-center p-6">
+        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl mb-4">
+          <p className="text-red-400 font-medium">{error}</p>
+        </div>
+        <button 
+          onClick={() => window.location.reload()}
+          className="text-white/60 hover:text-white underline transition-colors"
+        >
+          Reintentar conexión
+        </button>
+      </div>
+    )
+  }
+
+  // if (selectedTopic) {
+  //   const currentModule = modules.find((m) => m.id === selectedTopic.moduleId)
+  //   return (
+  //     <TopicLearningPage
+  //       topicId={selectedTopic.id}
+  //       topicTitle={selectedTopic.title}
+  //       moduleId={selectedTopic.moduleId}
+  //       moduleColor={selectedTopic.moduleColor}
+  //       gradeId={gradeId!}
+  //       totalTopicsInModule={currentModule?.topics?.length || 0}
+  //       onBack={handleBackFromTopic}
+  //       htmlContent={selectedTopic.content}
+  //     />
+  //   )
+  // }
 
   return (
     <GradeModulePath
@@ -138,6 +121,7 @@ export default function GradePage() {
         resetGradeProgress(gradeId!)
         setShowCompletion(false)
       }}
+      // moduleProgress={moduleProgress}
     />
   )
 }

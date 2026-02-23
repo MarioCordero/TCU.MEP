@@ -9,9 +9,10 @@ export type IconModalProps = {
   onClose: () => void;
   currentIcon: string;
   onIconChange: (iconName: string) => void;
+  disabled: boolean;
 };
 
-export function IconModal({ show, onClose, currentIcon, onIconChange }: IconModalProps) {
+export function IconModal({ show, onClose, currentIcon, onIconChange, disabled }: IconModalProps) {
   if (!show) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">

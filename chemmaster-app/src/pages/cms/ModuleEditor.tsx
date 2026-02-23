@@ -1,14 +1,13 @@
-import { useState, useEffect } from "react";
-import { Button } from "../../components/ui/button";
+import { useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
 import { Label } from "../../components/ui/label";
 import { Input } from "../../components/ui/input";
 import { Textarea } from "../../components/ui/textarea";
 import { Switch } from "../../components/ui/switch";
 import * as LucideIcons from "lucide-react";
-import { getApiUrl } from "../../config/api";
-import type { CMSModuleEditorProps, CMSModule } from "../../types/cms";
-import { IconModal, ConfirmModal, SuccessModal } from "./Modals";
+import { API } from "../../lib/api";
+import type { Module } from "../../types/cms";
+import { IconModal } from "./Modals";
 
 const COLOR_OPTIONS = [
   { value: "from-purple-500 to-purple-600", label: "Púrpura" },
@@ -26,30 +25,9 @@ const GRADE_OPTIONS = [
   { value: "11", label: "11°" },
 ];
 
-const apiRequest = async (endpoint: string, data: any) => {
-  const response = await fetch(getApiUrl(endpoint), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!response.ok) throw new Error("Error al guardar módulo");
-  return response.json();
-};
-
-const moduleAPI = {
-  update: (module: CMSModule) => {
-    const moduleData = {
-      id: module.id,
-      module_id: module.module_id,
-      title: module.title,
-      description: module.description,
-      icon: module.icon,
-      color: module.color,
-      grade_level: module.grade_level,
-      active: module.active ? 1 : 0,
-    };
-    return apiRequest("updateModule.php", moduleData);
-  },
+const getIconComponent = (iconName: string) => {
+  const Icon = LucideIcons[iconName as keyof typeof LucideIcons] as any;
+  return Icon ? <Icon className="h-8 w-8 text-white" /> : <LucideIcons.BookOpen className="h-8 w-8 text-white" />;
 };
 
 export function CMSModuleEditor({
@@ -59,18 +37,16 @@ export function CMSModuleEditor({
   isEditing,
   showIconModal,
   setShowIconModal,
-  selectedModuleId,
 }: {
-  module: CMSModule;
-  editedModule: CMSModule;
-  setEditedModule: (mod: CMSModule) => void;
+  module: Module;
+  editedModule: Module;
+  setEditedModule: (mod: Module) => void;
   isEditing: boolean;
   showIconModal: boolean;
   setShowIconModal: (show: boolean) => void;
-  selectedModuleId: number | null;
 }) {
   
-  const handleChange = (field: keyof CMSModule, value: any) => {
+  const handleChange = (field: keyof Module, value: any) => {
     setEditedModule({ ...editedModule, [field]: value });
   };
 
@@ -84,10 +60,10 @@ export function CMSModuleEditor({
         <div className="flex items-center gap-4">
           <div
             className={`p-3 bg-gradient-to-r ${editedModule.color} rounded-xl cursor-pointer`}
-            onClick={() => setShowIconModal(true)}
-            title="Cambiar ícono"
+            onClick={() => isEditing && setShowIconModal(true)}
+            title={isEditing ? "Cambiar ícono" : ""}
           >
-            <LucideIcons.BookOpen className="h-8 w-8 text-white" />
+            {getIconComponent(editedModule.icon || "BookOpen")}
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-800">{editedModule.title}</h1>
@@ -147,11 +123,11 @@ export function CMSModuleEditor({
                 <Label htmlFor="icon">Ícono</Label>
                 <Input
                   id="icon"
-                  value={editedModule.icon}
+                  value={editedModule.icon || ""}
                   onChange={e => handleChange("icon", e.target.value)}
                   disabled={!isEditing}
                   className="mt-1"
-                  placeholder="Ícono"
+                  placeholder="BookOpen"
                 />
               </div>
             </div>
@@ -167,6 +143,15 @@ export function CMSModuleEditor({
                 placeholder="Descripción del módulo"
               />
             </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="active">Activo</Label>
+              <Switch
+                id="active"
+                checked={editedModule.active}
+                onCheckedChange={checked => handleChange("active", checked)}
+                disabled={!isEditing}
+              />
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -175,6 +160,7 @@ export function CMSModuleEditor({
         onClose={() => setShowIconModal(false)}
         currentIcon={editedModule.icon || ""}
         onIconChange={iconName => handleChange("icon", iconName)}
+        disabled={!isEditing}
       />
     </div>
   );

@@ -14,7 +14,7 @@ export interface Module {
   slug: string; // Text ID for the URL
   grade_level: "10" | "11"; 
   title: string;
-  description?: string;
+  description: string;
   icon?: string;
   color?: string;
   active: boolean;
