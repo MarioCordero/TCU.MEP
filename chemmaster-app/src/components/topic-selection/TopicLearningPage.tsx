@@ -21,46 +21,15 @@ import {
   Info,
   ArrowUp,
 } from "lucide-react"
-import { useProgressContext } from "@/hooks/useProgressContext"
+import { useProgressContext } from "../../hooks/useProgressContext"
 import { Topic } from "../../types/cms"
-
-// BlockNote Block types
-interface BlockNoteBlock {
-  id: string
-  type: string
-  props: {
-    backgroundColor?: string
-    textColor?: string
-    textAlignment?: string
-    level?: number
-    isToggleable?: boolean
-  }
-  content: Array<{
-    type: string
-    text: string
-    styles: Record<string, boolean>
-  }>
-  children: BlockNoteBlock[]
-}
-
-interface QuizQuestion {
-  id: string
-  question: string
-  options: string[]
-  correctAnswer: number
-  explanation: string
-}
-
-interface TopicLearningPageProps {
-  topic: Topic
-  moduleId: number
-  moduleColor: string
-  gradeId: string
-  totalTopicsInModule: number
-  onBack: () => void
-}
+import {BlockNoteBlock} from "../../types/topicSelector"
+import {QuizQuestion} from "../../types/topicSelector"
+import {TopicLearningPageProps} from "../../types/topicSelector"
+import TopicQuiz from "./TopicQuiz"
 
 type ViewState = "content" | "quiz"
+type ContentType = "blocknote" | "html"
 
 // BlockNote Content Renderer Component
 function BlockNoteRenderer({ blocks }: { blocks: BlockNoteBlock[] }) {
@@ -81,31 +50,53 @@ function BlockNoteRenderer({ blocks }: { blocks: BlockNoteBlock[] }) {
 
   const renderBlock = (block: BlockNoteBlock) => {
     const alignment = block.props.textAlignment || 'left'
+    const level = block.props.level || 2
     
     switch (block.type) {
       case 'heading':
-        const HeadingTag = `h${block.props.level || 2}` as keyof JSX.IntrinsicElements
         const headingClasses = {
           1: 'text-2xl md:text-3xl font-bold text-white mt-8 mb-4',
           2: 'text-xl md:text-2xl font-bold text-white mt-6 mb-3',
           3: 'text-lg md:text-xl font-bold text-white mt-4 mb-2',
-        }[block.props.level || 2]
+        }[level] || 'text-xl md:text-2xl font-bold text-white mt-6 mb-3'
         
-        return (
-          <HeadingTag
-            key={block.id}
-            className={headingClasses}
-            style={{ textAlign: alignment as any }}
-          >
-            {renderContent(block.content)}
-          </HeadingTag>
-        )
+        if (level === 1) {
+          return (
+            <h1
+              key={block.id}
+              className={headingClasses}
+              style={{ textAlign: alignment as any }}
+            >
+              {renderContent(block.content)}
+            </h1>
+          )
+        } else if (level === 3) {
+          return (
+            <h3
+              key={block.id}
+              className={headingClasses}
+              style={{ textAlign: alignment as any }}
+            >
+              {renderContent(block.content)}
+            </h3>
+          )
+        } else {
+          return (
+            <h2
+              key={block.id}
+              className={headingClasses}
+              style={{ textAlign: alignment as any }}
+            >
+              {renderContent(block.content)}
+            </h2>
+          )
+        }
       
       case 'paragraph':
         return (
           <p
             key={block.id}
-            className="text-white/80 leading-relaxed mb-4 text-sm md:text-base"
+            className="text-white leading-relaxed mb-4 text-sm md:text-base"
             style={{ textAlign: alignment as any }}
           >
             {renderContent(block.content)}
@@ -116,7 +107,7 @@ function BlockNoteRenderer({ blocks }: { blocks: BlockNoteBlock[] }) {
         return (
           <li
             key={block.id}
-            className="text-white/80 mb-2 ml-6 list-disc"
+            className="text-white mb-2 ml-6 list-disc"
             style={{ textAlign: alignment as any }}
           >
             {renderContent(block.content)}
@@ -127,7 +118,7 @@ function BlockNoteRenderer({ blocks }: { blocks: BlockNoteBlock[] }) {
         return (
           <li
             key={block.id}
-            className="text-white/80 mb-2 ml-6 list-decimal"
+            className="text-white mb-2 ml-6 list-decimal"
             style={{ textAlign: alignment as any }}
           >
             {renderContent(block.content)}
@@ -136,7 +127,7 @@ function BlockNoteRenderer({ blocks }: { blocks: BlockNoteBlock[] }) {
       
       default:
         return (
-          <div key={block.id} className="text-white/80 mb-4">
+          <div key={block.id} className="text-white mb-4">
             {renderContent(block.content)}
           </div>
         )
@@ -146,6 +137,33 @@ function BlockNoteRenderer({ blocks }: { blocks: BlockNoteBlock[] }) {
   return (
     <div className="space-y-2">
       {blocks.map((block) => renderBlock(block))}
+    </div>
+  )
+}
+
+// HTML Content Renderer Component
+function HTMLRenderer({ html }: { html: string }) {
+  return (
+    <div className="text-white">
+      <div
+        className="prose prose-invert max-w-none
+          prose-headings:text-white prose-headings:font-bold
+          prose-h1:text-2xl prose-h1:md:text-3xl prose-h1:mt-8 prose-h1:mb-4
+          prose-h2:text-xl prose-h2:md:text-2xl prose-h2:mt-6 prose-h2:mb-3
+          prose-h3:text-lg prose-h3:md:text-xl prose-h3:mt-4 prose-h3:mb-2
+          prose-p:text-white prose-p:leading-relaxed prose-p:mb-4 prose-p:text-sm prose-p:md:text-base
+          prose-strong:text-white prose-strong:font-semibold
+          prose-em:text-white prose-em:italic
+          prose-ul:my-4 prose-ul:pl-6 prose-ul:list-disc
+          prose-ol:my-4 prose-ol:pl-6 prose-ol:list-decimal
+          prose-li:text-white prose-li:mb-2 prose-li:marker:text-white
+          prose-a:text-violet-400 prose-a:hover:text-violet-300 prose-a:underline
+          prose-blockquote:border-l-4 prose-blockquote:border-violet-500 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-white
+          prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-violet-300 prose-code:text-white
+          prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10 prose-pre:rounded-xl prose-pre:p-4 prose-pre:text-white
+          [&_*]:text-white [&_p]:text-white [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white [&_strong]:text-white [&_em]:text-white"
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
     </div>
   )
 }
@@ -164,22 +182,33 @@ export default function TopicLearningPage({
   const [score, setScore] = useState(0)
   const [showExplanation, setShowExplanation] = useState<string | null>(null)
   const [showScrollTop, setShowScrollTop] = useState(false)
-
   const contentRef = useRef<HTMLDivElement>(null)
   const { completeTopic, isTopicCompleted } = useProgressContext()
 
-  // Parse topic content - assumes content is BlockNote JSON
-  const parseTopicContent = (): BlockNoteBlock[] => {
+  const detectContentType = (): ContentType => {
+    try {
+      JSON.parse(topic.content)
+      const parsed = JSON.parse(topic.content)
+      return Array.isArray(parsed) ? 'blocknote' : 'html'
+    } catch {
+      return 'html'
+    }
+  }
+
+  const contentType = detectContentType()
+  const parseTopicContent = (): BlockNoteBlock[] | string => {
+    if (contentType === 'html') {
+      return topic.content
+    }
     try {
       const parsed = JSON.parse(topic.content)
       return Array.isArray(parsed) ? parsed : []
     } catch (error) {
-      console.error('Error parsing topic content:', error)
       return []
     }
   }
 
-  const blocks = parseTopicContent()
+  const content = parseTopicContent()
   const isAlreadyCompleted = isTopicCompleted(gradeId, moduleId, topic.id)
 
   // Default quiz if none provided
@@ -239,11 +268,24 @@ export default function TopicLearningPage({
     completeTopic(gradeId, moduleId, topic.id, totalTopicsInModule)
     onBack()
   }
+  
+  const handleQuizComplete = (score: number) => {
+    const passingScore = Math.ceil(quiz.length * 0.6)
+    if (score >= passingScore) {
+      completeTopic(gradeId, moduleId, topic.id, totalTopicsInModule)
+    }
+  }
 
   // QUIZ PAGE VIEW
   if (currentView === "quiz") {
-    // ... existing quiz code (same as before)
-    return <div>Quiz View (same as your existing code)</div>
+    return (
+      <TopicQuiz
+        topicTitle={topic.title}
+        quiz={quiz}
+        onBack={goToContent}
+        onComplete={handleQuizComplete}
+      />
+    )
   }
 
   // CONTENT PAGE VIEW (default)
@@ -316,17 +358,21 @@ export default function TopicLearningPage({
             </motion.div>
           )}
 
-          {/* BlockNote Content */}
+          {/* Content Rendering - BlockNote or HTML */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="mb-8 p-5 md:p-6 rounded-2xl bg-white/5 border border-white/10"
           >
-            {blocks.length > 0 ? (
-              <BlockNoteRenderer blocks={blocks} />
+            {contentType === 'blocknote' && Array.isArray(content) ? (
+              content.length > 0 ? (
+                <BlockNoteRenderer blocks={content} />
+              ) : (
+                <p className="text-white/60 text-center py-8">No hay contenido disponible</p>
+              )
             ) : (
-              <p className="text-white/60 text-center py-8">No hay contenido disponible</p>
+              <HTMLRenderer html={content as string} />
             )}
           </motion.div>
 
