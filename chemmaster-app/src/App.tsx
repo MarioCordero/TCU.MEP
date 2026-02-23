@@ -36,12 +36,7 @@ interface AppProps {
 export default function App({ basePath = '' }: AppProps) {
   const navigate = useNavigate()
   const location = useLocation()
-
-  // No necesitamos useMemo complejo, ya el padre nos dice quiénes somos.
-  // Pero si queremos ser extra seguros para local dev:
   const effectiveBase = basePath || (location.pathname.startsWith('/ChemMaster') ? '/ChemMaster' : '');
-
-  // Handlers simplificados usando el effectiveBase
   const handleCMSClose = () => navigate(effectiveBase || '/')
   const handleInfoBack = () => navigate(effectiveBase || '/')
   const handleInfoStart = () => navigate(`${effectiveBase}/grade-selector`)
