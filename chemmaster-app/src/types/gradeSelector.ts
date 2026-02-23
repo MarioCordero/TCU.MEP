@@ -1,7 +1,7 @@
-import { Module, Topic } from "@/types/cms"
+import { Module } from "./cms"
 
 // Re-export core types
-export type { Module, Topic } from "@/types/cms"
+export type { Module, Topic } from "./cms"
 
 // Props for StairStep component
 export interface StairStepProps {

@@ -4,6 +4,7 @@ export interface ProgressContextType {
   getModuleProgress: (gradeId: string | number, moduleId: string | number, totalTopics: number) => number
   getCompletedTopicsCount: (gradeId: string | number, moduleId: string | number) => number
   isTopicCompleted: (gradeId: string | number, moduleId: string | number, topicId: string | number) => boolean
+  completeTopic: (gradeId: string | number, moduleId: string | number, topicId: string | number, totalTopics: number) => void
   resetGradeProgress: (gradeId: string | number) => void
 }
 
@@ -29,6 +30,35 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     return progress[key]?.completed === 1
   }
 
+  const completeTopic = (gradeId: string | number, moduleId: string | number, topicId: string | number, totalTopics: number): void => {
+    setProgress((prev) => {
+      const updated = { ...prev }
+      const topicKey = `${gradeId}-${moduleId}-${topicId}`
+      const moduleKey = `${gradeId}-${moduleId}`
+      
+      // Mark topic as completed
+      updated[topicKey] = { completed: 1 }
+      
+      // Update module progress count
+      if (!updated[moduleKey]) {
+        updated[moduleKey] = { completed: 0 }
+      }
+      
+      // Count total completed topics for this module
+      let completedCount = 0
+      for (let i = 1; i <= totalTopics; i++) {
+        const key = `${gradeId}-${moduleId}-${i}`
+        if (updated[key]?.completed === 1) {
+          completedCount++
+        }
+      }
+      
+      updated[moduleKey] = { completed: completedCount }
+      
+      return updated
+    })
+  }
+
   const resetGradeProgress = (gradeId: string | number): void => {
     setProgress((prev) => {
       const updated = { ...prev }
@@ -42,7 +72,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <ProgressContext.Provider value={{ getModuleProgress, getCompletedTopicsCount, isTopicCompleted, resetGradeProgress }}>
+    <ProgressContext.Provider value={{ getModuleProgress, getCompletedTopicsCount, isTopicCompleted, completeTopic, resetGradeProgress }}>
       {children}
     </ProgressContext.Provider>
   )

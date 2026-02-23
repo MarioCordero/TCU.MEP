@@ -2,9 +2,9 @@
 
 import React, { useRef } from "react"
 import { motion, useInView } from "framer-motion"
-import { Button } from "@/components/ui/button"
+import { Button } from "../ui/button"
 import { CheckCircle2, Sparkles, Star, ChevronRight } from "lucide-react"
-import { getIconComponent } from "./iconMap"
+import { getIconComponent } from "../../lib/iconMap"
 import { StairStepProps } from "../../types/gradeSelector"
 
 export function StairStep({
