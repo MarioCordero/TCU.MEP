@@ -7,9 +7,12 @@ import { API } from "../lib/api"
 import { GradeModulePath } from "../components/grade-selection/GradeModulePath"
 import { SelectedTopic } from "../types/gradeSelector"
 import { useProgressContext } from "../hooks/useProgressContext"
-// import TopicLearningPage from "./TopicLearningPage" // The page that shows the topic content and marks it as completed when the user finishes it
 
-export default function GradePage() {
+interface GradePageProps {
+  basePath?: string;
+}
+
+export default function GradePage({ basePath = '' }: GradePageProps) {
   const { gradeId } = useParams<{ gradeId: string }>()
   const navigate = useNavigate()
   const [modules, setModules] = useState<Module[]>([])
@@ -51,8 +54,7 @@ export default function GradePage() {
     : 0
 
   const handleSelectTopic = (topic: SelectedTopic) => {
-    setSelectedTopic(topic)
-    setSelectedModule(null)
+    navigate(`${basePath}/grade/${gradeId}/module/${topic.moduleId}/topic/${topic.id}`);
   }
 
   const handleBackFromTopic = () => {
@@ -87,22 +89,6 @@ export default function GradePage() {
       </div>
     )
   }
-
-  // if (selectedTopic) {
-  //   const currentModule = modules.find((m) => m.id === selectedTopic.moduleId)
-  //   return (
-  //     <TopicLearningPage
-  //       topicId={selectedTopic.id}
-  //       topicTitle={selectedTopic.title}
-  //       moduleId={selectedTopic.moduleId}
-  //       moduleColor={selectedTopic.moduleColor}
-  //       gradeId={gradeId!}
-  //       totalTopicsInModule={currentModule?.topics?.length || 0}
-  //       onBack={handleBackFromTopic}
-  //       htmlContent={selectedTopic.content}
-  //     />
-  //   )
-  // }
 
   return (
     <GradeModulePath
