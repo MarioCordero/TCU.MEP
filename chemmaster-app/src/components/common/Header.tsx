@@ -2,7 +2,7 @@
 
 import React from "react"
 import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
+import { Button } from "../ui/button"
 import { Atom, ArrowLeft } from "lucide-react"
 
 interface HeaderProps {
