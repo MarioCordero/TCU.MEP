@@ -20,13 +20,8 @@ function DocumentTitle() {
       '/info': 'ChemMaster - Información',
       '/CMS': 'ChemMaster - CMS'
     }
-    let cleanPath = location.pathname;
-    if (cleanPath.startsWith('/ChemMaster')) {
-      cleanPath = cleanPath.replace('/ChemMaster', '');
-    }
-    if (cleanPath === '') {
-      cleanPath = '/';
-    }
+    // With basename, location.pathname is already relative to /ChemMaster
+    const cleanPath = location.pathname || '/';
     document.title = titles[cleanPath] || 'ChemMaster'
   }, [location.pathname])
   return null
@@ -41,8 +36,8 @@ interface AppProps {
 export default function App({ basePath = '' }: AppProps) {
   const navigate = useNavigate()
   const location = useLocation()
-  const isIntegratedMode = location.pathname.startsWith('/ChemMaster') // It detects if the app is running inside the integrated mode by checking the pathname. If it starts with /ChemMaster, we consider it as integrated mode.
-  const homeRoute = isIntegratedMode ? '/ChemMaster' : '/'
+  // With basename="/ChemMaster" set on the Router, all paths are relative to /ChemMaster
+  const homeRoute = '/'
   
   const handleCMSClose = () => { navigate(homeRoute) }
   const handleInfoBack = () => { navigate(homeRoute) }
