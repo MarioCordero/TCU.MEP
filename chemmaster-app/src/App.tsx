@@ -1,5 +1,5 @@
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 
 // Import page components
 import LandingPage from './pages/LandingPage'
@@ -20,13 +20,13 @@ function DocumentTitle() {
       '/info': 'ChemMaster - Información',
       '/CMS': 'ChemMaster - CMS'
     }
-    // With basename, location.pathname is already relative to /ChemMaster
     const cleanPath = location.pathname || '/';
     document.title = titles[cleanPath] || 'ChemMaster'
   }, [location.pathname])
   return null
 }
 
+// Props, TODO, PUT IN OTHER FILE
 interface AppProps {
   isLoaderComplete?: boolean;
   currentPage?: string;
@@ -36,72 +36,48 @@ interface AppProps {
 export default function App({ basePath = '' }: AppProps) {
   const navigate = useNavigate()
   const location = useLocation()
-  // With basename="/ChemMaster" set on the Router, all paths are relative to /ChemMaster
-  const homeRoute = '/'
-  
-  const handleCMSClose = () => { navigate(homeRoute) }
-  const handleInfoBack = () => { navigate(homeRoute) }
-  const handleInfoStart = () => { navigate('/grade-selector') }
-  
+
+  // No necesitamos useMemo complejo, ya el padre nos dice quiénes somos.
+  // Pero si queremos ser extra seguros para local dev:
+  const effectiveBase = basePath || (location.pathname.startsWith('/ChemMaster') ? '/ChemMaster' : '');
+
+  // Handlers simplificados usando el effectiveBase
+  const handleCMSClose = () => navigate(effectiveBase || '/')
+  const handleInfoBack = () => navigate(effectiveBase || '/')
+  const handleInfoStart = () => navigate(`${effectiveBase}/grade-selector`)
+
   return (
-    <>
-      <ProgressProvider>
-        <DocumentTitle />
-        <Routes>
-
-          <Route
-            path="/" element={
-              <LandingPage
-                onStart={() => navigate('/grade-selector')}
-                onInfo={() => navigate('/info')}
-                onResources={() => navigate('/resources')}
-                onCms={() => navigate('/CMS')}
-              />
-            }
+    <ProgressProvider>
+      <DocumentTitle />
+      <Routes>
+        {/* Usamos rutas RELATIVAS para que no choquen con el prefijo del padre */}
+        <Route path="/" element={
+          <LandingPage
+            onStart={() => navigate(`${effectiveBase}/grade-selector`)}
+            onInfo={() => navigate(`${effectiveBase}/info`)}
+            onResources={() => navigate(`${effectiveBase}/resources`)}
+            onCms={() => navigate(`${effectiveBase}/CMS`)}
           />
+        } />
 
-          <Route
-            path="/info" element={
-              <InfoPage
-                onBack={handleInfoBack}
-                onStart={handleInfoStart}
-              />
-            }
+        <Route path="/info" element={<InfoPage onBack={handleInfoBack} onStart={handleInfoStart} />} />
+        
+        <Route path="/CMS" element={<ChemMasterCMS onClose={handleCMSClose} />} />
+
+        <Route path="/grade-selector" element={
+          <GradeSelectorPage
+            onBack={() => navigate(effectiveBase || '/')}
+            onSelectGrade={(gradeId) => {
+              const id = gradeId.replace('grade-', '');
+              navigate(`${effectiveBase}/grade/${id}`);
+            }}
           />
+        } />
 
-          <Route
-            path="/CMS" element={
-              <ChemMasterCMS
-                onClose={handleCMSClose}
-              />
-            }
-          />
-
-          <Route
-            path="/grade-selector"
-            element={
-              <GradeSelectorPage
-                onBack={() => navigate('/')}
-                onSelectGrade={(gradeId) => {
-                  const id = gradeId.replace('grade-', '');
-                  navigate(`/grade/${id}`);
-                }}
-              />
-            }
-          />
-
-          <Route
-            path="/grade/:gradeId"
-            element={<GradePage />}
-          />
-
-          <Route
-            path="/grade/:gradeId/module/:moduleId/topic/:topicId"
-            element={<TopicPage />}
-          />
-
-        </Routes>
-      </ProgressProvider>
-    </>
+        {/* Las rutas dinámicas también respetan el prefijo */}
+        <Route path="/grade/:gradeId" element={<GradePage />} />
+        <Route path="/grade/:gradeId/module/:moduleId/topic/:topicId" element={<TopicPage />} />
+      </Routes>
+    </ProgressProvider>
   )
 }
