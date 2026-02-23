@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 import { Button } from "../ui/button"
 import { Badge } from "../ui/badge"
 import { CheckCircle2, ChevronRight, Play, BookOpen } from "lucide-react"
-import { useProgressContext } from "@/hooks/useProgressContext"
+import { useProgressContext } from "../../hooks/useProgressContext"
 import { TopicRowProps } from "../../types/topicSelector"
 
 export default function TopicRow({
