@@ -21,7 +21,6 @@ export default function TopicLearningHeader({
   const { navigateBack } = useNavigationBase()
 
   const handleQuizClick = () => {
-    console.log('TopicLearningHeader: Go to Quiz clicked')
     onGoToQuiz()
   }
 

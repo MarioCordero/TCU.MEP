@@ -21,9 +21,6 @@ export const NavigationProvider = ({
 
   const navigateBack = () => {
     const currentPath = location.pathname
-    console.log('NavigationContext: navigateBack called')
-    console.log('Current path:', currentPath)
-    console.log('Base path:', basePath)
 
     // Extract gradeId from the current path
     const gradeMatch = currentPath.match(/\/grade\/(\d+)/)
