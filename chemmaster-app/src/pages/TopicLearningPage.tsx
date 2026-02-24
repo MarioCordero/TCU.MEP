@@ -2,8 +2,8 @@
 
 import React, { useState, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "../ui/button"
-import { Badge } from "../ui/badge"
+import { Button } from "../components/ui/button"
+import { Badge } from "../components/ui/badge"
 import {
   ArrowLeft,
   ArrowRight,
@@ -21,12 +21,12 @@ import {
   Info,
   ArrowUp,
 } from "lucide-react"
-import { useProgressContext } from "../../hooks/useProgressContext"
-import { Topic } from "../../types/cms"
-import {BlockNoteBlock} from "../../types/topicSelector"
-import {QuizQuestion} from "../../types/topicSelector"
-import {TopicLearningPageProps} from "../../types/topicSelector"
-import TopicQuiz from "./TopicQuiz"
+import { useProgressContext } from "../hooks/useProgressContext"
+import { Topic } from "../types/cms"
+import {BlockNoteBlock} from "../types/topicSelector"
+import {QuizQuestion} from "../types/topicSelector"
+import {TopicLearningPageProps} from "../types/topicSelector"
+import TopicQuiz from "../components/topic-selection/TopicQuiz"
 
 type ViewState = "content" | "quiz"
 type ContentType = "blocknote" | "html"

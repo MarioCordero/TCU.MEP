@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { API } from '../lib/api'
 import { Topic, Module } from '../types/cms'
-import TopicLearningPage from '../components/topic-selection/TopicLearningPage'
+import TopicLearningPage from './TopicLearningPage'
 
 export default function TopicPage() {
   const { gradeId, moduleId, topicId } = useParams<{

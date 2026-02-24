@@ -7,6 +7,7 @@ import { Button } from "../ui/button"
 import { X, Sparkles, Star, Rocket } from "lucide-react"
 import { getIconComponent } from "../../lib/iconMap"
 import { useProgressContext } from "../../hooks/useProgressContext"
+import { useNavigationBase } from "../../context/NavigationContext"
 import { API } from "../../lib/api"
 import TopicRow from "./TopicRow"
 import { Module } from "../../types/gradeSelector"
@@ -14,37 +15,37 @@ import { ModuleDetailModalProps } from "../../types/gradeSelector"
 import { Topic } from "../../types/cms"
 
 export function ModuleDetailModal({ module, onClose, gradeId, onSelectTopic }: ModuleDetailModalProps) {
-  const navigate = useNavigate()
-  const IconComponent = getIconComponent(module.icon)
-  const { getModuleProgress, getCompletedTopicsCount } = useProgressContext()
-  const [topics, setTopics] = useState<Topic[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate();
+  const IconComponent = getIconComponent(module.icon);
+  const { getModuleProgress, getCompletedTopicsCount } = useProgressContext();
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { basePath } = useNavigationBase();
 
   useEffect(() => {
     const fetchTopics = async () => {
       try {
-        setLoading(true)
-        setError(null)
-        const fetchedTopics = await API.GetTopics(module.id)
-        setTopics(fetchedTopics)
+        setLoading(true);
+        setError(null);
+        const fetchedTopics = await API.GetTopics(module.id);
+        setTopics(fetchedTopics);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Error al cargar los temas")
-        console.error("Error fetching topics:", err)
+        setError(err instanceof Error ? err.message : "Error al cargar los temas");
+        console.error("Error fetching topics:", err);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
     fetchTopics()
   }, [module.id])
 
-  const progress = getModuleProgress(gradeId, module.id, topics.length)
-  const completedCount = getCompletedTopicsCount(gradeId, module.id)
+  const progress = getModuleProgress(gradeId, module.id, topics.length);
+  const completedCount = getCompletedTopicsCount(gradeId, module.id);
 
   const handleTopicSelect = (topic: Topic) => {
-    // Navigate to the topic page
-    navigate(`/grade/${gradeId}/module/${module.id}/topic/${topic.id}`)
+    navigate(`${basePath}/grade/${gradeId}/module/${module.id}/topic/${topic.id}`);
   }
 
   return (

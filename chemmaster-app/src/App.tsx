@@ -9,6 +9,7 @@ import GradePage from './pages/GradePage'
 import TopicPage from './pages/TopicPage'
 import ChemMasterCMS from './pages/CMSPage'
 import { ProgressProvider } from './context/ProgressContext'
+import { NavigationProvider } from './context/NavigationContext'
 
 function DocumentTitle() {
   const location = useLocation()
@@ -43,36 +44,37 @@ export default function App({ basePath = '' }: AppProps) {
 
   return (
     <ProgressProvider>
-      <DocumentTitle />
-      <Routes>
-        {/* Usamos rutas RELATIVAS para que no choquen con el prefijo del padre */}
-        <Route path="/" element={
-          <LandingPage
-            onStart={() => navigate(`${effectiveBase}/grade-selector`)}
-            onInfo={() => navigate(`${effectiveBase}/info`)}
-            onResources={() => navigate(`${effectiveBase}/resources`)}
-            onCms={() => navigate(`${effectiveBase}/CMS`)}
-          />
-        } />
+      <NavigationProvider basePath={effectiveBase}>
+        <DocumentTitle />
+        <Routes>
+          {/* Usamos rutas RELATIVAS para que no choquen con el prefijo del padre */}
+          <Route path="/" element={
+            <LandingPage
+              onStart={() => navigate(`${effectiveBase}/grade-selector`)}
+              onInfo={() => navigate(`${effectiveBase}/info`)}
+              onResources={() => navigate(`${effectiveBase}/resources`)}
+              onCms={() => navigate(`${effectiveBase}/CMS`)}
+            />
+          } />
 
-        <Route path="/info" element={<InfoPage onBack={handleInfoBack} onStart={handleInfoStart} />} />
-        
-        <Route path="/CMS" element={<ChemMasterCMS onClose={handleCMSClose} />} />
+          <Route path="/info" element={<InfoPage onBack={handleInfoBack} onStart={handleInfoStart} />} />
 
-        <Route path="/grade-selector" element={
-          <GradeSelectorPage
-            onBack={() => navigate(effectiveBase || '/')}
-            onSelectGrade={(gradeId) => {
-              const id = gradeId.replace('grade-', '');
-              navigate(`${effectiveBase}/grade/${id}`);
-            }}
-          />
-        } />
+          <Route path="/CMS" element={<ChemMasterCMS onClose={handleCMSClose} />} />
 
-        {/* Las rutas dinámicas también respetan el prefijo */}
-        <Route path="/grade/:gradeId" element={<GradePage />} />
-        <Route path="/grade/:gradeId/module/:moduleId/topic/:topicId" element={<TopicPage />} />
-      </Routes>
+          <Route path="/grade-selector" element={
+            <GradeSelectorPage
+              onBack={() => navigate(effectiveBase || '/')}
+              onSelectGrade={(gradeId) => {
+                const id = gradeId.replace('grade-', '');
+                navigate(`${effectiveBase}/grade/${id}`);
+              }}
+            />
+          } />
+          
+          <Route path="/grade/:gradeId" element={<GradePage />} />
+          <Route path="/grade/:gradeId/module/:moduleId/topic/:topicId" element={<TopicPage />} />
+        </Routes>
+      </NavigationProvider>
     </ProgressProvider>
   )
 }
