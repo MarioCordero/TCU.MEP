@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useRef } from "react"
+import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "../components/ui/button"
 import { Badge } from "../components/ui/badge"
@@ -175,6 +176,7 @@ export default function TopicLearningPage({
   gradeId,
   totalTopicsInModule,
   onBack,
+  basePath = ""
 }: TopicLearningPageProps) {
   const [currentView, setCurrentView] = useState<ViewState>("content")
   const [quizAnswers, setQuizAnswers] = useState<{ [key: string]: number }>({})

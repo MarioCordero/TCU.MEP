@@ -4,8 +4,7 @@ import { API } from '../lib/api'
 import { Topic, Module } from '../types/cms'
 import TopicLearningPage from './TopicLearningPage'
 
-export default function TopicPage() {
-  const { gradeId, moduleId, topicId } = useParams<{
+export default function TopicPage({ basePath = '' }: { basePath?: string }) {  const { gradeId, moduleId, topicId } = useParams<{
     gradeId: string
     moduleId: string
     topicId: string
@@ -17,6 +16,9 @@ export default function TopicPage() {
   const [totalTopics, setTotalTopics] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const handleBack = () => {
+    navigate(`${basePath}/grade/${gradeId}`)
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,10 +56,6 @@ export default function TopicPage() {
 
     fetchData()
   }, [gradeId, moduleId, topicId])
-
-  const handleBack = () => {
-    navigate(`/grade/${gradeId}`)
-  }
 
   if (loading) {
     return (
