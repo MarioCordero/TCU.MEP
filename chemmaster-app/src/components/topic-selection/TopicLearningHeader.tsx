@@ -16,10 +16,14 @@ export default function TopicLearningHeader({
   topicTitle,
   moduleColor,
   isAlreadyCompleted,
-  onBack,
   onGoToQuiz,
 }: TopicLearningHeaderProps) {
-  const { basePath } = useNavigationBase()
+  const { navigateBack } = useNavigationBase()
+
+  const handleQuizClick = () => {
+    console.log('TopicLearningHeader: Go to Quiz clicked')
+    onGoToQuiz()
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-gray-950/95 backdrop-blur-xl">
@@ -29,7 +33,7 @@ export default function TopicLearningHeader({
             <Button
               variant="ghost"
               size="icon"
-              onClick={onBack}
+              onClick={navigateBack}
               className="text-white/70 hover:text-white hover:bg-white/10"
             >
               <ArrowLeft className="h-5 w-5" />
@@ -57,7 +61,7 @@ export default function TopicLearningHeader({
               <Clock className="h-4 w-4 text-white/50" />
               <span className="text-sm text-white/70">~5 min</span>
             </div>
-            <Button onClick={onGoToQuiz} size="sm" className="bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:opacity-90">
+            <Button onClick={handleQuizClick} size="sm" className="bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:opacity-90">
               <Target className="h-4 w-4 mr-1 md:mr-2" />
               <span className="hidden sm:inline">Ir al</span> Quiz
             </Button>

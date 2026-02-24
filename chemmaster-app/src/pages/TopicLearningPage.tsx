@@ -198,6 +198,13 @@ export default function TopicLearningPage({
     }
   }
 
+  // Debugging logs
+  const handleBackClick = () => {
+    console.log('TopicLearningPage: onBack called')
+    console.log('Current location:', window.location.pathname)
+    onBack()
+  }
+
   const contentType = detectContentType()
   const parseTopicContent = (): BlockNoteBlock[] | string => {
     if (contentType === 'html') {
@@ -299,7 +306,8 @@ export default function TopicLearningPage({
         topicTitle={topic.title}
         moduleColor={moduleColor}
         isAlreadyCompleted={isAlreadyCompleted}
-        onBack={onBack}
+        // onBack={onBack}
+        onBack={handleBackClick}
         onGoToQuiz={goToQuiz}
       />
 

@@ -1,5 +1,5 @@
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 
 // Import page components
 import LandingPage from './pages/LandingPage'
@@ -27,7 +27,6 @@ function DocumentTitle() {
   return null
 }
 
-// Props, TODO, PUT IN OTHER FILE
 interface AppProps {
   isLoaderComplete?: boolean;
   currentPage?: string;
@@ -36,8 +35,8 @@ interface AppProps {
 
 export default function App({ basePath = '' }: AppProps) {
   const navigate = useNavigate()
-  const location = useLocation()
-  const effectiveBase = basePath || (location.pathname.startsWith('/ChemMaster') ? '/ChemMaster' : '');
+  const effectiveBase = basePath.trim()
+  
   const handleCMSClose = () => navigate(effectiveBase || '/')
   const handleInfoBack = () => navigate(effectiveBase || '/')
   const handleInfoStart = () => navigate(`${effectiveBase}/grade-selector`)
@@ -47,7 +46,6 @@ export default function App({ basePath = '' }: AppProps) {
       <NavigationProvider basePath={effectiveBase}>
         <DocumentTitle />
         <Routes>
-          {/* Usamos rutas RELATIVAS para que no choquen con el prefijo del padre */}
           <Route path="/" element={
             <LandingPage
               onStart={() => navigate(`${effectiveBase}/grade-selector`)}
