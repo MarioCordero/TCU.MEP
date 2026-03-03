@@ -336,12 +336,14 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: Props) {
         topicsCount={topics.length}
       />
 
-      <TopicEditorModal
-        show={showEditModal}
-        topic={editingTopic}
-        onClose={() => setShowEditModal(false)}
-        onSave={handleSaveEdit}
-      />
+      {showEditModal && editingTopic && (
+        <TopicEditorModal
+          show={true}
+          topic={editingTopic}
+          onClose={() => setShowEditModal(false)}
+          onSave={handleSaveEdit}
+        />
+      )}
 
       <Modal
         isOpen={deleteConfirmation.show}
