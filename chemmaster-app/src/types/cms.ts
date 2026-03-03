@@ -41,9 +41,30 @@ export interface ColorOption {
   preview: string;
 }
 
+export interface CMSTopicEditorProps {
+  moduleId: number
+  topics: Topic[]
+  onUpdate: () => void
+}
+
 export interface CMSModuleEditorProps {
   module: Module;
   onSave: (module: Module) => void;
+}
+
+export interface CMSTopicEditorModalProps {
+  show: boolean
+  topic: Topic | null
+  onClose: () => void
+  onSave: (topic: Topic) => void
+}
+
+export interface CMSAddTopicModalProps {
+  show: boolean
+  onClose: () => void
+  onSave: () => void
+  moduleId: number
+  topicsCount: number
 }
 
 export interface IconModalProps {

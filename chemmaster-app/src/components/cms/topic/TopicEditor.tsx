@@ -1,213 +1,31 @@
 import { useState } from 'react';
-import { API } from '../../lib/api';
-import { Topic } from '../../types/cms';
-import { Button } from '../../components/ui/button';
-import { Card } from '../../components/ui/card';
-import { Input } from '../../components/ui/input';
-import { Textarea } from '../../components/ui/textarea';
-import { Label } from '../../components/ui/label';
+import { Topic } from '../../../types/cms';
+import { Button } from '../../ui/button';
+import { Card } from '../../ui/card';
 import * as LucideIcons from 'lucide-react';
 import TopicEditorModal from './TopicEditorModal';
-import { Modal, AlertModal } from '../../components/ui/modal';
+import { Modal, AlertModal } from '../../ui/modal';
+import AddTopicModal from './AddTopicModal';
+import { CMSTopicEditorProps } from '../../../types/cms';
+import { useTopicDelete } from '../../../hooks/useTopicDelete';
+import SuccessModal from '../../common/modals/SuccessModal'
 
-interface Props {
-  moduleId: number;
-  topics: Topic[];
-  onUpdate: () => void;
-}
-
-function AddTopicModal({
-  show,
-  onClose,
-  onSave,
-  moduleId,
-  topicsCount
-}: {
-  show: boolean;
-  onClose: () => void;
-  onSave: () => void;
-  moduleId: number;
-  topicsCount: number;
-}) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [isAdding, setIsAdding] = useState(false);
-
-  const [alertConfig, setAlertConfig] = useState<{
-    show: boolean;
-    title: string;
-    msg: string;
-    variant: "destructive" | "warning" | "default";
-  }>({ show: false, title: "", msg: "", variant: "default" });
-
-  const handleAdd = async () => {
-    if (!title.trim()) {
-      setAlertConfig({
-        show: true,
-        title: "Título Requerido",
-        msg: "El tópico necesita un título para ser creado.",
-        variant: "warning"
-      });
-      return;
-    }
-
-    setIsAdding(true);
-    try {
-      await API.AddTopic({
-        module_id: moduleId,
-        title: title,
-        description: description,
-        content: "<p>Contenido inicial...</p>",
-        order_in_module: topicsCount
-      });
-
-      setTitle("");
-      setDescription("");
-      onSave();
-      onClose();
-
-    } catch (error) {
-      setAlertConfig({
-        show: true,
-        title: "Error al crear",
-        msg: "No se pudo crear el tópico: " + String(error),
-        variant: "destructive"
-      });
-    } finally {
-      setIsAdding(false);
-    }
-  };
-
-  const footerContent = (
-    <>
-      <Button variant="ghost" onClick={onClose} disabled={isAdding}>
-        Cancelar
-      </Button>
-      <Button
-        className="bg-emerald-600 hover:bg-emerald-700 text-white min-w-[140px]"
-        onClick={handleAdd}
-        disabled={isAdding || !title.trim()}
-      >
-        {isAdding ? (
-          <>
-            <LucideIcons.Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            Creando...
-          </>
-        ) : (
-          <>
-            <LucideIcons.Plus className="h-4 w-4 mr-2" />
-            Crear Tópico
-          </>
-        )}
-      </Button>
-    </>
-  );
-
-  return (
-    <>
-      <Modal
-        isOpen={show}
-        onClose={onClose}
-        title="Nuevo Tópico"
-        maxWidth="max-w-xl"
-        footer={footerContent}
-      >
-        <div className="p-8 space-y-6">
-          <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex items-start gap-3 mb-6">
-            <div className="bg-emerald-100 p-2 rounded-lg text-emerald-600 shrink-0">
-              <LucideIcons.Lightbulb className="h-5 w-5" />
-            </div>
-            <div className="text-sm text-emerald-800">
-              <p className="font-semibold">Tip:</p>
-              <p>Estás creando la estructura del tema. Podrás editar el contenido rico (imágenes, texto, videos) en el siguiente paso.</p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="add-title" className="text-sm font-semibold text-gray-700">
-                Título del Tópico <span className="text-red-500">*</span>
-              </Label>
-              <div className="relative">
-                <LucideIcons.Type className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                <Input
-                  id="add-title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  disabled={isAdding}
-                  className="pl-10 h-11 border-gray-200 focus:border-emerald-500 bg-gray-50 focus:bg-white transition-colors"
-                  placeholder="Ej: Estructura de la materia"
-                  autoFocus
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="add-description" className="text-sm font-semibold text-gray-700">
-                Descripción (Opcional)
-              </Label>
-              <Textarea
-                id="add-description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                disabled={isAdding}
-                className="min-h-[100px] border-gray-200 focus:border-emerald-500 bg-gray-50 focus:bg-white resize-none"
-                placeholder="Breve resumen de lo que tratará este tópico..."
-              />
-            </div>
-          </div>
-        </div>
-      </Modal>
-
-      <AlertModal
-        isOpen={alertConfig.show}
-        onClose={() => setAlertConfig({ ...alertConfig, show: false })}
-        title={alertConfig.title}
-        message={alertConfig.msg}
-        variant={alertConfig.variant}
-      />
-    </>
-  );
-}
-
-export default function TopicEditor({ moduleId, topics, onUpdate }: Props) {
-  const [isDeleting, setIsDeleting] = useState<number | null>(null);
+export default function TopicEditor({ moduleId, topics, onUpdate }: CMSTopicEditorProps) {
   const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const [deleteConfirmation, setDeleteConfirmation] = useState<{ show: boolean, topicId: number | null }>({
-    show: false,
-    topicId: null
-  });
-
-  const [globalAlert, setGlobalAlert] = useState<{ show: boolean, msg: string }>({
-    show: false, msg: ""
-  });
-
-  const requestDelete = (id: number) => {
-    setDeleteConfirmation({ show: true, topicId: id });
-  };
-
-  const confirmDelete = async () => {
-    const id = deleteConfirmation.topicId;
-    if (!id) return;
-
-    setIsDeleting(id);
-    setDeleteConfirmation({ show: false, topicId: null });
-
-    try {
-      await API.DeleteTopic(id);
-      onUpdate();
-    } catch (error) {
-      setGlobalAlert({
-        show: true,
-        msg: "No se pudo eliminar el tópico: " + String(error)
-      });
-    } finally {
-      setIsDeleting(null);
-    }
-  };
+  const {
+    isDeleting,
+    deleteConfirmation,
+    deleteError,
+    showDeleteSuccess,
+    clearDeleteSuccess,
+    clearError,
+    requestDelete,
+    confirmDelete,
+    cancelDelete,
+  } = useTopicDelete(onUpdate)
 
   const handleEdit = (topic: Topic) => {
     setEditingTopic(topic);
@@ -216,7 +34,6 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: Props) {
 
   const handleSaveEdit = (updatedTopic: Topic) => {
     onUpdate();
-    setShowEditModal(false);
   };
 
   return (
@@ -313,7 +130,7 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: Props) {
                   size="icon"
                   disabled={isDeleting === topic.id || !topic.id}
                   className="text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                  onClick={() => topic.id && requestDelete(topic.id)}
+                  onClick={() => topic.id && requestDelete(topic.id, topic.title)}
                   title="Eliminar tópico"
                 >
                   {isDeleting === topic.id ? (
@@ -346,9 +163,9 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: Props) {
       )}
 
       <Modal
-        isOpen={deleteConfirmation.show}
-        onClose={() => setDeleteConfirmation({ show: false, topicId: null })}
-        maxWidth="max-w-md"
+        isOpen = {deleteConfirmation.show}
+        onClose = {cancelDelete}
+        maxWidth = "max-w-md"
       >
         <div className="p-8 text-center">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-red-100 mb-6 ring-8 ring-white shadow-xl shadow-red-100">
@@ -369,7 +186,7 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: Props) {
           <div className="flex gap-3 justify-center w-full">
             <Button
               variant="ghost"
-              onClick={() => setDeleteConfirmation({ show: false, topicId: null })}
+              onClick={cancelDelete}
               className="flex-1 h-12 text-slate-600 hover:bg-slate-100"
             >
               Cancelar
@@ -385,11 +202,18 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: Props) {
         </div>
       </Modal>
 
+      <SuccessModal
+        show={showDeleteSuccess}
+        onClose={clearDeleteSuccess}
+        title="¡Tópico Eliminado!"
+        message={`El tópico "${deleteConfirmation.topicTitle || ''}" fue eliminado correctamente.`}
+      />
+
       <AlertModal
-        isOpen={globalAlert.show}
-        onClose={() => setGlobalAlert({ show: false, msg: "" })}
+        isOpen={!!deleteError}
+        onClose={clearError}
         title="Ocurrió un error"
-        message={globalAlert.msg}
+        message={deleteError}
         variant="destructive"
       />
     </div>
