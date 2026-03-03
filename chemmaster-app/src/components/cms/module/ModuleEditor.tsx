@@ -29,8 +29,8 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
 
   const handleSave = async (password: string) => {
     // TODO: validate password via API
-    if (!editedModule.id) throw new Error("Falta el ID del módulo")  // 👈 throw so ConfirmSaveModal catches it
-    await API.UpdateModule(editedModule.id, editedModule)  // 👈 throw on failure too
+    if (!editedModule.id) throw new Error("Falta el ID del módulo")
+    await API.UpdateModule(editedModule.id, editedModule)
     setIsEditing(false)
     onSave?.(editedModule)
   }

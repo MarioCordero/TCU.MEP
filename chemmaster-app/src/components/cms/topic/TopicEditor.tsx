@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { API } from '../../../lib/api';
 import { Topic } from '../../../types/cms';
 import { Button } from '../../ui/button';
 import { Card } from '../../ui/card';
@@ -20,8 +19,8 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: CMSTopicEdit
     isDeleting,
     deleteConfirmation,
     deleteError,
-    showDeleteSuccess,       // 👈 add this
-    clearDeleteSuccess,      // 👈 add this
+    showDeleteSuccess,
+    clearDeleteSuccess,
     clearError,
     requestDelete,
     confirmDelete,

@@ -4,14 +4,14 @@ import { API } from '../lib/api'
 export function useTopicDelete(onSuccess: () => void) {
   const [isDeleting, setIsDeleting] = useState<number | null>(null)
   const [deleteError, setDeleteError] = useState("")
-  const [showDeleteSuccess, setShowDeleteSuccess] = useState(false)  // 👈 add this
+  const [showDeleteSuccess, setShowDeleteSuccess] = useState(false)
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     show: boolean
     topicId: number | null
-    topicTitle?: string                                               // 👈 add this
+    topicTitle?: string
   }>({ show: false, topicId: null, topicTitle: "" })
 
-  const requestDelete = (id: number, title?: string) => {            // 👈 add title param
+  const requestDelete = (id: number, title?: string) => {
     setDeleteConfirmation({ show: true, topicId: id, topicTitle: title })
   }
 
@@ -29,7 +29,7 @@ export function useTopicDelete(onSuccess: () => void) {
     try {
       await API.DeleteTopic(id)
       onSuccess()
-      setShowDeleteSuccess(true)   // 👈 trigger success after delete
+      setShowDeleteSuccess(true)
     } catch (error) {
       setDeleteError("No se pudo eliminar el tópico: " + String(error))
     } finally {
@@ -41,8 +41,8 @@ export function useTopicDelete(onSuccess: () => void) {
     isDeleting,
     deleteConfirmation,
     deleteError,
-    showDeleteSuccess,                              // 👈 expose this
-    clearDeleteSuccess: () => setShowDeleteSuccess(false),  // 👈 expose this
+    showDeleteSuccess,
+    clearDeleteSuccess: () => setShowDeleteSuccess(false),
     clearError: () => setDeleteError(""),
     requestDelete,
     confirmDelete,

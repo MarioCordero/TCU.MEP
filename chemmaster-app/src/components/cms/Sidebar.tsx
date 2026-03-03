@@ -66,7 +66,7 @@ export default function CMSSidebar({
         <button
           onClick={(e) => {
             e.stopPropagation()
-            requestDelete(module.id!, module.title)   // 👈 use hook
+            requestDelete(module.id!, module.title)
           }}
           className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-red-100 hover:text-red-600 text-gray-400 rounded-md"
           title="Eliminar módulo"
