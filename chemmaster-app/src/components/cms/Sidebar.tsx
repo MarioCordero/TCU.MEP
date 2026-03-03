@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Module } from '../../types/cms'
 import { Button } from '../ui/button'
 import * as LucideIcons from 'lucide-react'
-import AddModuleModal from './AddModuleModal'
+import AddModuleModal from './module/AddModuleModal'
 import { Modal } from '../ui/modal' // ✅ Importamos el Modal genérico
 import { API } from '../../lib/api' // ✅ Necesitamos la API para borrar aquí mismo
 

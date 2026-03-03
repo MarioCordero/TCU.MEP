@@ -1,93 +1,18 @@
-import { useState, useMemo } from "react"
-import { Button } from "../../components/ui/button"
-import { Input } from "../../components/ui/input"
-import { Textarea } from "../../components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
-import { Switch } from "../../components/ui/switch"
-import { Label } from "../../components/ui/label"
-import type { CMSModuleEditorProps, IconModalProps } from "../../types/cms"
-import { AllowedGrade, COLOR_OPTIONS } from "../../lib/constants"
+import { useState } from "react"
+import { Button } from "../../ui/button"
+import { Input } from "../../ui/input"
+import { Textarea } from "../../ui/textarea"
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select"
+import { Switch } from "../../ui/switch"
+import { Label } from "../../ui/label"
+import type { CMSModuleEditorProps } from "../../../types/cms"
+import { AllowedGrade, COLOR_OPTIONS } from "../../../lib/constants"
 import * as LucideIcons from "lucide-react"
-import { API } from "../../lib/api"
-import { useModuleEditor } from "../../hooks/useModuleEditor"
-import { Modal, AlertModal } from "../../components/ui/modal"
-
-function IconModal({ show, onClose, currentIcon, onIconChange }: IconModalProps) {
-  const [searchTerm, setSearchTerm] = useState("")
-
-  const allIconNames = useMemo(() => {
-    return Object.keys(LucideIcons).filter((key) => {
-      return key !== "icons" && key !== "createLucideIcon" && /^[A-Z]/.test(key)
-    })
-  }, [])
-
-  const filteredIcons = allIconNames.filter((name) =>
-    name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-
-  const renderIcon = (iconName: string, size = 24) => {
-    const IconComponent = (LucideIcons as any)[iconName]
-    return IconComponent ? <IconComponent size={size} /> : null
-  }
-
-  return (
-    <Modal
-      isOpen={show}
-      onClose={onClose}
-      title="Galería de Iconos"
-      maxWidth="max-w-5xl"
-    >
-      <div className="flex flex-col h-[70vh]">
-        <div className="p-6 border-b bg-white sticky top-0 z-10 shadow-sm">
-          <div className="relative">
-            <LucideIcons.Search className="absolute left-4 top-4 text-slate-400 h-5 w-5" />
-            <Input
-              autoFocus
-              placeholder="Buscar icono..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 text-lg h-14 border-slate-200 focus:border-blue-500 bg-slate-50 focus:bg-white rounded-xl"
-            />
-          </div>
-          <p className="text-xs text-slate-400 mt-3 ml-1 font-medium">
-            {filteredIcons.length} iconos disponibles
-          </p>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-8 bg-slate-50/50 custom-scrollbar">
-          {filteredIcons.length === 0 ? (
-            <div className="text-center py-20 text-slate-300">
-              <LucideIcons.Frown className="h-16 w-16 mx-auto mb-4 opacity-50" />
-              <p className="text-lg">No encontramos resultados</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-4">
-              {filteredIcons.slice(0, 100).map((iconName) => (
-                <button
-                  key={iconName}
-                  onClick={() => { onIconChange(iconName); onClose(); }}
-                  className={`flex flex-col items-center justify-center p-4 rounded-2xl border transition-all duration-200 group h-28 ${currentIcon === iconName
-                      ? "bg-blue-600 text-white shadow-xl shadow-blue-200 scale-105 border-blue-600 ring-2 ring-blue-200 ring-offset-2"
-                      : "bg-white border-slate-100 hover:border-blue-300 hover:shadow-lg hover:-translate-y-1 text-slate-500"
-                    }`}
-                  title={iconName}
-                >
-                  <div className="mb-3 transition-transform group-hover:scale-110">
-                    {renderIcon(iconName, 26)}
-                  </div>
-                  <span className={`text-[10px] font-medium truncate w-full text-center ${currentIcon === iconName ? "text-blue-100" : "text-slate-400 group-hover:text-blue-600"}`}>
-                    {iconName}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </Modal>
-  )
-}
+import { API } from "../../../lib/api"
+import { useModuleEditor } from "../../../hooks/useModuleEditor"
+import { Modal, AlertModal } from "../../ui/modal"
+import IconPickerModal from "../../common/IconPickerModal"
 
 function ConfirmSaveModal({ show, onClose, onConfirm }: { show: boolean, onClose: () => void, onConfirm: (pass: string) => void }) {
   const [password, setPassword] = useState("")
@@ -347,7 +272,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                     )}
                   </div>
                 </div>
-                <IconModal
+                <IconPickerModal
                   show={showIconModal}
                   onClose={() => setShowIconModal(false)}
                   currentIcon={editedModule.icon || ""}
