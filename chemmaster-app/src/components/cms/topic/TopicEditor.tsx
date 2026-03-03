@@ -8,45 +8,22 @@ import TopicEditorModal from './TopicEditorModal';
 import { Modal, AlertModal } from '../../ui/modal';
 import AddTopicModal from './AddTopicModal';
 import { CMSTopicEditorProps } from '../../../types/cms';
+import { useTopicDelete } from '../../../hooks/useTopicDelete';
 
 export default function TopicEditor({ moduleId, topics, onUpdate }: CMSTopicEditorProps) {
-  const [isDeleting, setIsDeleting] = useState<number | null>(null);
   const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const [deleteConfirmation, setDeleteConfirmation] = useState<{ show: boolean, topicId: number | null }>({
-    show: false,
-    topicId: null
-  });
-
-  const [globalAlert, setGlobalAlert] = useState<{ show: boolean, msg: string }>({
-    show: false, msg: ""
-  });
-
-  const requestDelete = (id: number) => {
-    setDeleteConfirmation({ show: true, topicId: id });
-  };
-
-  const confirmDelete = async () => {
-    const id = deleteConfirmation.topicId;
-    if (!id) return;
-
-    setIsDeleting(id);
-    setDeleteConfirmation({ show: false, topicId: null });
-
-    try {
-      await API.DeleteTopic(id);
-      onUpdate();
-    } catch (error) {
-      setGlobalAlert({
-        show: true,
-        msg: "No se pudo eliminar el tópico: " + String(error)
-      });
-    } finally {
-      setIsDeleting(null);
-    }
-  };
+  const {
+    isDeleting,
+    deleteConfirmation,
+    deleteError,
+    clearError,
+    requestDelete,
+    confirmDelete,
+    cancelDelete,
+  } = useTopicDelete(onUpdate)
 
   const handleEdit = (topic: Topic) => {
     setEditingTopic(topic);
@@ -184,9 +161,9 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: CMSTopicEdit
       )}
 
       <Modal
-        isOpen={deleteConfirmation.show}
-        onClose={() => setDeleteConfirmation({ show: false, topicId: null })}
-        maxWidth="max-w-md"
+        isOpen = {deleteConfirmation.show}
+        onClose = {cancelDelete}
+        maxWidth = "max-w-md"
       >
         <div className="p-8 text-center">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-red-100 mb-6 ring-8 ring-white shadow-xl shadow-red-100">
@@ -207,7 +184,7 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: CMSTopicEdit
           <div className="flex gap-3 justify-center w-full">
             <Button
               variant="ghost"
-              onClick={() => setDeleteConfirmation({ show: false, topicId: null })}
+              onClick={cancelDelete}
               className="flex-1 h-12 text-slate-600 hover:bg-slate-100"
             >
               Cancelar
@@ -224,10 +201,10 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: CMSTopicEdit
       </Modal>
 
       <AlertModal
-        isOpen={globalAlert.show}
-        onClose={() => setGlobalAlert({ show: false, msg: "" })}
+        isOpen={!!deleteError}
+        onClose={clearError}
         title="Ocurrió un error"
-        message={globalAlert.msg}
+        message={deleteError}
         variant="destructive"
       />
     </div>
