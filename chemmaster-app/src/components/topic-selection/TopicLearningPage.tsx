@@ -27,6 +27,8 @@ import {BlockNoteBlock} from "../../types/topicSelector"
 import {QuizQuestion} from "../../types/topicSelector"
 import {TopicLearningPageProps} from "../../types/topicSelector"
 import TopicQuiz from "./TopicQuiz"
+import { InlineMath } from "react-katex";
+import "katex/dist/katex.min.css";
 
 type ViewState = "content" | "quiz"
 type ContentType = "blocknote" | "html"
@@ -34,11 +36,15 @@ type ContentType = "blocknote" | "html"
 // BlockNote Content Renderer Component
 function BlockNoteRenderer({ blocks }: { blocks: BlockNoteBlock[] }) {
   const renderContent = (content: BlockNoteBlock['content']) => {
+    if (!content || !Array.isArray(content)) return null;
+
     return content.map((item, idx) => {
       const styles: React.CSSProperties = {}
-      if (item.styles.bold) styles.fontWeight = 'bold'
-      if (item.styles.italic) styles.fontStyle = 'italic'
-      if (item.styles.underline) styles.textDecoration = 'underline'
+      if (item.styles?.bold) styles.fontWeight = 'bold'
+      if (item.styles?.italic) styles.fontStyle = 'italic'
+      if (item.styles?.underline) styles.textDecoration = 'underline'
+      if (item.styles?.superscript) styles.verticalAlign = 'super'; styles.fontSize = '0.75em'
+      if (item.styles?.subscript) styles.verticalAlign = 'sub'; styles.fontSize = '0.75em'
       
       return (
         <span key={idx} style={styles}>
@@ -92,6 +98,27 @@ function BlockNoteRenderer({ blocks }: { blocks: BlockNoteBlock[] }) {
           )
         }
       
+      case 'math':
+        return (
+          <div
+            key={block.id}
+            className="text-white w-full my-4 flex justify-center items-center py-4"
+          >
+            <InlineMath math={block.props?.equation || ''} />
+          </div>
+        )
+
+      case 'image':
+        return (
+          <div key={block.id} className="w-full my-4 flex justify-center">
+            <img
+              src={block.props?.url}
+              alt={block.props?.caption || ''}
+              className="max-w-full rounded-lg"
+            />
+          </div>
+        )
+
       case 'paragraph':
         return (
           <p

@@ -16,19 +16,31 @@ export interface TopicRowProps {
 export interface BlockNoteBlock {
   id: string
   type: string
+  content: Array<{
+    type: string
+    text: string
+    styles?: {
+      bold?: boolean
+      italic?: boolean
+      underline?: boolean
+      strike?: boolean
+      superscript?: boolean
+      subscript?: boolean
+    }
+  }>
+  children?: BlockNoteBlock[]
   props: {
     backgroundColor?: string
     textColor?: string
     textAlignment?: string
     level?: number
     isToggleable?: boolean
+    equation?: string
+    url?: string
+    caption?: string
+    previewWidth?: number
+    name?: string
   }
-  content: Array<{
-    type: string
-    text: string
-    styles: Record<string, boolean>
-  }>
-  children: BlockNoteBlock[]
 }
 
 export interface QuizQuestion {
