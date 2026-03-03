@@ -58,6 +58,7 @@ export interface TopicLearningPageProps {
   gradeId: string
   totalTopicsInModule: number
   onBack: () => void
+  basePath?: string
 }
 
 export interface QuizQuestion {

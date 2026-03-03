@@ -19,7 +19,6 @@ export function TopicEditor({
   updateTopic: (idx: number, field: string, value: any) => void
   removeTopic: (idx: number) => void
 }) {
-  console.log("TopicEditor renderizado", topics);
 
   return (
     <div className="p-6">
