@@ -9,6 +9,7 @@ import { Modal, AlertModal } from '../../ui/modal';
 import AddTopicModal from './AddTopicModal';
 import { CMSTopicEditorProps } from '../../../types/cms';
 import { useTopicDelete } from '../../../hooks/useTopicDelete';
+import SuccessModal from '../../common/modals/SuccessModal'
 
 export default function TopicEditor({ moduleId, topics, onUpdate }: CMSTopicEditorProps) {
   const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
@@ -19,6 +20,8 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: CMSTopicEdit
     isDeleting,
     deleteConfirmation,
     deleteError,
+    showDeleteSuccess,       // 👈 add this
+    clearDeleteSuccess,      // 👈 add this
     clearError,
     requestDelete,
     confirmDelete,
@@ -128,7 +131,7 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: CMSTopicEdit
                   size="icon"
                   disabled={isDeleting === topic.id || !topic.id}
                   className="text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                  onClick={() => topic.id && requestDelete(topic.id)}
+                  onClick={() => topic.id && requestDelete(topic.id, topic.title)}
                   title="Eliminar tópico"
                 >
                   {isDeleting === topic.id ? (
@@ -199,6 +202,13 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: CMSTopicEdit
           </div>
         </div>
       </Modal>
+
+      <SuccessModal
+        show={showDeleteSuccess}
+        onClose={clearDeleteSuccess}
+        title="¡Tópico Eliminado!"
+        message={`El tópico "${deleteConfirmation.topicTitle || ''}" fue eliminado correctamente.`}
+      />
 
       <AlertModal
         isOpen={!!deleteError}
