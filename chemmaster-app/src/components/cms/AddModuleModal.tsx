@@ -10,7 +10,7 @@ import { Modal, AlertModal } from '../ui/modal'
 import * as LucideIcons from 'lucide-react'
 import { AddModuleModalProps, Module } from '../../types/moduleProps'
 import IconPickerModal from '../common/IconPickerModal'
-
+import SuccessModal from '../common/SuccessModal'
 
 const COLOR_OPTIONS = [
   { value: 'from-blue-500 to-blue-600', label: 'Azul' },
@@ -26,6 +26,8 @@ const COLOR_OPTIONS = [
 export default function AddModuleModal({ show, onClose, onModuleAdded }: AddModuleModalProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [showIconPicker, setShowIconPicker] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [createdModuleTitle, setCreatedModuleTitle] = useState('')
 
   const [formData, setFormData] = useState({
     slug: '',
@@ -85,7 +87,9 @@ export default function AddModuleModal({ show, onClose, onModuleAdded }: AddModu
       }
 
       onModuleAdded(newModule)
+      setCreatedModuleTitle(formData.title)
       handleClose()
+      setShowSuccess(true)
     } catch (error) {
       setAlertConfig({
         show: true,
@@ -288,6 +292,13 @@ export default function AddModuleModal({ show, onClose, onModuleAdded }: AddModu
         onClose={() => setShowIconPicker(false)}
         currentIcon={formData.icon}
         onIconChange={(icon) => setFormData({ ...formData, icon })}
+      />
+
+      <SuccessModal
+        show={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        title="¡Módulo Creado!"
+        message={`El módulo "${createdModuleTitle}" fue creado exitosamente.`}
       />
 
       <AlertModal
