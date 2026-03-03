@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react"
-import { Topic } from "../../types/cms"
-import { Button } from "../ui/button"
-import { Input } from "../ui/input"
+import { Topic } from "../../../types/cms"
+import { Button } from "../../ui/button"
+import { Input } from "../../ui/input"
 import { 
   useCreateBlockNote,
   FormattingToolbar,
@@ -19,12 +19,12 @@ import {
   useBlockNoteEditor
 } from "@blocknote/react";
 import * as LucideIcons from "lucide-react"
-import { API } from "../../lib/api"
+import { API } from "../../../lib/api"
 import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
-import { AlertModal } from "../ui/modal";
-import { extractFileUrls } from "../../lib/utils";
-import { MathBlock } from "./MathBlock";
+import { AlertModal } from "../../ui/modal";
+import { extractFileUrls } from "../../../lib/utils";
+import { MathBlock } from "../MathBlock";
 import { 
   BlockNoteSchema, 
   defaultBlockSpecs, 
@@ -32,7 +32,7 @@ import {
   createStyleSpec,
 } from "@blocknote/core";
 import { getDefaultReactSlashMenuItems, SuggestionMenuController } from "@blocknote/react";
-import { MathBlockProvider } from "./MathBlockContext"
+import { MathBlockProvider } from "../MathBlockContext"
 
 // TODO: This file is getting pretty big, consider splitting into multiple components and hooks if it grows more. The Math Editor Modal and Context are already separate, so it's mostly the main TopicEditorModal that has a lot of logic in it.
 interface TopicEditorModalProps {
