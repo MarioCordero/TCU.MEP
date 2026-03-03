@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useApi } from '../hooks/useApi';
 import { API } from '../lib/api';
 import { Module, AllContentResponse } from '../types/cms';
-import TopicEditor from '../components/cms/TopicEditor';
-import { CMSModuleEditor } from '../components/cms/ModuleEditor';
+import TopicEditor from '../components/cms/topic/TopicEditor';
+import { CMSModuleEditor } from '../components/cms/module/ModuleEditor';
 import CMSSidebar from '../components/cms/Sidebar';
 import * as LucideIcons from "lucide-react"
 
