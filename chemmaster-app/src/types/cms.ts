@@ -52,6 +52,13 @@ export interface CMSModuleEditorProps {
   onSave: (module: Module) => void;
 }
 
+export interface CMSTopicEditorModalProps {
+  show: boolean
+  topic: Topic | null
+  onClose: () => void
+  onSave: (topic: Topic) => void
+}
+
 export interface CMSAddTopicModalProps {
   show: boolean
   onClose: () => void

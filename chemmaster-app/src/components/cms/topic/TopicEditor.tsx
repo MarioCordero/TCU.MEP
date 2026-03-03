@@ -55,7 +55,6 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: CMSTopicEdit
 
   const handleSaveEdit = (updatedTopic: Topic) => {
     onUpdate();
-    setShowEditModal(false);
   };
 
   return (

@@ -33,14 +33,8 @@ import {
 } from "@blocknote/core";
 import { getDefaultReactSlashMenuItems, SuggestionMenuController } from "@blocknote/react";
 import { MathBlockProvider } from "../MathBlockContext"
-
-// TODO: This file is getting pretty big, consider splitting into multiple components and hooks if it grows more. The Math Editor Modal and Context are already separate, so it's mostly the main TopicEditorModal that has a lot of logic in it.
-interface TopicEditorModalProps {
-  show: boolean
-  topic: Topic | null
-  onClose: () => void
-  onSave: (topic: Topic) => void
-}
+import { CMSTopicEditorModalProps } from "../../../types/cms";
+import SuccessModal from "../../common/modals/SuccessModal"
 
 function TipTapMarkButton({ mark, label }: { mark: string; label: string }) {
   const editor = useBlockNoteEditor();
@@ -60,10 +54,10 @@ function TipTapMarkButton({ mark, label }: { mark: string; label: string }) {
       ].join(" ")}
       style={{
         cursor: "pointer",
-        paddingInline: "8px",                                      // ✅ more horizontal margin
+        paddingInline: "8px",
         backgroundColor: isActive
-          ? undefined                                              // let bn-button-selected handle it
-          : isHovered ? "#e9ecef" : "transparent", // ✅ gray on hover
+          ? undefined
+          : isHovered ? "#e9ecef" : "transparent",
         borderRadius: "4px",
         transition: "background-color 0.15s ease",
       }}
@@ -111,12 +105,14 @@ const SubscriptStyle = createStyleSpec(
   }
 );
 
-export default function TopicEditorModal({ show, topic, onClose, onSave }: TopicEditorModalProps) {
+export default function TopicEditorModal({ show, topic, onClose, onSave }: CMSTopicEditorModalProps) {
   const [editedTopic, setEditedTopic] = useState<Topic | null>(topic)
   const [isSaving, setIsSaving] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [savedTitle, setSavedTitle] = useState("")
   const pendingImagesRef = useRef<Map<string, File>>(new Map());
   const [pendingImages, setPendingImages] = useState<Map<string, File>>(new Map());
-  const [errorAlert, setErrorAlert] = useState<{show: boolean, msg: string}>({ show: false, msg: "" });
+  const [errorAlert, setErrorAlert] = useState<{ show: boolean, msg: string }>({ show: false, msg: "" });
 
 
   const schema = useMemo(() => {
@@ -184,7 +180,9 @@ export default function TopicEditorModal({ show, topic, onClose, onSave }: Topic
   }, [editor, topic]);
 
   const handleSave = async () => {
-    if (!editedTopic || !editedTopic.id) return
+    if (!editedTopic || !editedTopic.id) {
+      return
+    }
     setIsSaving(true)
 
     try {
@@ -243,9 +241,11 @@ export default function TopicEditorModal({ show, topic, onClose, onSave }: Topic
       });
       
       localStorage.removeItem(`draft_topic_${editedTopic.id}`);
+      setSavedTitle(editedTopic.title)
       onSave({ ...editedTopic, content: finalJson });
-      onClose();
+      setShowSuccess(true)
     } catch (error) {
+      // TODO: USE MODALS INSTEAD OF ALERTS
       setErrorAlert({
         show: true,
         msg: "Error crítico al guardar: " + String(error)
@@ -255,10 +255,32 @@ export default function TopicEditorModal({ show, topic, onClose, onSave }: Topic
     }
   }
 
+  const handleSuccessClose = () => {
+    console.log("🔵 handleSuccessClose called")
+    setShowSuccess(false)
+    onClose()
+  }
+
   if (!show || !editedTopic) return null
 
   return (
     <MathBlockProvider>
+
+      <AlertModal
+        isOpen={errorAlert.show}
+        onClose={() => setErrorAlert({ show: false, msg: "" })}
+        title="Atención requerida"
+        message={<span className="whitespace-pre-line">{errorAlert.msg}</span>}
+        variant="destructive"
+      />
+
+      <SuccessModal
+        show={showSuccess}
+        onClose={handleSuccessClose}
+        title="¡Tópico Guardado!"
+        message={`El tópico "${savedTitle}" fue guardado correctamente.`}
+      />
+
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 transition-all">
         <div className="bg-slate-50 rounded-2xl shadow-2xl w-full max-w-6xl overflow-hidden flex flex-col h-[92vh] border border-slate-200">
 
@@ -385,14 +407,6 @@ export default function TopicEditorModal({ show, topic, onClose, onSave }: Topic
             </div>
           </div>
         </div>
-
-        <AlertModal
-          isOpen={errorAlert.show}
-          onClose={() => setErrorAlert({ show: false, msg: "" })}
-          title="Atención requerida"
-          message={<span className="whitespace-pre-line">{errorAlert.msg}</span>}
-          variant="destructive"
-        />
       </div>
     </MathBlockProvider>
   )
