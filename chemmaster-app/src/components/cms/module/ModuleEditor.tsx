@@ -11,67 +11,8 @@ import { AllowedGrade, COLOR_OPTIONS } from "../../../lib/constants"
 import * as LucideIcons from "lucide-react"
 import { API } from "../../../lib/api"
 import { useModuleEditor } from "../../../hooks/useModuleEditor"
-import { Modal, AlertModal } from "../../ui/modal"
-import IconPickerModal from "../../common/IconPickerModal"
-
-function ConfirmSaveModal({ show, onClose, onConfirm }: { show: boolean, onClose: () => void, onConfirm: (pass: string) => void }) {
-  const [password, setPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-
-  const handleConfirm = () => {
-    setIsLoading(true);
-    onConfirm(password);
-    setPassword("");
-    setIsLoading(false);
-  }
-
-  const modalFooter = (
-    <>
-      <Button variant="ghost" onClick={onClose} disabled={isLoading}>Cancelar</Button>
-      <Button
-        onClick={handleConfirm}
-        disabled={!password || isLoading}
-        className="bg-blue-600 hover:bg-blue-700 text-white min-w-[120px]"
-      >
-        {isLoading ? <LucideIcons.Loader2 className="h-4 w-4 animate-spin" /> : "Confirmar"}
-      </Button>
-    </>
-  )
-
-  return (
-    <Modal isOpen={show} onClose={onClose} title="Confirmar Cambios" maxWidth="max-w-md" footer={modalFooter}>
-      <div className="p-8 flex flex-col items-center text-center space-y-6">
-        <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center ring-8 ring-blue-50/50">
-          <LucideIcons.LockKeyhole className="h-8 w-8 text-blue-600" />
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-slate-600">
-            Estás a punto de guardar cambios sensibles en la estructura del módulo.
-          </p>
-          <p className="text-sm text-slate-400">
-            Por favor, ingresa tu contraseña de administrador para continuar.
-          </p>
-        </div>
-
-        <div className="w-full">
-          <Label className="sr-only">Contraseña</Label>
-          <div className="relative">
-            <LucideIcons.Key className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-            <Input
-              type="password"
-              placeholder="Contraseña..."
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="pl-10 h-12 text-lg border-slate-200 focus:border-blue-500 bg-slate-50 focus:bg-white transition-colors"
-              autoFocus
-            />
-          </div>
-        </div>
-      </div>
-    </Modal>
-  )
-}
+import IconPickerModal from "../../common/modals/IconPickerModal"
+import ConfirmSaveModal from '../../common/modals/ConfirmSaveModal'
 
 export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
   const {
@@ -86,46 +27,16 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
   const [showIconModal, setShowIconModal] = useState(false)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
 
-  const [alertConfig, setAlertConfig] = useState<{
-    show: boolean;
-    title: string;
-    msg: string;
-    variant: "success" | "destructive" | "default";
-  }>({ show: false, title: "", msg: "", variant: "default" });
-
   const handleSave = async (password: string) => {
-    // TODO: Aquí validar la contraseña contra una API si fuera necesario
-    // if (password !== "admin") { ... mostrar error ... return; }
-    setShowConfirmModal(false);
-    try {
-      if (!editedModule.id) throw new Error("Falta el ID del módulo");
-
-      await API.UpdateModule(editedModule.id, editedModule);
-
-      setIsEditing(false);
-      onSave?.(editedModule);
-
-      setAlertConfig({
-        show: true,
-        title: "¡Guardado Exitoso!",
-        msg: `El módulo "${editedModule.title}" ha sido actualizado correctamente en la base de datos.`,
-        variant: "success"
-      });
-
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
-      setAlertConfig({
-        show: true,
-        title: "Error al Guardar",
-        msg: `No pudimos guardar los cambios: ${errorMessage}`,
-        variant: "destructive"
-      });
-    }
+    // TODO: validate password via API
+    if (!editedModule.id) throw new Error("Falta el ID del módulo")  // 👈 throw so ConfirmSaveModal catches it
+    await API.UpdateModule(editedModule.id, editedModule)  // 👈 throw on failure too
+    setIsEditing(false)
+    onSave?.(editedModule)
   }
 
   return (
     <div className="overflow-y-auto bg-white h-full custom-scrollbar">
-
       {/* HEADER */}
       <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-8 border-b-4 border-blue-500 shadow-md">
         <div className="flex items-center justify-between">
@@ -317,16 +228,10 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
         show={showConfirmModal}
         onClose={() => setShowConfirmModal(false)}
         onConfirm={handleSave}
+        description={`Estás a punto de guardar cambios en el módulo "${editedModule.title}".`}
+        successTitle="¡Módulo Actualizado!"
+        successMessage={`El módulo "${editedModule.title}" fue guardado correctamente.`}
       />
-
-      <AlertModal
-        isOpen={alertConfig.show}
-        onClose={() => setAlertConfig({ ...alertConfig, show: false })}
-        title={alertConfig.title}
-        message={alertConfig.msg}
-        variant={alertConfig.variant as any}
-      />
-
     </div>
   )
 }

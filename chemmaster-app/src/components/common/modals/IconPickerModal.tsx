@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react'
-import { Input } from '../ui/input'
-import { Modal } from '../ui/modal'
+import { Input } from '../../ui/input'
+import { Modal } from '../../ui/modal'
 import * as LucideIcons from 'lucide-react'
-import { IconPickerModalProps } from '../../types/iconPicker'
+import { IconPickerModalProps } from '../../../types/iconPicker'
 
 export default function IconPickerModal({ show, onClose, currentIcon, onIconChange }: IconPickerModalProps) {
   const [searchTerm, setSearchTerm] = useState("")

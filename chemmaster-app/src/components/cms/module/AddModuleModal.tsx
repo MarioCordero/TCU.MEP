@@ -9,8 +9,8 @@ import { API } from '../../../lib/api'
 import { Modal, AlertModal } from '../../ui/modal'
 import * as LucideIcons from 'lucide-react'
 import { AddModuleModalProps, Module } from '../../../types/moduleProps'
-import IconPickerModal from '../../common/IconPickerModal'
-import SuccessModal from '../../common/SuccessModal'
+import IconPickerModal from '../../common/modals/IconPickerModal'
+import SuccessModal from '../../common/modals/SuccessModal'
 
 const COLOR_OPTIONS = [
   { value: 'from-blue-500 to-blue-600', label: 'Azul' },

@@ -1,7 +1,7 @@
-import { Modal } from '../ui/modal'
-import { Button } from '../ui/button'
+import { Modal } from '../../ui/modal'
+import { Button } from '../../ui/button'
 import * as LucideIcons from 'lucide-react'
-import { SuccessModalProps } from '../../types/modals'
+import { SuccessModalProps } from '../../../types/modals'
 
 export default function SuccessModal({
   show,
