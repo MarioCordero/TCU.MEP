@@ -256,7 +256,6 @@ export default function TopicEditorModal({ show, topic, onClose, onSave }: CMSTo
   }
 
   const handleSuccessClose = () => {
-    console.log("🔵 handleSuccessClose called")
     setShowSuccess(false)
     onClose()
   }

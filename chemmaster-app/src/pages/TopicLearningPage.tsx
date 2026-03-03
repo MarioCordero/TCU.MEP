@@ -29,6 +29,8 @@ import {QuizQuestion} from "../types/topicSelector"
 import {TopicLearningPageProps} from "../types/topicSelector"
 import TopicQuiz from "../components/topic-selection/TopicQuiz"
 import TopicLearningHeader from "../components/topic-selection/TopicLearningHeader"
+import { InlineMath } from 'react-katex'
+import 'katex/dist/katex.min.css'
 
 type ViewState = "content" | "quiz"
 type ContentType = "blocknote" | "html"
