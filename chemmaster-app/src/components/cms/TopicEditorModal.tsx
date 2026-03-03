@@ -2,18 +2,35 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { Topic } from "../../types/cms"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
-import { Textarea } from "../ui/textarea"
-import { Label } from "../ui/label"
-import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
+import { 
+  useCreateBlockNote,
+  FormattingToolbar,
+  FormattingToolbarController,
+  BasicTextStyleButton,
+  BlockTypeSelect,
+  ColorStyleButton,
+  CreateLinkButton,
+  FileCaptionButton,
+  FileReplaceButton,
+  NestBlockButton,
+  UnnestBlockButton,
+  TextAlignButton,
+  useEditorSelectionChange,
+  useBlockNoteEditor
+} from "@blocknote/react";
 import * as LucideIcons from "lucide-react"
 import { API } from "../../lib/api"
 import { BlockNoteView } from "@blocknote/mantine";
-import { useCreateBlockNote } from "@blocknote/react";
 import "@blocknote/mantine/style.css";
 import { AlertModal } from "../ui/modal";
 import { extractFileUrls } from "../../lib/utils";
 import { MathBlock } from "./MathBlock";
-import { BlockNoteSchema, defaultBlockSpecs } from "@blocknote/core";
+import { 
+  BlockNoteSchema, 
+  defaultBlockSpecs, 
+  defaultStyleSpecs,
+  createStyleSpec,
+} from "@blocknote/core";
 import { getDefaultReactSlashMenuItems, SuggestionMenuController } from "@blocknote/react";
 import { MathBlockProvider } from "./MathBlockContext"
 
@@ -24,6 +41,75 @@ interface TopicEditorModalProps {
   onClose: () => void
   onSave: (topic: Topic) => void
 }
+
+function TipTapMarkButton({ mark, label }: { mark: string; label: string }) {
+  const editor = useBlockNoteEditor();
+  const [isActive, setIsActive] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  useEditorSelectionChange(() => {
+    setIsActive((editor as any)._tiptapEditor?.isActive(mark) ?? false);
+  }, editor);
+
+  return (
+    <button
+      data-test={`${mark}-button`}
+      className={[
+        "bn-button",
+        isActive ? "bn-button-selected" : "",
+      ].join(" ")}
+      style={{
+        cursor: "pointer",
+        paddingInline: "8px",                                      // ✅ more horizontal margin
+        backgroundColor: isActive
+          ? undefined                                              // let bn-button-selected handle it
+          : isHovered ? "#e9ecef" : "transparent", // ✅ gray on hover
+        borderRadius: "4px",
+        transition: "background-color 0.15s ease",
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        (editor as any)._tiptapEditor?.chain().focus().toggleMark(mark).run();
+      }}
+      aria-label={label}
+      aria-pressed={isActive}
+      title={label}
+    >
+      {mark === "superscript"
+        ? <span>A<sup style={{ fontSize: "0.65em", lineHeight: 0 }}>2</sup></span>
+        : <span>A<sub style={{ fontSize: "0.65em", lineHeight: 0 }}>2</sub></span>
+      }
+    </button>
+  );
+}
+
+const SuperscriptStyle = createStyleSpec(
+  {
+    type: "superscript",
+    propSchema: "boolean",
+  },
+  {
+    render: () => {
+      const dom = document.createElement("sup");
+      return { dom, contentDOM: dom };
+    },
+  }
+);
+
+const SubscriptStyle = createStyleSpec(
+  {
+    type: "subscript",
+    propSchema: "boolean",
+  },
+  {
+    render: () => {
+      const dom = document.createElement("sub");
+      return { dom, contentDOM: dom };
+    },
+  }
+);
 
 export default function TopicEditorModal({ show, topic, onClose, onSave }: TopicEditorModalProps) {
   const [editedTopic, setEditedTopic] = useState<Topic | null>(topic)
@@ -37,8 +123,17 @@ export default function TopicEditorModal({ show, topic, onClose, onSave }: Topic
     const mathBlockSpec = typeof MathBlock === "function"
       ? (MathBlock as any)()
       : MathBlock;
+
     return BlockNoteSchema.create({
-      blockSpecs: { ...defaultBlockSpecs, math: mathBlockSpec as any },
+      blockSpecs: { 
+        ...defaultBlockSpecs, 
+        math: mathBlockSpec as any 
+      },
+      styleSpecs: {
+        ...defaultStyleSpecs,
+        superscript: SuperscriptStyle,
+        subscript: SubscriptStyle,
+      },
     });
   }, []);
 
@@ -49,7 +144,10 @@ export default function TopicEditorModal({ show, topic, onClose, onSave }: Topic
     return tempUrl;
   }, []);
 
-  const editor = useCreateBlockNote({ schema, uploadFile });
+  const editor = useCreateBlockNote({
+    schema,
+    uploadFile
+  });
 
   const insertMathItem = useMemo(() => ({
     title: "Fórmula Matemática",
@@ -212,21 +310,44 @@ export default function TopicEditorModal({ show, topic, onClose, onSave }: Topic
                   onChange={handleEditorChange}
                   className="min-h-[500px]"
                   slashMenu={false} // Default menu disabled
+                  formattingToolbar={false} // Default toolbar disabled
                 >
-                  {/* Custom Menu */}
+                  {/* Custom toolbar with chemistry buttons */}
+                  <FormattingToolbarController
+                    formattingToolbar={() => (
+                      <FormattingToolbar>
+                        <BlockTypeSelect key="blockTypeSelect" />
+                        <FileCaptionButton key="fileCaptionButton" />
+                        <FileReplaceButton key="fileReplaceButton" />
+                        <BasicTextStyleButton basicTextStyle="bold" key="boldStyleButton" />
+                        <BasicTextStyleButton basicTextStyle="italic" key="italicStyleButton" />
+                        <BasicTextStyleButton basicTextStyle="underline" key="underlineStyleButton" />
+                        <BasicTextStyleButton basicTextStyle="strike" key="strikeStyleButton" />
+
+                        {/* ✅ Chemistry buttons */}
+                        <TipTapMarkButton key="superscript" mark="superscript" label="Superíndice" />
+                        <TipTapMarkButton key="subscript" mark="subscript" label="Subíndice" />
+
+                        <TextAlignButton textAlignment="left" key="textAlignLeftButton" />
+                        <TextAlignButton textAlignment="center" key="textAlignCenterButton" />
+                        <TextAlignButton textAlignment="right" key="textAlignRightButton" />
+                        <ColorStyleButton key="colorStyleButton" />
+                        <NestBlockButton key="nestBlockButton" />
+                        <UnnestBlockButton key="unnestBlockButton" />
+                        <CreateLinkButton key="createLinkButton" />
+                      </FormattingToolbar>
+                    )}
+                  />
+
                   <SuggestionMenuController
-                    triggerCharacter={"/"}
+                    triggerCharacter="/"
                     getItems={async (query) => {
                       const defaultItems = getDefaultReactSlashMenuItems(editor);
                       const allItems = [...defaultItems, insertMathItem];
-
-                      // Filter what user types
                       return allItems.filter(
                         (item) =>
                           item.title.toLowerCase().includes(query.toLowerCase()) ||
-                          item.aliases?.some((alias) =>
-                            alias.toLowerCase().includes(query.toLowerCase())
-                          )
+                          item.aliases?.some((alias) => alias.toLowerCase().includes(query.toLowerCase()))
                       );
                     }}
                   />

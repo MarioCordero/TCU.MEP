@@ -9,10 +9,12 @@ import "katex/dist/katex.min.css";
 const mathTemplates = [
   { label: "Fracción", template: "\\frac{a}{b}" },
   { label: "Raíz", template: "\\sqrt{x}" },
-  { label: "Potencia", template: "x^{2}" },
-  { label: "Subíndice", template: "x_{1}" },
+  { label: "Potencia x²", template: "x^{2}" },
+  { label: "Subíndice x₂", template: "x_{2}" },
   { label: "Suma", template: "\\sum_{i=1}^{n}" },
   { label: "Integral", template: "\\int_{0}^{\\infty}" },
+  { label: "H₂O", template: "H_{2}O" },
+  { label: "CO₂", template: "CO_{2}" },
 ];
 
 export function MathEditorModal({
