@@ -100,3 +100,11 @@ export interface UseModuleEditorReturn {
   resetToOriginal: () => void;
   hasChanges: boolean;
 }
+
+export interface SidebarProps {
+  modules: Module[]
+  selectedModule: Module | null
+  onSelect: (module: Module) => void
+  onModuleAdded?: (module: Module) => void
+  onModuleDeleted?: (moduleId: number) => void
+}

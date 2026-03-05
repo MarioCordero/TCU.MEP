@@ -1,41 +1,32 @@
 import { useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { AlertCircle, ArrowLeft, Eye as EyeIcon, EyeOff, Lock } from "lucide-react"
-import { Button } from "../../components/ui/button"
-import { Input } from "../../components/ui/input"
-import { Label } from "../../components/ui/label"
-
-type CMSLoginPageProps = {
-  onBack: () => void
-  onSuccess: () => void
-}
+import { Button } from "../components/ui/button"
+import { Input } from "../components/ui/input"
+import { Label } from "../components/ui/label"
+import { useApi } from "../hooks/useApi"
+import { API } from "../lib/api"
+import { CMSLoginPageProps, LoginResponse } from "../types/login"
 
 export default function CMSLoginPage({ onBack, onSuccess }: CMSLoginPageProps) {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-
-  // Credenciales temporales - cambiar a consulta backend posteriormente
-  const TEMP_USERNAME = "admin"
-  const TEMP_PASSWORD = "chemmaster2024"
+  const { loading: isLoading, error, request } = useApi<LoginResponse>()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError("")
-    setIsLoading(true)
-
-    // Simular delay de red
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
-    // TODO: Reemplazar con llamada al backend
-    if (username === TEMP_USERNAME && password === TEMP_PASSWORD) {
+    try {
+      const result = await request(API.Login({ username, password }))
+      console.log("Login result:", result)
+      if (result?.token) {
+        localStorage.setItem("cms_token", result.token)
+        localStorage.setItem("cms_user", JSON.stringify(result.user))
+      }
       onSuccess()
-    } else {
-      setError("Credenciales incorrectas. Intenta de nuevo.")
+    } catch {
+      // error is handled by useApi
     }
-    setIsLoading(false)
   }
 
   return (

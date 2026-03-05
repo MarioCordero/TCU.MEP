@@ -1,13 +1,7 @@
 import { motion } from "framer-motion"
 import { Atom, Compass, Info, Play, Settings, Zap, ChevronRight } from "lucide-react"
 import { Button } from "../components/ui/button"
-
-type LandingHomeProps = {
-  onStart: () => void
-  onInfo: () => void
-  onResources: () => void
-  onCms: () => void
-}
+import { LandingHomeProps } from "../types/landing"
 
 export default function LandingHome({ onStart, onInfo, onResources, onCms }: LandingHomeProps) {
   return (
