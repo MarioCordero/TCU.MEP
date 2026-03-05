@@ -24,7 +24,7 @@ import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
 import { AlertModal } from "../../ui/modal";
 import { extractFileUrls } from "../../../lib/utils";
-import { MathBlock } from "../MathBlock";
+import { MathBlock } from "../mathBlock/MathBlock";
 import { 
   BlockNoteSchema, 
   defaultBlockSpecs, 
@@ -32,7 +32,7 @@ import {
   createStyleSpec,
 } from "@blocknote/core";
 import { getDefaultReactSlashMenuItems, SuggestionMenuController } from "@blocknote/react";
-import { MathBlockProvider } from "../MathBlockContext"
+import { MathBlockProvider } from "../mathBlock/MathBlockContext"
 import { CMSTopicEditorModalProps } from "../../../types/cms";
 import SuccessModal from "../../common/modals/SuccessModal"
 
