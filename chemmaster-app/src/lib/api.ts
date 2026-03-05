@@ -1,4 +1,5 @@
 import { Topic, Module, AllContentResponse } from '../types/cms';
+import { LoginResponse } from '../types/login';
 
 const BASE_URL = import.meta.env.PROD 
   ? 'https://spectcr.com/API/ChemMaster/' 
@@ -87,4 +88,10 @@ export const API = {
     }),
 
   GetAllContent: () => request<AllContentResponse>('getAllContent.php'),
+
+  Login: (data: { username: string; password: string }) =>
+    request<LoginResponse>('login.php', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 };

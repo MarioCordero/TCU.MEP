@@ -6,12 +6,14 @@ import TopicEditor from '../components/cms/topic/TopicEditor';
 import { CMSModuleEditor } from '../components/cms/module/ModuleEditor';
 import CMSSidebar from '../components/cms/Sidebar';
 import * as LucideIcons from "lucide-react"
+import { useAuthGuard } from "../hooks/useAuthGuard"
 
 interface ChemMasterCMSProps {
   onClose?: () => void;
 }
 
 export default function ChemMasterCMS({ onClose }: ChemMasterCMSProps) {
+  useAuthGuard()
   const { data: cmsData, loading, error, request } = useApi<AllContentResponse>();
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
 

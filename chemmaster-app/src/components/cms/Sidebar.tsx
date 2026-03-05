@@ -1,19 +1,12 @@
 import { useState } from 'react'
-import { Module } from '../../types/cms'
 import { Button } from '../ui/button'
 import * as LucideIcons from 'lucide-react'
 import AddModuleModal from './module/AddModuleModal'
 import { Modal, AlertModal } from '../ui/modal'
 import { useModuleDelete } from '../../hooks/useModuleDelete'
 import SuccessModal from '../common/modals/SuccessModal'
-
-interface SidebarProps {
-  modules: Module[]
-  selectedModule: Module | null
-  onSelect: (module: Module) => void
-  onModuleAdded?: (module: Module) => void
-  onModuleDeleted?: (moduleId: number) => void
-}
+import { SidebarProps } from '../../types/cms'
+import { useNavigate } from 'react-router-dom'
 
 export default function CMSSidebar({
   modules,
@@ -23,6 +16,13 @@ export default function CMSSidebar({
   onModuleDeleted
 }: SidebarProps) {
   const [showAddModal, setShowAddModal] = useState(false)
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    localStorage.removeItem("cms_token")
+    localStorage.removeItem("cms_user")
+    navigate("/")
+  }
 
   const {
     isDeleting,
@@ -132,6 +132,18 @@ export default function CMSSidebar({
               {renderModuleList("11")}
             </div>
           </div>
+        </div>
+
+        {/* Footer - Logout */}
+        <div className="p-3 border-t border-gray-200 bg-white">
+          <Button
+            onClick={handleLogout}
+            className="w-full bg-red-500 hover:bg-red-600 text-white transition-all"
+            size="sm"
+          >
+            <LucideIcons.LogOut className="h-4 w-4 mr-2" />
+            Cerrar sesión
+          </Button>
         </div>
       </aside>
 

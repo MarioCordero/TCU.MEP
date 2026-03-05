@@ -8,8 +8,10 @@ import GradeSelectorPage from './pages/GradeSelectorPage'
 import GradePage from './pages/GradePage'
 import TopicPage from './pages/TopicPage'
 import ChemMasterCMS from './pages/CMSPage'
+import CMSLoginPage from './pages/CMSLoginPage'
 import { ProgressProvider } from './context/ProgressContext'
 import { NavigationProvider } from './context/NavigationContext'
+import { AppProps } from './types/app'
 
 function DocumentTitle() {
   const location = useLocation()
@@ -19,18 +21,13 @@ function DocumentTitle() {
       '/': 'ChemMaster - HOME',
       '/grade-selector': 'ChemMaster - Selección de Grado',
       '/info': 'ChemMaster - Información',
-      '/CMS': 'ChemMaster - CMS'
+      '/CMS': 'ChemMaster - CMS',
+      '/login': 'ChemMaster - Login',
     }
     const cleanPath = location.pathname || '/';
     document.title = titles[cleanPath] || 'ChemMaster'
   }, [location.pathname])
   return null
-}
-
-interface AppProps {
-  isLoaderComplete?: boolean;
-  currentPage?: string;
-  basePath?: string; 
 }
 
 export default function App({ basePath = '' }: AppProps) {
@@ -51,13 +48,20 @@ export default function App({ basePath = '' }: AppProps) {
               onStart={() => navigate(`${effectiveBase}/grade-selector`)}
               onInfo={() => navigate(`${effectiveBase}/info`)}
               onResources={() => navigate(`${effectiveBase}/resources`)}
-              onCms={() => navigate(`${effectiveBase}/CMS`)}
+              onCms={() => navigate(`${effectiveBase}/login`)}
             />
           } />
 
           <Route path="/info" element={<InfoPage onBack={handleInfoBack} onStart={handleInfoStart} />} />
 
           <Route path="/CMS" element={<ChemMasterCMS onClose={handleCMSClose} />} />
+
+          <Route path="/login" element={
+            <CMSLoginPage 
+              onBack={() => navigate(effectiveBase || '/')} 
+              onSuccess={() => navigate(`${effectiveBase}/CMS`)}
+            />
+          } />
 
           <Route path="/grade-selector" element={
             <GradeSelectorPage
