@@ -18,7 +18,6 @@ export default function CMSLoginPage({ onBack, onSuccess }: CMSLoginPageProps) {
     e.preventDefault()
     try {
       const result = await request(API.Login({ username, password }))
-      console.log("Login result:", result)
       if (result?.token) {
         localStorage.setItem("cms_token", result.token)
         localStorage.setItem("cms_user", JSON.stringify(result.user))
