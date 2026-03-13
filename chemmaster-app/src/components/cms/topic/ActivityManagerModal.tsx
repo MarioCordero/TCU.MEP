@@ -3,6 +3,8 @@ import { Modal } from '../../ui/modal';
 import { Button } from '../../ui/button';
 import * as LucideIcons from 'lucide-react';
 import { Activity, ActivityManagerModalProps, ActivityType, QuizOption, MatchPair, DragItem, WordSoupRow } from '../../../types/activities';
+import { API } from '../../../lib/api';
+import SuccessModal from '../../common/modals/SuccessModal';
 
 // ─── Activity Type Config ─────────────────────────────────────────────────────
 
@@ -585,6 +587,7 @@ export default function ActivityManagerModal({
   const [content, setContent] = useState('{}');
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleSelectType = (type: ActivityType) => {
     setSelectedType(type);
@@ -606,7 +609,13 @@ export default function ActivityManagerModal({
     setQuestion('');
     setContent('{}');
     setError(null);
+    setShowSuccess(false);
     onClose();
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccess(false);
+    handleClose();
   };
 
   const handleSave = async () => {
@@ -615,8 +624,10 @@ export default function ActivityManagerModal({
       setError('La pregunta o instrucción es requerida.');
       return;
     }
+
     setIsSaving(true);
     setError(null);
+
     try {
       const payload: Omit<Activity, 'id' | 'created_at' | 'updated_at'> = {
         topic_id: topicId,
@@ -626,19 +637,8 @@ export default function ActivityManagerModal({
         order_in_topic: 0,
       };
 
-      const res = await fetch(`/api/activities`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        credentials: 'include',
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.message || 'Error al guardar la actividad.');
-      }
-
-      handleClose();
+      await API.AddActivity(payload);
+      setShowSuccess(true); // ✅ mostrar modal de éxito
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error inesperado.');
     } finally {
@@ -666,140 +666,147 @@ export default function ActivityManagerModal({
   };
 
   return (
-    <Modal isOpen={show} onClose={handleClose} maxWidth="max-w-2xl">
-      <div className="flex flex-col max-h-[85vh]">
-
-        {/* ── Header ── */}
-        <div className="p-6 border-b border-slate-100 shrink-0">
-          <div className="flex items-center gap-3">
-            {step === 'create' && (
+    <>
+      <Modal isOpen={show} onClose={handleClose} maxWidth="max-w-2xl">
+        <div className="flex flex-col max-h-[85vh]">
+          {/* ── Header ── */}
+          <div className="p-6 border-b border-slate-100 shrink-0">
+            <div className="flex items-center gap-3">
+              {step === 'create' && (
+                <button
+                  onClick={handleBack}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                >
+                  <LucideIcons.ArrowLeft className="h-5 w-5" />
+                </button>
+              )}
+              <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
+                <LucideIcons.Trophy className="h-5 w-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg font-bold text-slate-800">
+                  {step === 'select' ? 'Nueva Actividad' : `Crear: ${selectedConfig?.label}`}
+                </h2>
+                <p className="text-xs text-slate-400 truncate">
+                  Tópico: <span className="font-medium text-slate-500">{topicTitle}</span>
+                </p>
+              </div>
               <button
-                onClick={handleBack}
+                onClick={handleClose}
                 className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
               >
-                <LucideIcons.ArrowLeft className="h-5 w-5" />
+                <LucideIcons.X className="h-5 w-5" />
               </button>
+            </div>
+
+            {/* Step indicator */}
+            <div className="flex items-center gap-2 mt-4">
+              {['select', 'create'].map((s, i) => (
+                <div key={s} className="flex items-center gap-2">
+                  {i > 0 && <div className="w-8 h-px bg-slate-200" />}
+                  <div className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${step === s
+                      ? 'bg-purple-100 text-purple-700'
+                      : i < ['select', 'create'].indexOf(step)
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-slate-100 text-slate-400'
+                    }`}>
+                    {i < ['select', 'create'].indexOf(step)
+                      ? <LucideIcons.Check className="h-3 w-3" />
+                      : <span>{i + 1}</span>}
+                    {s === 'select' ? 'Tipo' : 'Configurar'}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Body ── */}
+          <div className="flex-1 overflow-y-auto p-6">
+
+            {/* Step 1: Select Type */}
+            {step === 'select' && (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {ACTIVITY_TYPES.map(({ type, label, icon, description, color, bgColor, borderColor }) => {
+                  const Icon = LucideIcons[icon] as React.ComponentType<{ className?: string }>;
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => handleSelectType(type)}
+                      className={`group text-left p-4 rounded-xl border-2 ${borderColor} ${bgColor} hover:shadow-md transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-purple-300`}
+                    >
+                      <div className={`${color} mb-3`}>
+                        <Icon className="h-7 w-7" />
+                      </div>
+                      <div className="font-bold text-slate-800 text-sm mb-1">{label}</div>
+                      <div className="text-xs text-slate-500 leading-relaxed">{description}</div>
+                      <div className={`mt-3 flex items-center gap-1 text-xs font-medium ${color} opacity-0 group-hover:opacity-100 transition-opacity`}>
+                        Seleccionar <LucideIcons.ArrowRight className="h-3 w-3" />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             )}
-            <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
-              <LucideIcons.Trophy className="h-5 w-5" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-bold text-slate-800">
-                {step === 'select' ? 'Nueva Actividad' : `Crear: ${selectedConfig?.label}`}
-              </h2>
-              <p className="text-xs text-slate-400 truncate">
-                Tópico: <span className="font-medium text-slate-500">{topicTitle}</span>
-              </p>
-            </div>
-            <button
-              onClick={handleClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-            >
-              <LucideIcons.X className="h-5 w-5" />
-            </button>
+
+            {/* Step 2: Create Form */}
+            {step === 'create' && selectedConfig && (
+              <div>
+                {/* Type pill */}
+                <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-5 ${selectedConfig.bgColor} ${selectedConfig.color} border ${selectedConfig.borderColor}`}>
+                  {(() => {
+                    const Icon = LucideIcons[selectedConfig.icon] as React.ComponentType<{ className?: string }>;
+                    return <Icon className="h-3.5 w-3.5" />;
+                  })()}
+                  {selectedConfig.label}
+                </div>
+
+                {renderForm()}
+
+                {error && (
+                  <div className="mt-4 flex items-start gap-2 bg-red-50 border border-red-100 rounded-lg p-3">
+                    <LucideIcons.AlertTriangle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Step indicator */}
-          <div className="flex items-center gap-2 mt-4">
-            {['select', 'create'].map((s, i) => (
-              <div key={s} className="flex items-center gap-2">
-                {i > 0 && <div className="w-8 h-px bg-slate-200" />}
-                <div className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${
-                  step === s
-                    ? 'bg-purple-100 text-purple-700'
-                    : i < ['select', 'create'].indexOf(step)
-                    ? 'bg-emerald-100 text-emerald-700'
-                    : 'bg-slate-100 text-slate-400'
-                }`}>
-                  {i < ['select', 'create'].indexOf(step)
-                    ? <LucideIcons.Check className="h-3 w-3" />
-                    : <span>{i + 1}</span>}
-                  {s === 'select' ? 'Tipo' : 'Configurar'}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Body ── */}
-        <div className="flex-1 overflow-y-auto p-6">
-
-          {/* Step 1: Select Type */}
-          {step === 'select' && (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {ACTIVITY_TYPES.map(({ type, label, icon, description, color, bgColor, borderColor }) => {
-                const Icon = LucideIcons[icon] as React.ComponentType<{ className?: string }>;
-                return (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => handleSelectType(type)}
-                    className={`group text-left p-4 rounded-xl border-2 ${borderColor} ${bgColor} hover:shadow-md transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-purple-300`}
-                  >
-                    <div className={`${color} mb-3`}>
-                      <Icon className="h-7 w-7" />
-                    </div>
-                    <div className="font-bold text-slate-800 text-sm mb-1">{label}</div>
-                    <div className="text-xs text-slate-500 leading-relaxed">{description}</div>
-                    <div className={`mt-3 flex items-center gap-1 text-xs font-medium ${color} opacity-0 group-hover:opacity-100 transition-opacity`}>
-                      Seleccionar <LucideIcons.ArrowRight className="h-3 w-3" />
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Step 2: Create Form */}
-          {step === 'create' && selectedConfig && (
-            <div>
-              {/* Type pill */}
-              <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-5 ${selectedConfig.bgColor} ${selectedConfig.color} border ${selectedConfig.borderColor}`}>
-                {(() => {
-                  const Icon = LucideIcons[selectedConfig.icon] as React.ComponentType<{ className?: string }>;
-                  return <Icon className="h-3.5 w-3.5" />;
-                })()}
-                {selectedConfig.label}
-              </div>
-
-              {renderForm()}
-
-              {error && (
-                <div className="mt-4 flex items-start gap-2 bg-red-50 border border-red-100 rounded-lg p-3">
-                  <LucideIcons.AlertTriangle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
-                  <p className="text-sm text-red-700">{error}</p>
-                </div>
-              )}
+          {/* ── Footer ── */}
+          {step === 'create' && (
+            <div className="p-6 border-t border-slate-100 shrink-0 flex gap-3 justify-end">
+              <Button variant="ghost" onClick={handleBack} className="text-slate-600">
+                Atrás
+              </Button>
+              <Button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="bg-purple-600 hover:bg-purple-700 text-white shadow-md shadow-purple-200"
+              >
+                {isSaving ? (
+                  <>
+                    <LucideIcons.Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <LucideIcons.Save className="h-4 w-4 mr-2" />
+                    Guardar Actividad
+                  </>
+                )}
+              </Button>
             </div>
           )}
         </div>
+      </Modal>
 
-        {/* ── Footer ── */}
-        {step === 'create' && (
-          <div className="p-6 border-t border-slate-100 shrink-0 flex gap-3 justify-end">
-            <Button variant="ghost" onClick={handleBack} className="text-slate-600">
-              Atrás
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="bg-purple-600 hover:bg-purple-700 text-white shadow-md shadow-purple-200"
-            >
-              {isSaving ? (
-                <>
-                  <LucideIcons.Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Guardando...
-                </>
-              ) : (
-                <>
-                  <LucideIcons.Save className="h-4 w-4 mr-2" />
-                  Guardar Actividad
-                </>
-              )}
-            </Button>
-          </div>
-        )}
-      </div>
-    </Modal>
+      <SuccessModal
+        show={showSuccess}
+        onClose={handleSuccessClose}
+        title="¡Actividad guardada!"
+        message="La actividad se creó correctamente."
+      />
+    </>
   );
 }
