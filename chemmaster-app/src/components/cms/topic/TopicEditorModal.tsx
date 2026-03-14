@@ -323,15 +323,23 @@ export default function TopicEditorModal({ show, topic, onClose, onSave }: CMSTo
                 <div className="h-1 w-20 bg-indigo-500 mt-4 rounded-full opacity-20"></div>
               </div>
 
-              {/*BlockNote HERE THE CODE DOESN'T WORK PROPPERLY*/}
-              <div className="flex-1 px-4 pb-12 cursor-text">
+              <div className="flex-1 flex flex-col px-4 pb-12 cursor-text bg-white rounded-b-xl">
                 <BlockNoteView
                   editor={editor}
                   theme="light"
                   onChange={handleEditorChange}
-                  className="min-h-[500px]"
-                  slashMenu={false} // Default menu disabled
-                  formattingToolbar={false} // Default toolbar disabled
+                  style={{
+                    minHeight: "500px",
+                    display: "flex",
+                    flexDirection: "column",
+                    flex: "1 1 auto",
+                    "--bn-colors-editor-background": "#ffffff",
+                    "--bn-colors-side-menu": "#ffffff",
+                    "--bn-colors-menu-background": "#ffffff",
+                  } as React.CSSProperties}
+                  className="[&_.bn-container]:!h-full [&_.bn-container]:!flex-1 [&_.bn-container]:!bg-white [&_.bn-editor]:!min-h-[500px] [&_.bn-editor]:!bg-white"
+                  slashMenu={false}
+                  formattingToolbar={false}
                 >
                   {/* Custom toolbar with chemistry buttons */}
                   <FormattingToolbarController

@@ -38,6 +38,12 @@ type ContentType = "blocknote" | "html"
 
 // BlockNote Content Renderer Component
 function BlockNoteRenderer({ blocks }: { blocks: BlockNoteBlock[] }) {
+  const getBlockUrl = (block: BlockNoteBlock) => {
+    const props = (block.props || {}) as Record<string, unknown>
+    const candidate = props.url || props.src || props.previewUrl || props.fileUrl
+    return typeof candidate === "string" ? candidate : ""
+  }
+
   const renderContent = (content: BlockNoteBlock['content']) => {
     if (!content || !Array.isArray(content)) return null;
 
@@ -46,8 +52,15 @@ function BlockNoteRenderer({ blocks }: { blocks: BlockNoteBlock[] }) {
       if (item.styles?.bold) styles.fontWeight = 'bold'
       if (item.styles?.italic) styles.fontStyle = 'italic'
       if (item.styles?.underline) styles.textDecoration = 'underline'
-      if (item.styles?.superscript) styles.verticalAlign = 'super'; styles.fontSize = '0.75em'
-      if (item.styles?.subscript) styles.verticalAlign = 'sub'; styles.fontSize = '0.75em'
+      if (item.styles?.strike) styles.textDecoration = 'line-through'
+      if (item.styles?.superscript) {
+        styles.verticalAlign = 'super'
+        styles.fontSize = '0.75em'
+      }
+      if (item.styles?.subscript) {
+        styles.verticalAlign = 'sub'
+        styles.fontSize = '0.75em'
+      }
       
       return (
         <span key={idx} style={styles}>
@@ -57,12 +70,71 @@ function BlockNoteRenderer({ blocks }: { blocks: BlockNoteBlock[] }) {
     })
   }
 
+  const renderListGroup = (items: BlockNoteBlock[], ordered: boolean) => {
+    const ListTag = ordered ? 'ol' : 'ul'
+    const listClass = ordered ? 'list-decimal' : 'list-disc'
+
+    return (
+      <ListTag className={`my-3 ml-6 ${listClass} text-white space-y-2`}>
+        {items.map((item) => (
+          <li key={item.id} style={{ textAlign: (item.props?.textAlignment || 'left') as React.CSSProperties['textAlign'] }}>
+            {renderContent(item.content)}
+            {item.children && item.children.length > 0 && (
+              <div className="ml-4 mt-2 border-l border-white/10 pl-3 space-y-2">
+                {renderBlocks(item.children)}
+              </div>
+            )}
+          </li>
+        ))}
+      </ListTag>
+    )
+  }
+
+  const renderTable = (block: BlockNoteBlock) => {
+    const tableContent = (block as any).content
+    const rows = tableContent?.rows
+
+    if (!Array.isArray(rows) || rows.length === 0) return null
+
+    return (
+      <div key={block.id} className="my-4 overflow-x-auto">
+        <table className="w-full border-collapse border border-white/20 text-white text-sm">
+          <tbody>
+            {rows.map((row: any, rowIndex: number) => (
+              <tr key={rowIndex}>
+                {(row.cells || []).map((cell: any, cellIndex: number) => {
+                  const cellText = Array.isArray(cell.content)
+                    ? cell.content
+                        .flatMap((entry: any) => Array.isArray(entry?.content) ? entry.content : [])
+                        .map((entry: any) => entry?.text || '')
+                        .join('')
+                    : ''
+
+                  return (
+                    <td key={cellIndex} className="border border-white/20 px-3 py-2 align-top min-h-10">
+                      {cellText || <span className="text-white/30">&nbsp;</span>}
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+
   const renderBlock = (block: BlockNoteBlock) => {
-    const alignment = block.props.textAlignment || 'left'
-    const level = block.props.level || 2
+    const alignment = block.props?.textAlignment || 'left'
+    const level = block.props?.level || 2
+    const mathAlignmentClass = alignment === 'center'
+      ? 'justify-center'
+      : alignment === 'right'
+        ? 'justify-end'
+        : 'justify-start'
     
     switch (block.type) {
-      case 'heading':
+      case 'heading': {
         const headingClasses = {
           1: 'text-2xl md:text-3xl font-bold text-white mt-8 mb-4',
           2: 'text-xl md:text-2xl font-bold text-white mt-6 mb-3',
@@ -74,7 +146,7 @@ function BlockNoteRenderer({ blocks }: { blocks: BlockNoteBlock[] }) {
             <h1
               key={block.id}
               className={headingClasses}
-              style={{ textAlign: alignment as any }}
+              style={{ textAlign: alignment as React.CSSProperties['textAlign'] }}
             >
               {renderContent(block.content)}
             </h1>
@@ -84,7 +156,7 @@ function BlockNoteRenderer({ blocks }: { blocks: BlockNoteBlock[] }) {
             <h3
               key={block.id}
               className={headingClasses}
-              style={{ textAlign: alignment as any }}
+              style={{ textAlign: alignment as React.CSSProperties['textAlign'] }}
             >
               {renderContent(block.content)}
             </h3>
@@ -94,79 +166,194 @@ function BlockNoteRenderer({ blocks }: { blocks: BlockNoteBlock[] }) {
             <h2
               key={block.id}
               className={headingClasses}
-              style={{ textAlign: alignment as any }}
+              style={{ textAlign: alignment as React.CSSProperties['textAlign'] }}
             >
               {renderContent(block.content)}
             </h2>
           )
         }
+      }
       
       case 'math':
         return (
           <div
             key={block.id}
-            className="text-white w-full my-4 flex justify-center items-center py-4"
+            className={`text-white w-full my-4 flex ${mathAlignmentClass} items-center py-2`}
           >
             <InlineMath math={block.props?.equation || ''} />
           </div>
         )
 
       case 'image':
+        const imageUrl = getBlockUrl(block)
+        if (!imageUrl) return null
         return (
-          <div key={block.id} className="w-full my-4 flex justify-center">
+          <div key={block.id} className={`w-full my-4 flex ${mathAlignmentClass}`}>
             <img
-              src={block.props?.url}
+              src={imageUrl}
               alt={block.props?.caption || ''}
               className="max-w-full rounded-lg"
             />
           </div>
         )
 
+      case 'video': {
+        const videoUrl = getBlockUrl(block)
+        if (!videoUrl) return null
+        return (
+          <div key={block.id} className={`w-full my-4 flex ${mathAlignmentClass}`}>
+            <video
+              src={videoUrl}
+              controls
+              preload="metadata"
+              className="w-full max-w-full rounded-lg bg-black"
+            />
+          </div>
+        )
+      }
+
+      case 'audio': {
+        const audioUrl = getBlockUrl(block)
+        if (!audioUrl) return null
+        return (
+          <div key={block.id} className={`w-full my-4 flex ${mathAlignmentClass}`}>
+            <audio
+              src={audioUrl}
+              controls
+              preload="metadata"
+              className="w-full"
+            />
+          </div>
+        )
+      }
+
+      case 'file':
+        const fileUrl = getBlockUrl(block)
+        if (!fileUrl) return null
+        return (
+          <div key={block.id} className="my-4">
+            <a
+              href={fileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-white/20 bg-white/5 text-violet-300 hover:bg-white/10 hover:text-violet-200 transition-colors"
+            >
+              <span>📎</span>
+              <span>{block.props?.name || block.props?.caption || 'Archivo adjunto'}</span>
+            </a>
+          </div>
+        )
+
+      case 'quote':
+        return (
+          <blockquote
+            key={block.id}
+            className="border-l-4 border-violet-500 pl-4 italic text-white/90 my-4"
+          >
+            {renderContent(block.content)}
+          </blockquote>
+        )
+
+      case 'checkListItem': {
+        const checked = Boolean((block.props as any)?.checked)
+        return (
+          <label key={block.id} className="flex items-start gap-2 my-2 text-white">
+            <input type="checkbox" checked={checked} readOnly className="mt-1" />
+            <span className={checked ? 'line-through text-white/60' : ''}>{renderContent(block.content)}</span>
+          </label>
+        )
+      }
+
+      case 'toggleListItem':
+        return (
+          <details key={block.id} open className="my-3 text-white/95">
+            <summary className="cursor-pointer select-none">{renderContent(block.content) || <span className="text-white/40 italic">Toggle</span>}</summary>
+            {block.children && block.children.length > 0 && (
+              <div className="ml-4 mt-2 border-l border-white/10 pl-3 space-y-2">
+                {renderBlocks(block.children)}
+              </div>
+            )}
+          </details>
+        )
+
+      case 'codeBlock': {
+        const codeText = (block.content || []).map((entry) => entry.text).join('')
+        const language = (block.props as any)?.language || 'text'
+        return (
+          <div key={block.id} className="my-4">
+            <pre className="bg-white/5 border border-white/10 rounded-xl p-4 text-white overflow-x-auto">
+              <code className="text-sm" data-language={language}>{codeText}</code>
+            </pre>
+          </div>
+        )
+      }
+
+      case 'divider':
+        return <hr key={block.id} className="my-6 border-white/20" />
+
+      case 'table':
+        return renderTable(block)
+
       case 'paragraph':
         return (
           <p
             key={block.id}
             className="text-white leading-relaxed mb-4 text-sm md:text-base"
-            style={{ textAlign: alignment as any }}
+            style={{ textAlign: alignment as React.CSSProperties['textAlign'] }}
           >
             {renderContent(block.content)}
           </p>
-        )
-      
-      case 'bulletListItem':
-        return (
-          <li
-            key={block.id}
-            className="text-white mb-2 ml-6 list-disc"
-            style={{ textAlign: alignment as any }}
-          >
-            {renderContent(block.content)}
-          </li>
-        )
-      
-      case 'numberedListItem':
-        return (
-          <li
-            key={block.id}
-            className="text-white mb-2 ml-6 list-decimal"
-            style={{ textAlign: alignment as any }}
-          >
-            {renderContent(block.content)}
-          </li>
         )
       
       default:
         return (
           <div key={block.id} className="text-white mb-4">
             {renderContent(block.content)}
+            {block.children && block.children.length > 0 && (
+              <div className="ml-4 mt-2 border-l border-white/10 pl-3 space-y-2">
+                {renderBlocks(block.children)}
+              </div>
+            )}
           </div>
         )
     }
   }
 
+  const renderBlocks = (items: BlockNoteBlock[]) => {
+    const rendered: React.ReactNode[] = []
+
+    for (let index = 0; index < items.length; index++) {
+      const block = items[index]
+
+      if (block.type === 'bulletListItem' || block.type === 'numberedListItem') {
+        const ordered = block.type === 'numberedListItem'
+        const group: BlockNoteBlock[] = [block]
+
+        while (
+          index + 1 < items.length &&
+          items[index + 1].type === block.type
+        ) {
+          group.push(items[index + 1])
+          index++
+        }
+
+        rendered.push(
+          <React.Fragment key={`list-${block.id}`}>
+            {renderListGroup(group, ordered)}
+          </React.Fragment>
+        )
+        continue
+      }
+
+      rendered.push(renderBlock(block))
+    }
+
+    return rendered
+  }
+
   return (
     <div className="space-y-2">
-      {blocks.map((block) => renderBlock(block))}
+      {renderBlocks(blocks)}
     </div>
   )
 }
