@@ -31,6 +31,7 @@ import TopicQuiz from "../components/topic-selection/TopicQuiz"
 import TopicLearningHeader from "../components/topic-selection/TopicLearningHeader"
 import { InlineMath } from 'react-katex'
 import 'katex/dist/katex.min.css'
+import TopicActivitiesRenderer from "../components/activities/TopicActivitiesRenderer"
 
 type ViewState = "content" | "quiz"
 type ContentType = "blocknote" | "html"
@@ -311,14 +312,14 @@ export default function TopicLearningPage({
     }
   }
 
-  // QUIZ PAGE VIEW
+  // TODO: QUIZ PAGE VIEW
   if (currentView === "quiz") {
     return (
-      <TopicQuiz
+      <TopicActivitiesRenderer
+        moduleId={moduleId}
+        topicId={topic.id}
         topicTitle={topic.title}
-        quiz={quiz}
         onBack={goToContent}
-        onComplete={handleQuizComplete}
       />
     )
   }
@@ -383,18 +384,21 @@ export default function TopicLearningPage({
             transition={{ delay: 0.3 }}
             className="flex flex-col gap-3"
           >
+            {/* Mark as Complete Button */}
             {!isAlreadyCompleted && (
               <Button onClick={handleMarkComplete} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-5 md:py-6">
                 <CheckCircle2 className="h-5 w-5 mr-2" />
                 Marcar como completado
               </Button>
             )}
+
+            {/* Go to activities Button */}
             <Button
               onClick={goToQuiz}
               className="w-full bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:opacity-90 py-5 md:py-6"
             >
               <Target className="h-5 w-5 mr-2" />
-              Tomar el Quiz
+              Ir a actividades de evaluación
               <ChevronRight className="h-5 w-5 ml-2" />
             </Button>
           </motion.div>

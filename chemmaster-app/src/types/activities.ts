@@ -1,7 +1,7 @@
 export type ActivityType = 'quiz' | 'match' | 'word_soup' | 'fill_blank' | 'drag_drop';
 
 export interface Activity {
-  id?: number;
+  id: number;
   topic_id: number;
   type: ActivityType;
   question?: string;
@@ -9,6 +9,14 @@ export interface Activity {
   order_in_topic?: number;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface NewActivity { // TODO: unify with Activity and make some fields optional
+  topic_id: number;
+  type: ActivityType;
+  question?: string;
+  content: string;
+  order_in_topic?: number;
 }
 
 export interface ActivityManagerModalProps {
@@ -40,4 +48,27 @@ export interface WordSoupRow {
   id: string;
   word: string;
   clue: string;
+}
+
+export interface QuizActivityProps {
+  activity: Activity
+}
+
+export interface TopicActivitiesRendererProps {
+  moduleId: number
+  topicId: number
+  topicTitle: string
+  onBack: () => void
+}
+
+export type ActivityResult = {
+  earned: number
+  total: number
+}
+
+export type OnActivityResult = (earned: number, total: number) => void;
+
+export interface ActivityComponentProps {
+  activity: Activity;
+  onResult?: OnActivityResult;
 }

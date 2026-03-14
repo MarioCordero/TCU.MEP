@@ -1,4 +1,5 @@
 import { Topic, Module, AllContentResponse } from '../types/cms';
+import { Activity } from '../types/activities';
 import { LoginResponse } from '../types/login';
 
 const BASE_URL = import.meta.env.PROD 
@@ -113,4 +114,7 @@ export const API = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+    
+  GetActivities: (moduleId: number, topicId: number) =>
+    request<Activity[]>(`getActivities.php?module_id=${moduleId}&topic_id=${topicId}`),
 };

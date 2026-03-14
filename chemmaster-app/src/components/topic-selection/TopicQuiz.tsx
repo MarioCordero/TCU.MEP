@@ -6,7 +6,6 @@ import { Button } from "../ui/button"
 import { Badge } from "../ui/badge"
 import {
   ArrowLeft,
-  ArrowRight,
   CheckCircle2,
   BookOpen,
   Lightbulb,
@@ -17,7 +16,6 @@ import {
   Zap,
   Info,
 } from "lucide-react"
-import {QuizQuestion} from "../../types/topicSelector"
 import {TopicQuizProps} from "../../types/topicSelector"
 
 export default function TopicQuiz({
