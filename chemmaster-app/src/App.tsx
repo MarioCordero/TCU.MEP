@@ -9,6 +9,7 @@ import GradePage from './pages/GradePage'
 import TopicPage from './pages/TopicPage'
 import ChemMasterCMS from './pages/CMSPage'
 import CMSLoginPage from './pages/CMSLoginPage'
+import ResourcesPage from './pages/Resources'
 import { ProgressProvider } from './context/ProgressContext'
 import { NavigationProvider } from './context/NavigationContext'
 import { AppProps } from './types/app'
@@ -53,6 +54,8 @@ export default function App({ basePath = '' }: AppProps) {
           } />
 
           <Route path="/info" element={<InfoPage onBack={handleInfoBack} onStart={handleInfoStart} />} />
+
+          <Route path="/resources" element={<ResourcesPage />} />
 
           <Route path="/CMS" element={<ChemMasterCMS onClose={handleCMSClose} />} />
 
