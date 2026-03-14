@@ -56,10 +56,6 @@ export default function TopicLearningHeader({
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-full">
-              <Clock className="h-4 w-4 text-white/50" />
-              <span className="text-sm text-white/70">~5 min</span>
-            </div>
             <Button onClick={handleQuizClick} size="sm" className="bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:opacity-90">
               <Target className="h-4 w-4 mr-1 md:mr-2" />
               <span className="hidden sm:inline">Ir al</span> Quiz

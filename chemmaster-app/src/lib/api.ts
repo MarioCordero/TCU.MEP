@@ -1,4 +1,5 @@
 import { Topic, Module, AllContentResponse } from '../types/cms';
+import { Activity } from '../types/activities';
 import { LoginResponse } from '../types/login';
 
 const BASE_URL = import.meta.env.PROD 
@@ -94,4 +95,26 @@ export const API = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+
+  AddActivity: (data: {
+    topic_id: number;
+    type: 'quiz' | 'match' | 'word_soup' | 'fill_blank' | 'drag_drop';
+    question?: string;
+    content: string | Record<string, unknown> | unknown[];
+    order_in_topic?: number;
+  }) =>
+    request<{
+      id: number;
+      topic_id: number;
+      type: string;
+      question: string | null;
+      content: string;
+      order_in_topic: number;
+    }>('addActivity.php', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+    
+  GetActivities: (moduleId: number, topicId: number) =>
+    request<Activity[]>(`getActivities.php?module_id=${moduleId}&topic_id=${topicId}`),
 };

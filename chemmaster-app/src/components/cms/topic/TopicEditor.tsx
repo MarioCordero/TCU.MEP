@@ -9,11 +9,13 @@ import AddTopicModal from './AddTopicModal';
 import { CMSTopicEditorProps } from '../../../types/cms';
 import { useTopicDelete } from '../../../hooks/useTopicDelete';
 import SuccessModal from '../../common/modals/SuccessModal'
+import ActivityManagerModal from './ActivityManagerModal';
 
 export default function TopicEditor({ moduleId, topics, onUpdate }: CMSTopicEditorProps) {
   const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [activityTopic, setActivityTopic] = useState<Topic | null>(null);
 
   const {
     isDeleting,
@@ -98,17 +100,26 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: CMSTopicEdit
                       {topic.description || "Sin descripción"}
                     </p>
 
+                    {/* BADGES */}
                     <div className="flex items-center gap-4 mt-2">
+                      {/* Topic ID */}
                       <div className="flex items-center gap-1.5 text-xs text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100">
                         <LucideIcons.Hash className="h-3 w-3" />
                         <span>ID: {topic.id}</span>
                       </div>
+                      {/* Content Badge */}
                       {topic.content && topic.content.length > 50 && (
                         <div className="flex items-center gap-1.5 text-xs text-blue-500 bg-blue-50 px-2 py-1 rounded border border-blue-100">
                           <LucideIcons.FileJson className="h-3 w-3" />
                           <span>Contenido cargado</span>
                         </div>
                       )}
+                      {/* Activities Badge */}
+                      <div className="flex items-center gap-1.5 text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded border border-purple-100">
+                        <LucideIcons.Gamepad2 className="h-3 w-3" />
+                        {/* TODO: Implement activity count display */}
+                        <span>{topic.activities_count || 0} Actividades</span> 
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -116,6 +127,7 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: CMSTopicEdit
 
               {/* Right Side - Actions */}
               <div className="flex items-center gap-2 self-center">
+                {/* EDIT BUTTON */}
                 <Button
                   variant="outline"
                   className="border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 transition-all"
@@ -124,7 +136,16 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: CMSTopicEdit
                   <LucideIcons.FileEdit className="h-4 w-4 mr-2" />
                   Editar Contenido
                 </Button>
-
+                {/* NUEVO BOTÓN DE ACTIVIDADES */}
+                <Button
+                  variant="outline"
+                  className="border-purple-200 text-purple-600 hover:border-purple-300 hover:bg-purple-50"
+                  onClick={() => setActivityTopic(topic)}
+                >
+                  <LucideIcons.Trophy className="h-4 w-4 mr-2" />
+                  Actividades
+                </Button>
+                {/* DELETE BUTTON */}
                 <Button
                   variant="ghost"
                   size="icon"
@@ -159,6 +180,15 @@ export default function TopicEditor({ moduleId, topics, onUpdate }: CMSTopicEdit
           topic={editingTopic}
           onClose={() => setShowEditModal(false)}
           onSave={handleSaveEdit}
+        />
+      )}
+
+      {activityTopic && activityTopic.id && (
+        <ActivityManagerModal
+          show={!!activityTopic}
+          onClose={() => setActivityTopic(null)}
+          topicId={activityTopic.id}
+          topicTitle={activityTopic.title}
         />
       )}
 

@@ -132,23 +132,6 @@ export function GradeModulePath({
         )}
       </main>
 
-      {/* Floating Explore Button */}
-      <motion.a
-        href="/"
-        onClick={(e) => {
-          e.preventDefault()
-          window.location.href = "/?page=resources"
-        }}
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 1, type: "spring" }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        className="fixed bottom-6 right-6 z-40 p-4 bg-gradient-to-r from-cyan-500 to-violet-600 rounded-full shadow-lg shadow-violet-500/30 cursor-pointer group"
-      >
-        <Compass className="h-6 w-6 text-white group-hover:rotate-45 transition-transform duration-300" />
-      </motion.a>
-
       {/* Module Detail Modal */}
       <AnimatePresence>
         {selectedModuleData && (
