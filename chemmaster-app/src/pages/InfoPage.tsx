@@ -1,11 +1,11 @@
 import { motion } from "framer-motion"
 import { 
-  Atom, BookOpen, CheckCircle2, FlaskConical, Play, 
-  Target, Trophy, Users, X, Smartphone, GraduationCap 
+  BookOpen, CheckCircle2, FlaskConical, Play, 
+  Target, Trophy, Users, Smartphone, GraduationCap 
 } from "lucide-react"
-import { Badge } from "../components/ui/badge"
 import { Button } from "../components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
+import Header from "../components/common/Header"
 
 type InfoPageProps = {
   onBack: () => void
@@ -15,28 +15,7 @@ type InfoPageProps = {
 export default function InfoPage({ onBack, onStart }: InfoPageProps) {
   return (
     <div className="min-h-screen bg-gray-950">
-      <header className="bg-gray-950/80 backdrop-blur-md border-b border-white/10 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={onBack} className="text-white/70 hover:text-white hover:bg-white/10">
-                <X className="h-5 w-5" />
-              </Button>
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-r from-violet-500 to-cyan-500 rounded-xl">
-                  <Atom className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-white">ChemMaster</h1>
-                  <p className="text-xs text-white/50">Acerca de la Plataforma</p>
-                </div>
-              </div>
-            </div>
-            {/* Cambiamos "Pro v2.0" por algo más acorde al ecosistema */}
-            <Badge className="bg-gradient-to-r from-violet-500 to-cyan-500 text-white border-0">SPECT Ecosystem</Badge>
-          </div>
-        </div>
-      </header>
+      <Header onBack={onBack} subtitle="Acerca de la Plataforma" />
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="text-center mb-12">
