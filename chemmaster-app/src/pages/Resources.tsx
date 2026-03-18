@@ -543,7 +543,12 @@ function ExternalResourcesPage({ onBack }: { onBack: () => void }) {
         <motion.div animate={{ opacity: [0.2, 0.4, 0.2] }} transition={{ duration: 4, repeat: Infinity, delay: 2 }} className="absolute bottom-1/4 -right-32 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl" />
       </div>
 
-      <Header onBack={onBack} title="Recursos Externos" subtitle="Apps y sitios para aprender mas" />
+      <Header 
+        onBack={onBack} 
+        title="Recursos Externos" 
+        subtitle="Apps y sitios para aprender mas" 
+        showBackButton={true}
+      />
 
       <div className="relative z-10 container mx-auto px-4 py-6 md:py-12">
         {/* Hero */}
