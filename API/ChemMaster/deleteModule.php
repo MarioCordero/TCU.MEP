@@ -1,12 +1,17 @@
 <?php
+    require_once __DIR__ . '/cors.php';
     require_once 'dbhandler.php';
+    
     $input = json_decode(file_get_contents("php://input"), true);
+    
     if (!$input || !isset($input['id'])) {
         http_response_code(400);
         echo json_encode(["success" => false, "message" => "Falta el ID del módulo"]);
         exit;
     }
+    
     $id = (int)$input['id'];
+    
     try {
         // Verify module exists
         $sqlCheck = "SELECT id FROM modules WHERE id = ?";
@@ -23,7 +28,7 @@
         }
         $stmtCheck->close();
 
-        // Check if module has associated topics using module_id
+        // Check if module has associated topics
         $sqlCountTopics = "SELECT COUNT(*) as total FROM topics WHERE module_id = ?";
         $stmtCountTopics = $conn->prepare($sqlCountTopics);
         $stmtCountTopics->bind_param("i", $id);
