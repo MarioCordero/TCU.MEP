@@ -12,13 +12,12 @@ export interface Topic {
 
 export interface Module {
   id: number;
-  slug: string;
   grade_level: "10" | "11"; 
   title: string;
   description: string;
   icon?: string;
   color?: string;
-  active: boolean;
+  active: number;
   features?: string[];     
   tools?: string[];        
   topics?: Topic[]; // Relation: A module can have N topics

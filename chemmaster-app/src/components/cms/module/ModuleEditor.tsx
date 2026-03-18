@@ -1,18 +1,18 @@
 import { useState } from "react"
-import { Button } from "../../ui/button"
-import { Input } from "../../ui/input"
-import { Textarea } from "../../ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select"
-import { Switch } from "../../ui/switch"
-import { Label } from "../../ui/label"
-import type { CMSModuleEditorProps } from "../../../types/cms"
-import { AllowedGrade, COLOR_OPTIONS } from "../../../lib/constants"
-import * as LucideIcons from "lucide-react"
 import { API } from "../../../lib/api"
+import { Input } from "../../ui/input"
+import { Label } from "../../ui/label"
+import { Switch } from "../../ui/switch"
+import { Button } from "../../ui/button"
+import * as LucideIcons from "lucide-react"
+import { Textarea } from "../../ui/textarea"
+import type { CMSModuleEditorProps } from "../../../types/cms"
 import { useModuleEditor } from "../../../hooks/useModuleEditor"
 import IconPickerModal from "../../common/modals/IconPickerModal"
 import ConfirmSaveModal from '../../common/modals/ConfirmSaveModal'
+import { COLOR_OPTIONS } from "../../../lib/constants"
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select"
 
 export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
   const {
@@ -26,13 +26,32 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
 
   const [showIconModal, setShowIconModal] = useState(false)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   const handleSave = async (password: string) => {
-    // TODO: validate password via API
     if (!editedModule.id) throw new Error("Falta el ID del módulo")
-    await API.UpdateModule(editedModule.id, editedModule)
-    setIsEditing(false)
-    onSave?.(editedModule)
+    
+    setIsSaving(true)
+    setSaveError(null)
+    
+    try {
+      await API.Module.Update(editedModule.id, {
+        grade_level: editedModule.grade_level,
+        title: editedModule.title,
+        description: editedModule.description,
+        icon: editedModule.icon,
+        color: editedModule.color,
+        active: editedModule.active
+      })
+      
+      setIsEditing(false)
+      onSave?.(editedModule)
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "Error desconocido")
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
@@ -65,12 +84,16 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
           <div className="flex items-center gap-4">
             <div className={`flex items-center gap-3 px-5 py-2.5 rounded-xl border transition-all ${isEditing ? 'bg-slate-800 border-slate-600' : 'bg-transparent border-transparent opacity-80'}`}>
               <Label htmlFor="module-active" className="text-slate-300 font-medium cursor-pointer">
-                {editedModule.active ? "Estado: Activo" : "Estado: Inactivo"}
+                {/* ✅ FIXED: Check if active is 1 or truthy */}
+                {editedModule.active === 1 || editedModule.active ? "Estado: Activo" : "Estado: Inactivo"}
               </Label>
               <Switch
                 id="module-active"
-                checked={editedModule.active}
-                onCheckedChange={(checked) => setEditedModule({ ...editedModule, active: checked })}
+                checked={editedModule.active === 1 || Boolean(editedModule.active)}
+                onCheckedChange={(checked) => setEditedModule({
+                  ...editedModule,
+                  active: checked ? 1 : 0
+                })}
                 disabled={!isEditing}
                 className="data-[state=checked]:bg-green-500"
               />
@@ -87,11 +110,20 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                 </Button>
                 <Button
                   onClick={() => setShowConfirmModal(true)}
-                  disabled={!hasChanges}
+                  disabled={!hasChanges || isSaving}
                   className="bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/20 px-6"
                 >
-                  <LucideIcons.Save className="h-4 w-4 mr-2" />
-                  Guardar Cambios
+                  {isSaving ? (
+                    <>
+                      <LucideIcons.Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    <>
+                      <LucideIcons.Save className="h-4 w-4 mr-2" />
+                      Guardar Cambios
+                    </>
+                  )}
                 </Button>
               </div>
             ) : (
@@ -106,6 +138,17 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
           </div>
         </div>
       </div>
+
+      {/* ERROR MESSAGE */}
+      {saveError && (
+        <div className="mx-8 mt-8 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+          <LucideIcons.AlertCircle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
+          <div>
+            <p className="font-medium text-red-800">Error al guardar</p>
+            <p className="text-sm text-red-700">{saveError}</p>
+          </div>
+        </div>
+      )}
 
       {/* CONTENT FORM */}
       <div className="p-8 space-y-8 max-w-5xl mx-auto">
@@ -146,7 +189,7 @@ export function CMSModuleEditor({ module, onSave }: CMSModuleEditorProps) {
                   <Label className="text-sm font-semibold text-slate-700">Nivel Académico</Label>
                   <Select
                     value={editedModule.grade_level}
-                    onValueChange={(value: AllowedGrade) => setEditedModule({ ...editedModule, grade_level: value })}
+                    onValueChange={(value: "10" | "11") => setEditedModule({ ...editedModule, grade_level: value })}
                     disabled={!isEditing}
                   >
                     <SelectTrigger className="h-11 border-slate-200 focus:border-blue-500 rounded-lg bg-white cursor-pointer w-full">

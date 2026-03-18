@@ -1,12 +1,24 @@
+import type { Module, Topic } from "../types/cms"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import type { Module, Topic, UseModuleEditorReturn } from "../types/cms"
+
+export interface UseModuleEditorReturn {
+  editedModule: Module
+  setEditedModule: (module: Module | ((prev: Module) => Module)) => void
+  deletedTopicIds: number[]
+  isEditing: boolean
+  setIsEditing: (value: boolean) => void
+  addTopic: () => void
+  updateTopic: (index: number, field: keyof Topic, value: any) => void
+  removeTopic: (index: number) => void
+  resetToOriginal: () => void
+  hasChanges: boolean
+}
 
 export function useModuleEditor(initialModule: Module): UseModuleEditorReturn {
   const [editedModule, setEditedModule] = useState<Module>(initialModule)
   const [deletedTopicIds, setDeletedTopicIds] = useState<number[]>([])
   const [isEditing, setIsEditing] = useState(false)
 
-  // Track if content has changed
   const hasChanges = useMemo(() => {
     const moduleChanged = JSON.stringify(editedModule) !== JSON.stringify(initialModule)
     const topicsDeleted = deletedTopicIds.length > 0
@@ -16,11 +28,12 @@ export function useModuleEditor(initialModule: Module): UseModuleEditorReturn {
   useEffect(() => {
     setEditedModule(initialModule)
     setDeletedTopicIds([])
+    setIsEditing(false)
   }, [initialModule])
 
   const addTopic = useCallback(() => {
     const newTopic: Topic = {
-      id: undefined,
+      id: Math.random(),
       module_id: initialModule.id!,
       title: "",
       content: "",
@@ -45,8 +58,8 @@ export function useModuleEditor(initialModule: Module): UseModuleEditorReturn {
   const removeTopic = useCallback((index: number) => {
     const topic = editedModule.topics?.[index]
     
-    if (topic?.id) {
-      setDeletedTopicIds(prev => [...prev, topic.id!])
+    if (topic?.id && typeof topic.id === 'number' && topic.id > 0) {
+      setDeletedTopicIds(prev => [...prev, topic.id as number])
     }
     
     setEditedModule(prev => ({

@@ -1,27 +1,23 @@
 import { useState } from 'react'
-import { Button } from '../../ui/button'
-import { Input } from '../../ui/input'
-import { Textarea } from '../../ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select'
-import { Label } from '../../ui/label'
 import { Card } from '../../ui/card'
+import { Input } from '../../ui/input'
+import { Label } from '../../ui/label'
 import { API } from '../../../lib/api'
-import { Modal, AlertModal } from '../../ui/modal'
+import { Button } from '../../ui/button'
 import * as LucideIcons from 'lucide-react'
-import { AddModuleModalProps, Module } from '../../../types/moduleProps'
+import { Module } from '../../../types/cms'
+import { Textarea } from '../../ui/textarea'
+import { Modal, AlertModal } from '../../ui/modal'
+import { COLOR_OPTIONS } from '../../../lib/constants'
 import IconPickerModal from '../../common/modals/IconPickerModal'
 import SuccessModal from '../../common/modals/SuccessModal'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select'
 
-const COLOR_OPTIONS = [
-  { value: 'from-blue-500 to-blue-600', label: 'Azul' },
-  { value: 'from-green-500 to-green-600', label: 'Verde' },
-  { value: 'from-purple-500 to-purple-600', label: 'Púrpura' },
-  { value: 'from-orange-500 to-orange-600', label: 'Naranja' },
-  { value: 'from-pink-500 to-pink-600', label: 'Rosa' },
-  { value: 'from-red-500 to-red-600', label: 'Rojo' },
-  { value: 'from-indigo-500 to-indigo-600', label: 'Índigo' },
-  { value: 'from-teal-500 to-teal-600', label: 'Verde Azulado' },
-]
+interface AddModuleModalProps {
+  show: boolean
+  onClose: () => void
+  onModuleAdded: (module: Module) => void
+}
 
 export default function AddModuleModal({ show, onClose, onModuleAdded }: AddModuleModalProps) {
   const [isLoading, setIsLoading] = useState(false)
@@ -30,41 +26,40 @@ export default function AddModuleModal({ show, onClose, onModuleAdded }: AddModu
   const [createdModuleTitle, setCreatedModuleTitle] = useState('')
 
   const [formData, setFormData] = useState({
-    slug: '',
     title: '',
-    grade_level: '10',
+    grade_level: '10' as '10' | '11',
     description: '',
     icon: 'Book',
     color: 'from-blue-500 to-blue-600',
   })
 
   const [alertConfig, setAlertConfig] = useState<{
-    show: boolean;
-    title: string;
-    msg: string;
-    variant: "destructive" | "warning" | "default";
+    show: boolean
+    title: string
+    msg: string
+    variant: 'destructive' | 'warning' | 'default'
   }>({
     show: false,
-    title: "",
-    msg: "",
-    variant: "default"
-  });
+    title: '',
+    msg: '',
+    variant: 'default'
+  })
 
   const handleAddModule = async () => {
-    if (!formData.slug || !formData.title) {
+    // Validate required fields
+    if (!formData.title.trim()) {
       setAlertConfig({
         show: true,
-        title: "Faltan datos",
-        msg: "El título y el slug son obligatorios para crear el módulo.",
-        variant: "warning"
-      });
-      return;
+        title: 'Faltan datos',
+        msg: 'El título del módulo es obligatorio.',
+        variant: 'warning'
+      })
+      return
     }
 
     setIsLoading(true)
     try {
-      const result = await API.AddModule({
-        slug: formData.slug,
+      const result = await API.Module.Add({
         grade_level: formData.grade_level,
         title: formData.title,
         description: formData.description,
@@ -75,13 +70,12 @@ export default function AddModuleModal({ show, onClose, onModuleAdded }: AddModu
 
       const newModule: Module = {
         id: result.id,
-        slug: result.slug,
-        grade_level: formData.grade_level as '10' | '11',
+        grade_level: formData.grade_level,
         title: formData.title,
         description: formData.description,
         icon: formData.icon,
         color: formData.color,
-        active: true,
+        active: 1,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }
@@ -93,10 +87,10 @@ export default function AddModuleModal({ show, onClose, onModuleAdded }: AddModu
     } catch (error) {
       setAlertConfig({
         show: true,
-        title: "Error del Servidor",
-        msg: "No se pudo crear el módulo. Detalles: " + String(error),
-        variant: "destructive"
-      });
+        title: 'Error del Servidor',
+        msg: 'No se pudo crear el módulo. ' + (error instanceof Error ? error.message : 'Error desconocido'),
+        variant: 'destructive'
+      })
     } finally {
       setIsLoading(false)
     }
@@ -104,7 +98,6 @@ export default function AddModuleModal({ show, onClose, onModuleAdded }: AddModu
 
   const handleClose = () => {
     setFormData({
-      slug: '',
       title: '',
       grade_level: '10',
       description: '',
@@ -122,7 +115,12 @@ export default function AddModuleModal({ show, onClose, onModuleAdded }: AddModu
 
   const modalFooter = (
     <>
-      <Button variant="ghost" onClick={handleClose} disabled={isLoading} className="text-slate-500 hover:text-slate-800">
+      <Button 
+        variant="ghost" 
+        onClick={handleClose} 
+        disabled={isLoading} 
+        className="text-slate-500 hover:text-slate-800"
+      >
         Cancelar
       </Button>
       <Button
@@ -143,7 +141,7 @@ export default function AddModuleModal({ show, onClose, onModuleAdded }: AddModu
         )}
       </Button>
     </>
-  );
+  )
 
   return (
     <>
@@ -155,9 +153,9 @@ export default function AddModuleModal({ show, onClose, onModuleAdded }: AddModu
         footer={modalFooter}
       >
         <div className="flex flex-col max-h-[75vh] overflow-y-auto bg-slate-50/30">
-
           <div className="p-8 space-y-8">
 
+            {/* General Information Card */}
             <Card className="border border-slate-200 shadow-sm overflow-hidden bg-white">
               <div className="bg-slate-50 px-8 py-5 border-b border-slate-100 flex items-center gap-3">
                 <div className="bg-white p-2 rounded-lg border border-slate-100 text-blue-600 shadow-sm">
@@ -172,19 +170,11 @@ export default function AddModuleModal({ show, onClose, onModuleAdded }: AddModu
               <div className="p-8 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-3">
-                    <Label className="text-sm font-semibold text-slate-700">Slug (URL)</Label>
-                    <Input
-                      placeholder="ej: quimica-organica"
-                      value={formData.slug}
-                      onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                      className="font-mono text-sm bg-slate-50 h-11 border-slate-200 focus:bg-white transition-colors"
-                    />
-                    <p className="text-[11px] text-slate-400">Identificador único sin espacios ni tildes.</p>
-                  </div>
-
-                  <div className="space-y-3">
                     <Label className="text-sm font-semibold text-slate-700">Nivel Académico</Label>
-                    <Select value={formData.grade_level} onValueChange={(value) => setFormData({ ...formData, grade_level: value })}>
+                    <Select 
+                      value={formData.grade_level} 
+                      onValueChange={(value: '10' | '11') => setFormData({ ...formData, grade_level: value })}
+                    >
                       <SelectTrigger className="bg-white h-11 border-slate-200 cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
@@ -197,7 +187,7 @@ export default function AddModuleModal({ show, onClose, onModuleAdded }: AddModu
                 </div>
 
                 <div className="space-y-3">
-                  <Label className="text-sm font-semibold text-slate-700">Título del Módulo</Label>
+                  <Label className="text-sm font-semibold text-slate-700">Título del Módulo *</Label>
                   <Input
                     placeholder="Ej: Introducción a la Estequiometría"
                     value={formData.title}
@@ -219,6 +209,7 @@ export default function AddModuleModal({ show, onClose, onModuleAdded }: AddModu
               </div>
             </Card>
 
+            {/* Visual Customization Card */}
             <Card className="border border-slate-200 shadow-sm overflow-hidden bg-white">
               <div className="bg-slate-50 px-8 py-5 border-b border-slate-100 flex items-center gap-3">
                 <div className="bg-white p-2 rounded-lg border border-slate-100 text-purple-600 shadow-sm">
@@ -231,6 +222,7 @@ export default function AddModuleModal({ show, onClose, onModuleAdded }: AddModu
               </div>
 
               <div className="p-8 space-y-8">
+                {/* Icon Selection */}
                 <div className="space-y-3">
                   <Label className="text-sm font-semibold text-slate-700">Icono Representativo</Label>
                   <div className="flex items-center gap-6 p-4 border border-slate-100 rounded-2xl bg-slate-50/50">
@@ -255,6 +247,7 @@ export default function AddModuleModal({ show, onClose, onModuleAdded }: AddModu
                   </div>
                 </div>
 
+                {/* Color Selection */}
                 <div className="space-y-4">
                   <Label className="text-sm font-semibold text-slate-700">Tema de Color</Label>
                   <div className="grid grid-cols-4 sm:grid-cols-8 gap-4">
@@ -287,6 +280,7 @@ export default function AddModuleModal({ show, onClose, onModuleAdded }: AddModu
         </div>
       </Modal>
 
+      {/* Icon Picker Modal */}
       <IconPickerModal
         show={showIconPicker}
         onClose={() => setShowIconPicker(false)}
@@ -294,6 +288,7 @@ export default function AddModuleModal({ show, onClose, onModuleAdded }: AddModu
         onIconChange={(icon) => setFormData({ ...formData, icon })}
       />
 
+      {/* Success Modal */}
       <SuccessModal
         show={showSuccess}
         onClose={() => setShowSuccess(false)}
@@ -301,6 +296,7 @@ export default function AddModuleModal({ show, onClose, onModuleAdded }: AddModu
         message={`El módulo "${createdModuleTitle}" fue creado exitosamente.`}
       />
 
+      {/* Alert Modal */}
       <AlertModal
         isOpen={alertConfig.show}
         onClose={() => setAlertConfig({ ...alertConfig, show: false })}

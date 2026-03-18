@@ -17,6 +17,7 @@ export function useModuleDelete(onSuccess: (moduleId: number) => void) {
 
   const cancelDelete = () => {
     setDeleteConfirmation({ show: false, moduleId: null, moduleTitle: "" })
+    setDeleteError("")
   }
 
   const confirmDelete = async () => {
@@ -24,14 +25,16 @@ export function useModuleDelete(onSuccess: (moduleId: number) => void) {
     if (!id) return
 
     setIsDeleting(true)
-    setDeleteConfirmation({ show: false, moduleId: null, moduleTitle: deleteConfirmation.moduleTitle })
+    setDeleteError("")
 
     try {
-      await API.DeleteModule(id)
+      await API.Module.Delete(id)
       onSuccess(id)
       setShowDeleteSuccess(true)
+      setDeleteConfirmation({ show: false, moduleId: null, moduleTitle: "" })
     } catch (error) {
-      setDeleteError("No se pudo eliminar el módulo: " + String(error))
+      const errorMsg = error instanceof Error ? error.message : 'Error desconocido'
+      setDeleteError("No se pudo eliminar el módulo: " + errorMsg)
     } finally {
       setIsDeleting(false)
     }

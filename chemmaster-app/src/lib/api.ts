@@ -87,7 +87,6 @@ export const API = {
   // ===== Module Operations (Full payload) =====
   Module: {
     Add: (payload: { 
-      slug: string;
       grade_level: '10' | '11';
       title: string;
       description?: string;
@@ -95,20 +94,27 @@ export const API = {
       color?: string;
       active?: number;
     }) => 
-      request<{ success: boolean; id: number; slug: string }>(ENDPOINTS.ADD_MODULE, { 
+      request<{ success: boolean; id: number }>(ENDPOINTS.ADD_MODULE, { 
         method: 'POST', 
         body: JSON.stringify(payload) 
       }),
 
-    Update: (id: number, payload: Partial<Module>) => 
+    Update: (id: number, payload: { 
+      grade_level?: string;
+      title?: string;
+      description?: string;
+      icon?: string;
+      color?: string;
+      active?: number;
+    }) => 
       request<{ success: boolean }>(ENDPOINTS.UPDATE_MODULE, { 
-        method: 'PUT', 
+        method: 'POST', 
         body: JSON.stringify({ id, ...payload }) 
       }),
 
     Delete: (id: number) => 
       request<{ success: boolean }>(ENDPOINTS.DELETE_MODULE, { 
-        method: 'DELETE', 
+        method: 'POST', 
         body: JSON.stringify({ id }) 
       }),
   },
@@ -134,13 +140,13 @@ export const API = {
       order_in_module: number;
     }) => 
       request<{ success: boolean }>(ENDPOINTS.UPDATE_TOPIC, { 
-        method: 'PUT', 
+        method: 'POST', 
         body: JSON.stringify({ id, ...payload }) 
       }),
 
     Delete: (id: number) => 
       request<{ success: boolean }>(ENDPOINTS.DELETE_TOPIC, { 
-        method: 'DELETE', 
+        method: 'POST', 
         body: JSON.stringify({ id }) 
       }),
   },
