@@ -26,7 +26,6 @@ jobs:
       - name: Sync Backend (API)
         run: |
           echo "🧪 Sincronizando API PHP..."
-          # -a: archive, -v: verbose, --delete: borra en destino lo que no exista en origen
           rsync -av --delete --exclude 'Config/development.ini' child-repo/API/ChemMaster/ parent-repo/API/ChemMaster/
 
       # 4. Sincronizar FRONTEND (Carpetas Clave)
@@ -34,17 +33,13 @@ jobs:
         run: |
           echo "⚛️ Sincronizando Frontend React..."
           
-          # Ruta base en el padre
           DEST_BASE="parent-repo/SPECT-Website/src/ChemMaster"
-          
-          # Lista de carpetas a copiar
           FOLDERS=("assets" "components" "context" "hooks" "lib" "pages" "types")
 
           for folder in "${FOLDERS[@]}"; do
             src="child-repo/chemmaster-app/src/$folder/"
             dest="$DEST_BASE/$folder/"
             
-            # Verificamos si la carpeta existe en el hijo antes de copiar
             if [ -d "$src" ]; then
               echo "✅ Procesando: $folder"
               mkdir -p "$dest"
@@ -75,11 +70,9 @@ jobs:
         run: |
           cd parent-repo
           
-          # Configurar identidad del bot para este commit
           git config user.name "ChemMaster Bot"
           git config user.email "bot@spectcr.com"
           
-          # Verificar si hubo cambios reales
           if [[ -n $(git status -s) ]]; then
             git add .
             git commit -m "feat(integration): Actualización automática desde ChemMaster App"
