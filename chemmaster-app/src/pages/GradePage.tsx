@@ -1,12 +1,12 @@
 "use client"
 
-import { useParams, useNavigate } from "react-router-dom"
-import React, { useEffect, useState } from "react"
-import { Module } from "../types/cms"
 import { API } from "../lib/api"
-import { GradeModulePath } from "../components/grade-selection/GradeModulePath"
+import { Module } from "../types/cms"
+import { useEffect, useState } from "react"
 import { SelectedTopic } from "../types/gradeSelector"
+import { useParams, useNavigate } from "react-router-dom"
 import { useProgressContext } from "../hooks/useProgressContext"
+import { GradeModulePath } from "../components/grade-selection/GradeModulePath"
 
 interface GradePageProps {
   basePath?: string;
@@ -25,27 +25,66 @@ export default function GradePage({ basePath = '' }: GradePageProps) {
 
   useEffect(() => {
     const fetchGradeContent = async () => {
-      if (!gradeId) return
+      if (!gradeId) {
+        setError("Grado no especificado")
+        setLoading(false)
+        return
+      }
       
       try {
         setLoading(true)
         setError(null)
-        const data = await API.GetModules(gradeId)
-        setModules(data)
+        
+        let data: any = null
+
+        if (gradeId === '10') {
+          data = await API.GetModules.tenth()
+        } else if (gradeId === '11') {
+          data = await API.GetModules.eleventh()
+        } else {
+          throw new Error(`Grado ${gradeId} no válido. Use 10 o 11.`)
+        }
+
+        if (!data) {
+          throw new Error(`No se recibieron datos para grado ${gradeId}`)
+        }
+
+        let modulesArray: Module[] = []
+        
+        if (Array.isArray(data)) {
+          modulesArray = data
+        } else if (Array.isArray(data.modules)) {
+          modulesArray = data.modules
+        } else if (Array.isArray(data.data)) {
+          modulesArray = data.data
+        } else {
+          console.warn('Unexpected data format:', data)
+          modulesArray = []
+        }
+
+        if (!Array.isArray(modulesArray)) {
+          throw new Error('La respuesta no contiene un array de módulos')
+        }
+
+        setModules(modulesArray)
       } catch (err: any) {
         console.error("API Error:", err)
         setError(err.message || "No se pudieron cargar los módulos")
+        setModules([])
       } finally {
         setLoading(false)
       }
     }
+    
     fetchGradeContent()
   }, [gradeId])
 
   const moduleProgress: Record<string | number, number> = {}
-  modules.forEach((mod) => {
-    moduleProgress[mod.id] = getModuleProgress(gradeId!, mod.id, mod.topics?.length || 0)
-  })
+  if (Array.isArray(modules)) {
+    modules.forEach((mod) => {
+      moduleProgress[mod.id] = getModuleProgress(gradeId!, mod.id, mod.topics?.length || 0)
+    })
+  }
 
   const overallProgress = modules.length > 0
     ? Math.round(
@@ -53,6 +92,7 @@ export default function GradePage({ basePath = '' }: GradePageProps) {
       )
     : 0
 
+  // TODO: IMPROVE
   const handleSelectTopic = (topic: SelectedTopic) => {
     navigate(`${basePath}/grade/${gradeId}/module/${topic.moduleId}/topic/${topic.id}`);
   }
@@ -90,6 +130,22 @@ export default function GradePage({ basePath = '' }: GradePageProps) {
     )
   }
 
+  if (modules.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center text-center p-6">
+        <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl mb-4">
+          <p className="text-yellow-400 font-medium">No hay módulos disponibles para este grado</p>
+        </div>
+        <button 
+          onClick={() => navigate('/grade-selector')}
+          className="text-white/60 hover:text-white underline transition-colors mt-4"
+        >
+          Volver al selector de grado
+        </button>
+      </div>
+    )
+  }
+
   return (
     <GradeModulePath
       gradeId={gradeId || ""}
@@ -107,7 +163,6 @@ export default function GradePage({ basePath = '' }: GradePageProps) {
         resetGradeProgress(gradeId!)
         setShowCompletion(false)
       }}
-      // moduleProgress={moduleProgress}
     />
   )
 }
