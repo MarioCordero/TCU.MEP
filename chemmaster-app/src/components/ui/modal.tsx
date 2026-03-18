@@ -3,12 +3,13 @@ import { X, AlertTriangle, CheckCircle, Info, AlertCircle } from "lucide-react";
 import { Button } from "./button";
 
 interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title?: string;
-  children?: React.ReactNode;
-  footer?: React.ReactNode;
-  maxWidth?: string;
+  isOpen: boolean
+  onClose: () => void
+  title?: string
+  children?: React.ReactNode
+  maxWidth?: string
+  zIndex?: string
+  footer?: React.ReactNode
 }
 
 export function Modal({
@@ -16,8 +17,9 @@ export function Modal({
   onClose,
   title,
   children,
-  footer,
   maxWidth = "max-w-md",
+  zIndex = "z-50",
+  footer,
 }: ModalProps) {
   
   useEffect(() => {
@@ -36,7 +38,7 @@ export function Modal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className={`fixed inset-0 ${zIndex} flex items-center justify-center p-4`}>
       <div 
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
         onClick={onClose}

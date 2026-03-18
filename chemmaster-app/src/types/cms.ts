@@ -63,7 +63,7 @@ export interface CMSTopicEditorModalProps {
 export interface CMSAddTopicModalProps {
   show: boolean
   onClose: () => void
-  onSave: () => void
+  onSave: (topic: Topic) => void
   moduleId: number
   topicsCount: number
 }

@@ -3,57 +3,69 @@ require_once __DIR__ . '/cors.php';
 require_once __DIR__ . '/dbhandler.php';
 
 header('Content-Type: application/json; charset=utf-8');
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/error.log');
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Método no permitido']);
-    exit;
-}
+try {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+        exit;
+    }
 
-// Get JSON body
-$input = json_decode(file_get_contents('php://input'), true);
-$activity_id = isset($input['activity_id']) ? (int) $input['activity_id'] : 0;
+    $raw = file_get_contents('php://input');
+    $data = json_decode($raw, true);
 
-if (!$activity_id) {
-    http_response_code(422);
-    echo json_encode(['success' => false, 'message' => 'activity_id es requerido']);
-    exit;
-}
+    if (!is_array($data)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'JSON inválido']);
+        exit;
+    }
 
-// Verify activity exists
-$verify_sql = "SELECT id FROM activities WHERE id = ?";
-$verify_stmt = $conn->prepare($verify_sql);
-$verify_stmt->bind_param('i', $activity_id);
-$verify_stmt->execute();
-$verify_result = $verify_stmt->get_result();
+    $activity_id = isset($data['activity_id']) ? (int)$data['activity_id'] : 0;
 
-if ($verify_result->num_rows === 0) {
-    http_response_code(404);
-    echo json_encode(['success' => false, 'message' => 'Actividad no encontrada']);
-    exit;
-}
-$verify_stmt->close();
+    if ($activity_id <= 0) {
+        http_response_code(422);
+        echo json_encode(['success' => false, 'message' => 'activity_id es requerido']);
+        exit;
+    }
 
-// Delete the activity
-$delete_sql = "DELETE FROM activities WHERE id = ?";
-$delete_stmt = $conn->prepare($delete_sql);
+    $stmt = $conn->prepare("DELETE FROM activities WHERE id = ?");
+    if (!$stmt) {
+        throw new Exception("Error preparando consulta: " . $conn->error);
+    }
 
-if (!$delete_stmt) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Error preparando consulta']);
-    exit;
-}
+    $stmt->bind_param('i', $activity_id);
+    
+    if (!$stmt->execute()) {
+        throw new Exception("Error ejecutando consulta: " . $stmt->error);
+    }
 
-$delete_stmt->bind_param('i', $activity_id);
+    if ($stmt->affected_rows === 0) {
+        http_response_code(404);
+        echo json_encode(['success' => false, 'message' => 'Actividad no encontrada']);
+        $stmt->close();
+        exit;
+    }
 
-if ($delete_stmt->execute()) {
+    $stmt->close();
+
+    http_response_code(200);
     echo json_encode([
         'success' => true,
-        'message' => 'Actividad eliminada correctamente',
-        'activity_id' => $activity_id
+        'message' => 'Actividad eliminada exitosamente'
     ]);
-} else {
+
+} catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Error al eliminar la actividad']);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Error del servidor: ' . $e->getMessage()
+    ]);
+    error_log("Error en deleteActivity.php: " . $e->getMessage());
 }
-$delete_stmt->close();
+
+exit;
+?>

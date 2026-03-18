@@ -38,22 +38,44 @@ export const ENDPOINTS = {
 } as const;
 
 // ============ REQUEST HELPER ============
-const request = async <T>(endpoint: string, options?: RequestInit): Promise<T> => {
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...options?.headers }
-  });
+const request = async <T,>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> => {
+  try {
+    const url = `${BASE_URL}${endpoint}`
+    
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...options.headers as Record<string, string>,
+    }
 
-  const json = await response.json();
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    })
 
-  if (!json.success) {
-    throw new Error(json.message || `Error en la API: ${endpoint}`);
+    const contentType = response.headers.get('content-type')
+    if (!contentType?.includes('application/json')) {
+      const text = await response.text()
+      console.error('❌ Backend returned non-JSON response:')
+      console.error(text)
+      throw new Error(
+        'Server error: The backend returned an invalid response. Check the console.'
+      )
+    }
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.message || `HTTP ${response.status}`)
+    }
+
+    return data.data || data
+  } catch (error) {
+    console.error('❌ API Request Error:', error)
+    throw error
   }
-
-  if (json.topics) return json.topics as T;
-  if (json.modules) return json.modules as T;
-  if (json.data) return json.data as T;
-  return json as T;
 }
 
 // ============ API OBJECT ============
@@ -153,30 +175,26 @@ export const API = {
 
   // ===== Activity Operations (Full payload) =====
   Activity: {
+    GetByTopic: (topicId: number) =>
+      request<Activity[]>(`${ENDPOINTS.GET_ACTIVITIES}?topic_id=${topicId}`),
+
     Add: (payload: {
-      topic_id: number;
-      type: 'quiz' | 'match' | 'word_soup' | 'fill_blank' | 'drag_drop';
-      question?: string;
-      content: string | Record<string, unknown> | unknown[];
-      order_in_topic?: number;
+      topic_id: number
+      type: 'quiz' | 'match' | 'word_soup' | 'fill_blank' | 'drag_drop'
+      question?: string
+      content: string
+      order_in_topic?: number
     }) =>
-      request<{
-        id: number;
-        topic_id: number;
-        type: string;
-        question: string | null;
-        content: string;
-        order_in_topic: number;
-      }>(ENDPOINTS.ADD_ACTIVITY, {
+      request<Activity>(ENDPOINTS.ADD_ACTIVITY, {
         method: 'POST',
         body: JSON.stringify(payload),
       }),
 
     Update: (activityId: number, payload: {
-      type: 'quiz' | 'match' | 'word_soup' | 'fill_blank' | 'drag_drop';
-      question: string;
-      content: string | Record<string, unknown>;
-      order_in_topic?: number;
+      type: 'quiz' | 'match' | 'word_soup' | 'fill_blank' | 'drag_drop'
+      question: string
+      content: string
+      order_in_topic?: number
     }) =>
       request<{ success: boolean }>(ENDPOINTS.UPDATE_ACTIVITY, {
         method: 'POST',

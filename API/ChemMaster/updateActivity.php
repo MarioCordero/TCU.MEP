@@ -3,131 +3,122 @@ require_once __DIR__ . '/cors.php';
 require_once __DIR__ . '/dbhandler.php';
 
 header('Content-Type: application/json; charset=utf-8');
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/error.log');
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Método no permitido']);
-    exit;
-}
+try {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+        exit;
+    }
 
-// Get JSON body
-$input = json_decode(file_get_contents('php://input'), true);
+    $raw = file_get_contents('php://input');
+    $data = json_decode($raw, true);
 
-$activity_id = isset($input['activity_id']) ? (int) $input['activity_id'] : 0;
-$type = isset($input['type']) ? trim($input['type']) : '';
-$question = isset($input['question']) ? trim($input['question']) : '';
-$content = isset($input['content']) ? $input['content'] : '';
-$order_in_topic = isset($input['order_in_topic']) ? (int) $input['order_in_topic'] : 0;
+    if (!is_array($data)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'JSON inválido']);
+        exit;
+    }
 
-// Validation
-if (!$activity_id) {
-    http_response_code(422);
-    echo json_encode(['success' => false, 'message' => 'activity_id es requerido']);
-    exit;
-}
+    $activity_id = isset($data['activity_id']) ? (int)$data['activity_id'] : 0;
+    $type = isset($data['type']) ? trim((string)$data['type']) : '';
+    $question = isset($data['question']) ? trim((string)$data['question']) : '';
+    $content = $data['content'] ?? null;
+    $order_in_topic = isset($data['order_in_topic']) ? (int)$data['order_in_topic'] : null;
 
-if (!$type || !in_array($type, ['quiz', 'match', 'drag_drop', 'fill_blank', 'word_soup'])) {
-    http_response_code(422);
-    echo json_encode(['success' => false, 'message' => 'tipo de actividad inválido']);
-    exit;
-}
+    $allowedTypes = ['quiz', 'match', 'word_soup', 'fill_blank', 'drag_drop'];
 
-if (!$question) {
-    http_response_code(422);
-    echo json_encode(['success' => false, 'message' => 'question es requerido']);
-    exit;
-}
+    if ($activity_id <= 0) {
+        http_response_code(422);
+        echo json_encode(['success' => false, 'message' => 'activity_id es requerido']);
+        exit;
+    }
 
-// Convert content to JSON string if it's an array/object
-if (is_array($content) || is_object($content)) {
-    $content = json_encode($content, JSON_UNESCAPED_UNICODE);
-} else if (!is_string($content)) {
-    $content = (string) $content;
-}
+    if (!in_array($type, $allowedTypes, true)) {
+        http_response_code(422);
+        echo json_encode(['success' => false, 'message' => 'type inválido']);
+        exit;
+    }
 
-// Verify content is valid JSON
-if (!json_decode($content)) {
-    http_response_code(422);
-    echo json_encode(['success' => false, 'message' => 'content debe ser un JSON válido']);
-    exit;
-}
+    if (empty($question)) {
+        http_response_code(422);
+        echo json_encode(['success' => false, 'message' => 'question es requerido']);
+        exit;
+    }
 
-// Verify activity exists
-$verify_sql = "SELECT id FROM activities WHERE id = ?";
-$verify_stmt = $conn->prepare($verify_sql);
-$verify_stmt->bind_param('i', $activity_id);
-$verify_stmt->execute();
-$verify_result = $verify_stmt->get_result();
+    if ($content === null || $content === '') {
+        http_response_code(422);
+        echo json_encode(['success' => false, 'message' => 'content es requerido']);
+        exit;
+    }
 
-if ($verify_result->num_rows === 0) {
-    http_response_code(404);
-    echo json_encode(['success' => false, 'message' => 'Actividad no encontrada']);
-    exit;
-}
-$verify_stmt->close();
+    // Serialize content if needed
+    if (is_array($content) || is_object($content)) {
+        $content = json_encode($content, JSON_UNESCAPED_UNICODE);
+    } else {
+        $content = (string)$content;
+        json_decode($content);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            http_response_code(422);
+            echo json_encode(['success' => false, 'message' => 'content debe ser JSON válido']);
+            exit;
+        }
+    }
 
-// Update the activity
-$update_sql = "
-    UPDATE activities 
-    SET 
-        type = ?,
-        question = ?,
-        content = ?,
-        order_in_topic = ?,
-        updated_at = NOW()
-    WHERE id = ?
-";
+    // Build UPDATE query
+    $updates = ['type = ?', 'question = ?', 'content = ?'];
+    $params = [$type, $question, $content];
+    $types = 'sss';
 
-$update_stmt = $conn->prepare($update_sql);
+    if ($order_in_topic !== null) {
+        $updates[] = 'order_in_topic = ?';
+        $params[] = $order_in_topic;
+        $types .= 'i';
+    }
 
-if (!$update_stmt) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Error preparando consulta']);
-    exit;
-}
+    $params[] = $activity_id;
+    $types .= 'i';
 
-$update_stmt->bind_param('sssii', $type, $question, $content, $order_in_topic, $activity_id);
-
-if ($update_stmt->execute()) {
-    // Fetch updated activity
-    $fetch_sql = "
-        SELECT 
-            id,
-            topic_id,
-            type,
-            question,
-            content,
-            order_in_topic,
-            created_at,
-            updated_at
-        FROM activities 
-        WHERE id = ?
-    ";
+    $sql = "UPDATE activities SET " . implode(', ', $updates) . " WHERE id = ?";
     
-    $fetch_stmt = $conn->prepare($fetch_sql);
-    $fetch_stmt->bind_param('i', $activity_id);
-    $fetch_stmt->execute();
-    $fetch_result = $fetch_stmt->get_result();
-    $updated_activity = $fetch_result->fetch_assoc();
-    $fetch_stmt->close();
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        throw new Exception("Error preparando consulta: " . $conn->error);
+    }
+
+    $stmt->bind_param($types, ...$params);
     
+    if (!$stmt->execute()) {
+        throw new Exception("Error ejecutando consulta: " . $stmt->error);
+    }
+
+    if ($stmt->affected_rows === 0) {
+        http_response_code(404);
+        echo json_encode(['success' => false, 'message' => 'Actividad no encontrada']);
+        $stmt->close();
+        exit;
+    }
+
+    $stmt->close();
+
+    http_response_code(200);
     echo json_encode([
         'success' => true,
-        'message' => 'Actividad actualizada correctamente',
-        'data' => [
-            'id' => (int) $updated_activity['id'],
-            'topic_id' => (int) $updated_activity['topic_id'],
-            'type' => $updated_activity['type'],
-            'question' => $updated_activity['question'],
-            'content' => json_decode($updated_activity['content']),
-            'order_in_topic' => (int) $updated_activity['order_in_topic'],
-            'created_at' => $updated_activity['created_at'],
-            'updated_at' => $updated_activity['updated_at']
-        ]
+        'message' => 'Actividad actualizada exitosamente'
     ]);
-    $update_stmt->close();
-} else {
+
+} catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Error al actualizar la actividad']);
-    $update_stmt->close();
+    echo json_encode([
+        'success' => false,
+        'message' => 'Error del servidor: ' . $e->getMessage()
+    ]);
+    error_log("Error en updateActivity.php: " . $e->getMessage());
 }
+
+exit;
+?>

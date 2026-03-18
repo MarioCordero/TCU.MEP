@@ -73,3 +73,10 @@ export interface ActivityComponentProps {
   activity: Activity;
   onResult?: OnActivityResult;
 }
+
+export interface ActivityEditorModalProps {
+  show: boolean
+  activity: Activity
+  onClose: () => void
+  onSave: (activity: Activity) => void
+}
