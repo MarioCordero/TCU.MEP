@@ -682,7 +682,7 @@ function ExternalResourcesPage({ onBack }: { onBack: () => void }) {
 
 export default function ResourcesPage() {
   const navigate = useNavigate()
-  return <ExternalResourcesPage onBack={() => navigate('/')} />
+  return <ExternalResourcesPage onBack={() => window.history.back()} />
 }
 
 // CMS Login Page Component
