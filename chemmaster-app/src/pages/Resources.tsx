@@ -4,42 +4,23 @@ import React from "react"
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Button } from "../components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
+import { Badge } from "../components/ui/badge"
+import { Input } from "../components/ui/input"
+import { Label } from "../components/ui/label"
 import { Lock, Eye as EyeIcon, EyeOff, AlertCircle } from "lucide-react"
 import { useNavigate } from 'react-router-dom'
 import Header from '../components/common/Header'
 import {
-  Atom,
-  Play,
-  Info,
-  X,
-  FlaskConical,
-  Calculator,
-  Eye,
-  BookOpen,
-  Target,
-  Sparkles,
-  Users,
-  Trophy,
-  Clock,
-  Settings,
-  Table2,
-  Hexagon,
-  ArrowLeft,
-  ChevronRight,
-  Star,
-  ExternalLink,
-  Compass,
-  Beaker,
-  Microscope,
-  Gamepad2,
-  GraduationCap,
-  Zap,
-  Globe,
+  Atom, Play, Info,
+  X, FlaskConical, Calculator,
+  Eye, BookOpen, Target,
+  Sparkles, Users, Trophy,
+  Clock, Settings, Table2,
+  Hexagon, ArrowLeft, ChevronRight,
+  ExternalLink, Compass, Beaker,
+  Gamepad2, GraduationCap, Zap,
 } from "lucide-react"
 
 type CurrentPage = "landing" | "grade-selector" | "grade-10" | "grade-11" | "info" | "cms" | "resources"
