@@ -1,11 +1,9 @@
 "use client"
 
-import React from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Zap,
   Atom,
-  Compass,
   Star,
 } from "lucide-react"
 import { StairStep } from "./StairStep"
@@ -105,7 +103,6 @@ export function GradeModulePath({
               totalSteps={modules.length}
               onSelect={onSelectModule}
               isReversed={index % 2 === 1}
-              // progress={moduleProgress[module.id] || 0}
               progress={0}
               gradeId={gradeId}
             />

@@ -5,13 +5,14 @@ export interface Topic {
   description?: string;
   content: string;
   order_in_module: number;  
+  points?: number;
   created_at?: string;
   updated_at?: string;
 }
 
 export interface Module {
   id: number;
-  slug: string; // Text ID for the URL
+  slug: string;
   grade_level: "10" | "11"; 
   title: string;
   description: string;
@@ -20,7 +21,8 @@ export interface Module {
   active: boolean;
   features?: string[];     
   tools?: string[];        
-  topics?: Topic[]; // Relation: A module can have multiple topics 
+  topics?: Topic[]; // Relation: A module can have N topics
+  total_points?: number; 
   created_at?: string;
   updated_at?: string;
 }

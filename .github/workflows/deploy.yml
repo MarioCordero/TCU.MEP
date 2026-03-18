@@ -70,6 +70,14 @@ jobs:
             echo "⚠️ App.tsx no encontrado en el origen"
           fi
 
+      # 4.2 Sincronizar Instrucciones de Copilot (Opcional pero recomendado)
+      - name: Sync Copilot Instructions
+        run: |
+          echo "🤖 Sincronizando instrucciones de Copilot..."
+          mkdir -p parent-repo/.github/instructions/
+          # Copiamos solo lo relevante a ChemMaster
+          cp child-repo/.github/instructions/copilot-instructions.md parent-repo/.github/instructions/chemmaster-context.md
+
       # 5. Guardar cambios en el PADRE
       - name: Commit and Push to Parent
         run: |

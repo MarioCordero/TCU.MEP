@@ -1,33 +1,17 @@
 "use client"
 
 import React, { useState, useRef } from "react"
-import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "../components/ui/button"
-import { Badge } from "../components/ui/badge"
 import {
-  ArrowLeft,
-  ArrowRight,
-  CheckCircle2,
-  BookOpen,
-  Lightbulb,
-  Target,
-  Trophy,
-  X,
-  RefreshCw,
-  Brain,
-  Zap,
-  Clock,
-  ChevronRight,
-  Info,
-  ArrowUp,
+  Lightbulb, Target, ChevronRight, ArrowUp,
 } from "lucide-react"
 import { useProgressContext } from "../hooks/useProgressContext"
 import { Topic } from "../types/cms"
+import TopicQuiz from "../components/topic-selection/TopicQuiz"
 import {BlockNoteBlock} from "../types/topicSelector"
 import {QuizQuestion} from "../types/topicSelector"
 import {TopicLearningPageProps} from "../types/topicSelector"
-import TopicQuiz from "../components/topic-selection/TopicQuiz"
 import TopicLearningHeader from "../components/topic-selection/TopicLearningHeader"
 import { InlineMath } from 'react-katex'
 import 'katex/dist/katex.min.css'
@@ -401,7 +385,11 @@ export default function TopicLearningPage({
   const [showExplanation, setShowExplanation] = useState<string | null>(null)
   const [showScrollTop, setShowScrollTop] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
+  
   const { completeTopic, isTopicCompleted } = useProgressContext()
+    const handleActivitiesPassed = () => {
+    completeTopic(gradeId, moduleId, topic.id, totalTopicsInModule)
+  }
 
   const detectContentType = (): ContentType => {
     try {
@@ -486,11 +474,6 @@ export default function TopicLearningPage({
     setQuizSubmitted(false)
     setShowExplanation(null)
   }
-
-  const handleMarkComplete = () => {
-    completeTopic(gradeId, moduleId, topic.id, totalTopicsInModule)
-    onBack()
-  }
   
   const handleQuizComplete = (score: number) => {
     const passingScore = Math.ceil(quiz.length * 0.6)
@@ -499,7 +482,6 @@ export default function TopicLearningPage({
     }
   }
 
-  // TODO: QUIZ PAGE VIEW
   if (currentView === "quiz") {
     return (
       <TopicActivitiesRenderer
@@ -507,6 +489,7 @@ export default function TopicLearningPage({
         topicId={topic.id}
         topicTitle={topic.title}
         onBack={goToContent}
+        onPassed={handleActivitiesPassed}
       />
     )
   }
@@ -571,14 +554,6 @@ export default function TopicLearningPage({
             transition={{ delay: 0.3 }}
             className="flex flex-col gap-3"
           >
-            {/* Mark as Complete Button */}
-            {!isAlreadyCompleted && (
-              <Button onClick={handleMarkComplete} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-5 md:py-6">
-                <CheckCircle2 className="h-5 w-5 mr-2" />
-                Marcar como completado
-              </Button>
-            )}
-
             {/* Go to activities Button */}
             <Button
               onClick={goToQuiz}

@@ -1,7 +1,6 @@
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 
-// Import page components
 import LandingPage from './pages/LandingPage'
 import InfoPage from './pages/InfoPage'
 import GradeSelectorPage from './pages/GradeSelectorPage'

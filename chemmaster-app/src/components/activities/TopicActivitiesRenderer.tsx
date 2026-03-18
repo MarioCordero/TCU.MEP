@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { Button } from '../ui/button'
 import { API } from '../../lib/api'
@@ -15,18 +15,33 @@ export default function TopicActivitiesRenderer({
   topicId,
   topicTitle,
   onBack,
+  onPassed,
 }: TopicActivitiesRendererProps) {
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [results, setResults] = useState<Record<number, ActivityResult>>({})
+  const hasNotifiedPassRef = useRef(false)
+  const totalEarned = useMemo(
+    () => Object.values(results).reduce((acc, r) => acc + r.earned, 0),
+    [results]
+  )
+
+  const totalPossible = useMemo(
+    () => Object.values(results).reduce((acc, r) => acc + r.total, 0),
+    [results]
+  )
+
+  const answeredCount = Object.keys(results).length
+  const allAnswered = activities.length > 0 && answeredCount === activities.length
+  const passThreshold = 0.6
+  const passed = totalPossible > 0 && totalEarned / totalPossible >= passThreshold
 
   useEffect(() => {
     const loadActivities = async () => {
       try {
         setLoading(true)
         setError(null)
-
         const data = await API.GetActivities(moduleId, topicId)
         setActivities(Array.isArray(data) ? data : [])
       } catch (err: unknown) {
@@ -39,6 +54,18 @@ export default function TopicActivitiesRenderer({
     loadActivities()
   }, [moduleId, topicId])
 
+  useEffect(() => {
+    hasNotifiedPassRef.current = false
+    setResults({})
+  }, [moduleId, topicId])
+
+  useEffect(() => {
+    if (allAnswered && passed && !hasNotifiedPassRef.current) {
+      hasNotifiedPassRef.current = true
+      onPassed?.()
+    }
+  }, [allAnswered, passed, onPassed])
+
   const handleActivityResult = (activityId: number, earned: number, total: number) => {
     setResults((prev) => ({
       ...prev,
@@ -46,17 +73,6 @@ export default function TopicActivitiesRenderer({
     }))
   }
 
-  const totalEarned = useMemo(
-    () => Object.values(results).reduce((acc, r) => acc + r.earned, 0),
-    [results]
-  )
-
-  const totalPossible = useMemo(
-    () => Object.values(results).reduce((acc, r) => acc + r.total, 0),
-    [results]
-  )
-
-  const answeredCount = Object.keys(results).length
 
   const renderActivity = (activity: Activity) => {
     if (activity.id == null) return null;

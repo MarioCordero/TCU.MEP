@@ -1,11 +1,12 @@
 "use client"
 
-import React, { useRef } from "react"
+import { useRef } from "react"
 import { motion, useInView } from "framer-motion"
 import { Button } from "../ui/button"
 import { CheckCircle2, Sparkles, Star, ChevronRight } from "lucide-react"
 import { getIconComponent } from "../../lib/iconMap"
 import { StairStepProps } from "../../types/gradeSelector"
+import { useProgressContext } from "../../hooks/useProgressContext"
 
 export function StairStep({
   module,
@@ -13,12 +14,15 @@ export function StairStep({
   totalSteps,
   onSelect,
   isReversed,
-  progress,
   gradeId,
 }: StairStepProps) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
   const IconComponent = getIconComponent(module.icon)
+  
+  // Get progress from context
+  const { getModuleProgress } = useProgressContext()
+  const progress = getModuleProgress(gradeId, module.id, module.topics?.length || 0)
 
   const stepNumber = index + 1
 

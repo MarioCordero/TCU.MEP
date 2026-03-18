@@ -11,7 +11,7 @@ export interface Activity {
   updated_at?: string;
 }
 
-export interface NewActivity { // TODO: unify with Activity and make some fields optional
+export interface NewActivity { // TODO: IS THIS USEFUL?
   topic_id: number;
   type: ActivityType;
   question?: string;
@@ -59,6 +59,7 @@ export interface TopicActivitiesRendererProps {
   topicId: number
   topicTitle: string
   onBack: () => void
+  onPassed?: () => void
 }
 
 export type ActivityResult = {
