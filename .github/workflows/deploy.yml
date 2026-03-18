@@ -1,7 +1,10 @@
 name: Integrar ChemMaster a SPECT
 
 on:
-  workflow_dispatch: # Se activa manualmente con el botón en Actions
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   sync-to-parent:
