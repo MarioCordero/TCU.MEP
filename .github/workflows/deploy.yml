@@ -37,7 +37,7 @@ jobs:
           echo "⚛️ Sincronizando Frontend React..."
           
           DEST_BASE="parent-repo/SPECT-Website/src/ChemMaster"
-          FOLDERS=("assets" "components" "context" "hooks" "lib" "pages" "types")
+          FOLDERS=("assets" "components" "context" "hooks" "lib" "pages" "types" "utils")
 
           for folder in "${FOLDERS[@]}"; do
             src="child-repo/chemmaster-app/src/$folder/"
