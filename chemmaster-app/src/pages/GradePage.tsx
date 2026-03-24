@@ -16,12 +16,14 @@ export default function GradePage({ basePath = '' }: GradePageProps) {
   const { gradeId } = useParams<{ gradeId: string }>()
   const navigate = useNavigate()
   const [modules, setModules] = useState<Module[]>([])
+  const [moduleTopicCounts, setModuleTopicCounts] = useState<Record<number, number>>({})
+  const [moduleActivityCounts, setModuleActivityCounts] = useState<Record<number, number>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedModule, setSelectedModule] = useState<number | null>(null)
   const [selectedTopic, setSelectedTopic] = useState<SelectedTopic | null>(null)
   const [showCompletion, setShowCompletion] = useState(false)
-  const { getModuleProgress, resetGradeProgress } = useProgressContext()
+  const { getModuleProgress, resetGradeProgress, getGradeTotalPoints } = useProgressContext()
 
   useEffect(() => {
     const fetchGradeContent = async () => {
@@ -67,6 +69,38 @@ export default function GradePage({ basePath = '' }: GradePageProps) {
         }
 
         setModules(modulesArray)
+
+        // Fetch activity counts and topic counts for each module
+        const topicCounts: Record<number, number> = {}
+        const activityCounts: Record<number, number> = {}
+        
+        try {
+          // Get activity counts from the new endpoint
+          const activityCountsResponse = await API.GetActivityCounts(parseInt(gradeId) as 10 | 11)
+          Object.assign(activityCounts, activityCountsResponse.by_module)
+        } catch (err) {
+          console.warn('Failed to fetch activity counts:', err)
+        }
+
+        try {
+          // Still fetch topic counts for progress display
+          await Promise.all(
+            modulesArray.map(async (mod) => {
+              try {
+                const topics = await API.GetTopics(mod.id)
+                topicCounts[mod.id] = Array.isArray(topics) ? topics.length : 0
+              } catch (err) {
+                console.warn(`Failed to fetch topics for module ${mod.id}:`, err)
+                topicCounts[mod.id] = 0
+              }
+            })
+          )
+        } catch (err) {
+          console.warn('Failed to fetch some topic counts:', err)
+        }
+        
+        setModuleTopicCounts(topicCounts)
+        setModuleActivityCounts(activityCounts)
       } catch (err: any) {
         console.error("API Error:", err)
         setError(err.message || "No se pudieron cargar los módulos")
@@ -80,11 +114,21 @@ export default function GradePage({ basePath = '' }: GradePageProps) {
   }, [gradeId])
 
   const moduleProgress: Record<string | number, number> = {}
+  let totalAchievablePoints = 0
+  
   if (Array.isArray(modules)) {
     modules.forEach((mod) => {
-      moduleProgress[mod.id] = getModuleProgress(gradeId!, mod.id, mod.topics?.length || 0)
+      const topicCount = moduleTopicCounts[mod.id] || 0
+      moduleProgress[mod.id] = getModuleProgress(gradeId!, mod.id, topicCount)
+      // Count total possible points (1 per activity, not per topic)
+      const activityCount = moduleActivityCounts[mod.id] || 0
+      totalAchievablePoints += activityCount
     })
   }
+
+  const gradePoints = getGradeTotalPoints(gradeId!)
+  const earnedPoints = gradePoints.earned
+  const totalPoints = totalAchievablePoints
 
   const overallProgress = modules.length > 0
     ? Math.round(
@@ -157,6 +201,9 @@ export default function GradePage({ basePath = '' }: GradePageProps) {
       selectedModule={selectedModule}
       onSelectModule={setSelectedModule}
       overallProgress={overallProgress}
+      earnedPoints={earnedPoints}
+      totalPoints={totalPoints}
+      moduleTopicCounts={moduleTopicCounts}
       showCompletion={showCompletion}
       onCloseCompletion={() => setShowCompletion(false)}
       onResetProgress={() => {

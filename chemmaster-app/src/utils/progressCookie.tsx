@@ -1,9 +1,15 @@
-const COOKIE_NAME = "chemmaster_progress_v1"
+const COOKIE_NAME = "chemmaster_progress_v2"
 
-export type ProgressMap = Record<string, Record<string, number>>
+export type ProgressEntry = {
+  completed?: 0 | 1
+  earned?: number
+  total?: number
+}
+
+export type ProgressMap = Record<string, ProgressEntry>
 
 type ProgressCookiePayload = {
-  version: 1
+  version: 2
   progress: ProgressMap
   updatedAt: number
 }
@@ -20,38 +26,63 @@ function getCookieValue(name: string): string | null {
 
 export function readProgressCookie(): ProgressMap {
   const raw = getCookieValue(COOKIE_NAME)
-  if (!raw) return {}
+  
+  // Try new version first
+  if (raw) {
+    try {
+      const decoded = decodeURIComponent(raw)
+      const parsed = JSON.parse(decoded) as ProgressCookiePayload | any
 
-  try {
-    const decoded = decodeURIComponent(raw)
-    const parsed = JSON.parse(decoded) as ProgressCookiePayload | { completedTopics?: Record<string, true> }
-
-    // Current format
-    if ("progress" in parsed && parsed.progress && typeof parsed.progress === "object") {
-      return parsed.progress
+      if ("progress" in parsed && parsed.progress && typeof parsed.progress === "object") {
+        return parsed.progress
+      }
+    } catch {
+      // Fall through to legacy migration
     }
-
-    // Legacy migration format: { completedTopics: { "g:m:t": true } }
-    if ("completedTopics" in parsed && parsed.completedTopics) {
-      const migrated: ProgressMap = {}
-      Object.keys(parsed.completedTopics).forEach((k) => {
-        const normalized = k.split(":").join("-")
-        migrated[normalized] = { completed: 1 }
-      })
-      return migrated
-    }
-
-    return {}
-  } catch {
-    return {}
   }
+
+  // Try legacy cookie (v1)
+  const legacyRaw = getCookieValue("chemmaster_progress_v1")
+  if (legacyRaw) {
+    try {
+      const decoded = decodeURIComponent(legacyRaw)
+      const parsed = JSON.parse(decoded) as any
+
+      // Legacy format: { completedTopics: { "g:m:t": true } }
+      if ("completedTopics" in parsed && parsed.completedTopics) {
+        const migrated: ProgressMap = {}
+        Object.keys(parsed.completedTopics).forEach((k) => {
+          const normalized = k.split(":").join("-")
+          migrated[normalized] = { completed: 1, earned: 1, total: 1 }
+        })
+        return migrated
+      }
+
+      // Legacy v1 format: { version: 1, progress: { "10-2-5": { completed: 1 } } }
+      if ("progress" in parsed && parsed.progress && typeof parsed.progress === "object") {
+        const migrated: ProgressMap = {}
+        Object.entries(parsed.progress).forEach(([key, value]: [string, any]) => {
+          migrated[key] = {
+            completed: value?.completed,
+            earned: value?.completed ? 1 : 0,
+            total: 1,
+          }
+        })
+        return migrated
+      }
+    } catch {
+      // Return empty
+    }
+  }
+
+  return {}
 }
 
 export function writeProgressCookie(progress: ProgressMap) {
   if (typeof document === "undefined") return
 
   const payload: ProgressCookiePayload = {
-    version: 1,
+    version: 2,
     progress,
     updatedAt: Date.now(),
   }

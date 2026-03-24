@@ -25,6 +25,9 @@ export function GradeModulePath({
   showCompletion,
   onCloseCompletion,
   onResetProgress,
+  earnedPoints = 0,
+  totalPoints = 0,
+  moduleTopicCounts = {},
 }: GradeModulePathProps) {
   const selectedModuleData = modules.find((m) => m.id === selectedModule)
 
@@ -56,6 +59,8 @@ export function GradeModulePath({
         overallProgress={overallProgress}
         moduleCount={modules.length}
         onBack={onBack}
+        earnedPoints={earnedPoints}
+        totalPoints={totalPoints}
       />
 
       {/* Main Content - Stair Path */}
@@ -105,6 +110,7 @@ export function GradeModulePath({
               isReversed={index % 2 === 1}
               progress={0}
               gradeId={gradeId}
+              topicCount={moduleTopicCounts[module.id] || 0}
             />
           ))}
         </div>

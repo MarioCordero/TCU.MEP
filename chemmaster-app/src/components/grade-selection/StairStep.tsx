@@ -15,14 +15,17 @@ export function StairStep({
   onSelect,
   isReversed,
   gradeId,
+  topicCount = 0,
 }: StairStepProps) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
   const IconComponent = getIconComponent(module.icon)
   
   // Get progress from context
-  const { getModuleProgress } = useProgressContext()
-  const progress = getModuleProgress(gradeId, module.id, module.topics?.length || 0)
+  const { getModuleProgress, getCompletedTopicsCount } = useProgressContext()
+  const progress = getModuleProgress(gradeId, module.id, topicCount)
+  const completedTopics = getCompletedTopicsCount(gradeId, module.id)
+  const totalTopics = topicCount
 
   const stepNumber = index + 1
 
@@ -128,7 +131,7 @@ export function StairStep({
           <div className="flex items-center gap-4 mb-3">
             <div className="flex items-center gap-1 text-white/70 text-sm">
               <Sparkles className="h-4 w-4" />
-              <span>{module.topics?.length || 0} Temas</span>
+              <span>{completedTopics}/{totalTopics} Temas</span>
             </div>
             <div className="flex items-center gap-1 text-white/70 text-sm">
               <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />

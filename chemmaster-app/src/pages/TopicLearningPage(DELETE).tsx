@@ -387,8 +387,8 @@ export default function TopicLearningPage({
   const contentRef = useRef<HTMLDivElement>(null)
   
   const { completeTopic, isTopicCompleted } = useProgressContext()
-    const handleActivitiesPassed = () => {
-    completeTopic(gradeId, moduleId, topic.id, totalTopicsInModule)
+    const handleActivitiesPassed = (score: { earned: number; total: number }) => {
+    completeTopic(gradeId, moduleId, topic.id, score.earned, score.total)
   }
 
   const detectContentType = (): ContentType => {
@@ -465,7 +465,7 @@ export default function TopicLearningPage({
     setQuizSubmitted(true)
 
     if (correctCount >= passingScore) {
-      completeTopic(gradeId, moduleId, topic.id, totalTopicsInModule)
+      completeTopic(gradeId, moduleId, topic.id, correctCount, quiz.length)
     }
   }
 
@@ -478,7 +478,7 @@ export default function TopicLearningPage({
   const handleQuizComplete = (score: number) => {
     const passingScore = Math.ceil(quiz.length * 0.6)
     if (score >= passingScore) {
-      completeTopic(gradeId, moduleId, topic.id, totalTopicsInModule)
+      completeTopic(gradeId, moduleId, topic.id, score, quiz.length)
     }
   }
 

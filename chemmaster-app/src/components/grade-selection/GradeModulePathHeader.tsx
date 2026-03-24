@@ -10,6 +10,8 @@ interface GradeModulePathHeaderProps {
   overallProgress: number
   moduleCount: number
   onBack: () => void
+  earnedPoints?: number
+  totalPoints?: number
 }
 
 export default function GradeModulePathHeader({
@@ -17,6 +19,8 @@ export default function GradeModulePathHeader({
   gradeSubtitle,
   overallProgress,
   moduleCount,
+  earnedPoints = 0,
+  totalPoints = 0,
 }: GradeModulePathHeaderProps) {
   const { navigateBack } = useNavigationBase()
 
@@ -40,6 +44,14 @@ export default function GradeModulePathHeader({
           </div>
 
           <div className="flex items-center gap-2 md:gap-4">
+            {/* Points Display */}
+            {totalPoints > 0 && (
+              <div className="flex flex-col gap-1 px-3 py-1.5 bg-white/5 rounded-full">
+                <span className="text-xs text-white/50 font-medium">Puntos</span>
+                <span className="text-sm text-white font-semibold">{earnedPoints}/{totalPoints}</span>
+              </div>
+            )}
+
             {/* Overall Progress */}
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-full">
               <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />

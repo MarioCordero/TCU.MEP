@@ -12,6 +12,7 @@ export interface StairStepProps {
   isReversed: boolean
   progress: number
   gradeId: string
+  topicCount?: number
 }
 
 // Props for ModuleDetailModal component
@@ -43,6 +44,9 @@ export interface GradeModulePathProps {
   showCompletion: boolean
   onCloseCompletion: () => void
   onResetProgress: () => void
+  earnedPoints?: number
+  totalPoints?: number
+  moduleTopicCounts?: Record<number, number>
 }
 
 // Topic selection type

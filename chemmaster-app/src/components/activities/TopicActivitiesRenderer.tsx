@@ -62,9 +62,9 @@ export default function TopicActivitiesRenderer({
   useEffect(() => {
     if (allAnswered && passed && !hasNotifiedPassRef.current) {
       hasNotifiedPassRef.current = true
-      onPassed?.()
+      onPassed?.({ earned: totalEarned, total: totalPossible })
     }
-  }, [allAnswered, passed, onPassed])
+  }, [allAnswered, passed, onPassed, totalEarned, totalPossible])
 
   const handleActivityResult = (activityId: number, earned: number, total: number) => {
     setResults((prev) => ({

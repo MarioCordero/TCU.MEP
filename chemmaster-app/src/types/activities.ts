@@ -59,7 +59,7 @@ export interface TopicActivitiesRendererProps {
   topicId: number
   topicTitle: string
   onBack: () => void
-  onPassed?: () => void
+  onPassed?: (score: ActivityResult) => void
 }
 
 export type ActivityResult = {

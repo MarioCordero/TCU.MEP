@@ -16,6 +16,7 @@ export const ENDPOINTS = {
   GET_MODULES: 'getModules.php',
   GET_TOPICS: 'getTopics.php',
   GET_ACTIVITIES: 'getActivities.php',
+  GET_ACTIVITY_COUNTS: 'getActivityCounts.php',
   
   // Module Operations
   ADD_MODULE: 'addModule.php',
@@ -105,6 +106,11 @@ export const API = {
     if (topicId) params.append('topic_id', topicId.toString());
     return request<Activity[]>(`${ENDPOINTS.GET_ACTIVITIES}?${params}`);
   },
+
+  GetActivityCounts: (grade: 10 | 11) => 
+    request<{ grade: number; total_activities: number; by_module: Record<number, number> }>(
+      `${ENDPOINTS.GET_ACTIVITY_COUNTS}?grade=${grade}`
+    ),
 
   // ===== Module Operations (Full payload) =====
   Module: {
