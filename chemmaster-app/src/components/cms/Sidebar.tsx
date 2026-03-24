@@ -21,7 +21,7 @@ export default function CMSSidebar({
   const handleLogout = () => {
     localStorage.removeItem("cms_token")
     localStorage.removeItem("cms_user")
-    navigate("/")
+    navigate(-1)
   }
 
   const {
