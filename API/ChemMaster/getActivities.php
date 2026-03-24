@@ -13,7 +13,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 $topic_id = isset($_GET['topic_id']) ? (int) $_GET['topic_id'] : 0;
 $module_id = isset($_GET['module_id']) ? (int) $_GET['module_id'] : 0;
 
-// NEW: Allow fetching all activities for a module
 if ($module_id > 0 && $topic_id <= 0) {
     // Get all activities for a module (across all topics)
     $sql = "
@@ -105,7 +104,7 @@ while ($row = $result->fetch_assoc()) {
         'order_in_topic' => (int) $row['order_in_topic'],
         'created_at' => $row['created_at'],
         'updated_at' => $row['updated_at'],
-        'points' => $points_per_activity  // NEW: Add points per activity
+        'points' => $points_per_activity
     ];
     $total_points += $points_per_activity;
 }
@@ -115,6 +114,6 @@ $stmt->close();
 echo json_encode([
     'success' => true,
     'data' => $activities,
-    'total_points' => $total_points,  // NEW: Total for module/topic
+    'total_points' => $total_points,
     'activity_count' => count($activities)
 ]);
