@@ -7,6 +7,7 @@ import { useModuleDelete } from '../../hooks/useModuleDelete'
 import SuccessModal from '../common/modals/SuccessModal'
 import { SidebarProps } from '../../types/cms'
 import { useNavigate } from 'react-router-dom'
+import { useNavigationBase } from '../../context/NavigationContext'
 
 export default function CMSSidebar({
   modules,
@@ -17,11 +18,12 @@ export default function CMSSidebar({
 }: SidebarProps) {
   const [showAddModal, setShowAddModal] = useState(false)
   const navigate = useNavigate()
+  const { basePath } = useNavigationBase()
 
   const handleLogout = () => {
     localStorage.removeItem("cms_token")
     localStorage.removeItem("cms_user")
-    navigate(-1)
+    navigate(basePath)
   }
 
   const {
