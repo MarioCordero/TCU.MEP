@@ -288,52 +288,410 @@ Context/Hooks (ProgressContext, NavigationContext)
 {
   "success": true,
   "message": "Human-readable status message",
-  "data": null
+  "data": { }
 }
 ```
 
+### Authentication
+
+**Bearer Token Flow:**
+1. Call `login.php` with username/password
+2. Receive Bearer token (32-byte hex string)
+3. Include in all protected endpoints: `Authorization: Bearer <token>`
+4. Token expires after 24 hours
+
+**Example:**
+```bash
+curl -X POST http://chemmaster.com/API/login.php \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "admin",
+    "password": "password123"
+  }'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Login exitoso",
+  "token": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+}
+```
+
+---
+
 ### Public Endpoints (No Auth Required)
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `login.php` | POST | Authenticate user, return token |
-| `getModules.php?grade=10` | GET | Fetch modules for a grade |
-| `getTopics.php?module_id=1` | GET | Fetch topics for a module |
-| `getActivities.php?topic_id=1` | GET | Fetch activities for a topic |
-| `getAllContent.php` | GET | Fetch complete content structure |
+#### 1. **Login**
+- **POST** `/login.php`
+- **Fields:** `username`, `password`
+- **Returns:** Bearer token for subsequent authenticated requests
+- **Usage in Frontend:**
+  ```typescript
+  const response = await API.login(username, password);
+  localStorage.setItem('cms_token', response.token);
+  ```
+
+#### 2. **Get Modules by Grade**
+- **GET** `/getModules.php?grade=10`
+- **Query Params:** `grade` (required: "10", "11", etc.)
+- **Returns:** Array of modules for the specified grade level
+- **Example:**
+  ```bash
+  curl http://chemmaster.com/API/getModules.php?grade=10
+  ```
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "modules": [
+      {
+        "id": 1,
+        "slug": "atomic-structure",
+        "title": "Atomic Structure",
+        "grade_level": "10",
+        "description": "Introduction to atomic structure",
+        "icon": "Atom",
+        "color": "from-blue-500 to-blue-600",
+        "active": true,
+        "features": [],
+        "tools": []
+      }
+    ]
+  }
+  ```
+
+#### 3. **Get Topics for Module**
+- **GET** `/getTopics.php?module_id=1`
+- **Query Params:** `module_id` (required)
+- **Returns:** Array of topics for the specified module
+- **Example:**
+  ```bash
+  curl http://chemmaster.com/API/getTopics.php?module_id=1
+  ```
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "topics": [
+      {
+        "id": 1,
+        "module_id": 1,
+        "title": "Subatomic Particles",
+        "description": "Understanding protons, neutrons, and electrons",
+        "content": "<p>Rich HTML content here</p>",
+        "order_in_module": 0,
+        "active": true
+      }
+    ]
+  }
+  ```
+
+#### 4. **Get Activities for Topic**
+- **GET** `/getActivities.php?topic_id=1`
+- **Query Params:** `topic_id` (required)
+- **Returns:** Array of interactive activities for the topic
+- **Activity Types:** `quiz`, `fill-blank`, `drag-drop`, `match`, `word-soup`, `text-response`
+
+#### 5. **Get All Content (Nested)**
+- **GET** `/getAllContent.php`
+- **Returns:** Complete hierarchical structure (modules → topics → activities)
+- **Use Case:** Initial page load, full content tree
+- **Example:**
+  ```bash
+  curl http://chemmaster.com/API/getAllContent.php
+  ```
+
+---
 
 ### Protected Endpoints (Bearer Token Required)
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `addModule.php` | POST | Create new module |
-| `updateModule.php` | POST | Modify existing module |
-| `deleteModule.php` | POST | Remove module |
-| `addTopic.php` | POST | Create new topic |
-| `updateTopic.php` | POST | Modify existing topic |
-| `deleteTopic.php` | POST | Remove topic |
-| `addActivity.php` | POST | Create new activity |
-| `upload.php` | POST | Upload media file |
-| `deleteFile.php` | POST | Remove uploaded file |
+Include header: `Authorization: Bearer <token>`
+
+#### **Modules Management**
+
+##### Create Module
+- **POST** `/addModule.php`
+- **Required Fields:**
+  - `slug` (string): Unique identifier
+  - `title` (string): Module name
+  - `grade_level` (string): "10", "11", or "12"
+- **Optional Fields:**
+  - `description` (string)
+  - `icon` (string): Icon name from Lucide (default: "Book")
+  - `color` (string): Gradient class (default: "from-blue-500 to-blue-600")
+  - `active` (boolean): Default 1
+- **Example:**
+  ```bash
+  curl -X POST http://chemmaster.com/API/addModule.php \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer abc123..." \
+    -d '{
+      "slug": "electrochemistry",
+      "title": "Electrochemistry",
+      "grade_level": "12",
+      "description": "Study of electron transfer reactions",
+      "icon": "Zap",
+      "color": "from-yellow-500 to-orange-600"
+    }'
+  ```
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "message": "Módulo creado exitosamente",
+    "module_id": 5
+  }
+  ```
+
+##### Update Module
+- **POST/PUT** `/updateModule.php`
+- **Required Fields:** `id` (integer)
+- **Optional Fields:** Any module field (slug, title, description, icon, color, active, etc.)
+- **Example:**
+  ```bash
+  curl -X POST http://chemmaster.com/API/updateModule.php \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer abc123..." \
+    -d '{
+      "id": 1,
+      "title": "Advanced Atomic Structure",
+      "description": "Updated description"
+    }'
+  ```
+
+##### Delete Module
+- **POST** `/deleteModule.php`
+- **Required Fields:** `id` (integer)
+- **⚠️ WARNING:** Deletes module AND all associated topics
+- **Example:**
+  ```bash
+  curl -X POST http://chemmaster.com/API/deleteModule.php \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer abc123..." \
+    -d '{"id": 1}'
+  ```
+
+#### **Topics Management**
+
+##### Create Topic
+- **POST** `/addTopic.php`
+- **Required Fields:**
+  - `module_id` (integer)
+  - `title` (string)
+- **Optional Fields:**
+  - `description` (string)
+  - `content` (string/object): HTML content or JSON structure
+  - `order_in_module` (integer)
+- **Example:**
+  ```bash
+  curl -X POST http://chemmaster.com/API/addTopic.php \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer abc123..." \
+    -d '{
+      "module_id": 1,
+      "title": "Electron Configuration",
+      "description": "How electrons are arranged in atoms",
+      "content": "<h2>Introduction</h2><p>Electrons follow specific rules...</p>",
+      "order_in_module": 1
+    }'
+  ```
+
+##### Update Topic
+- **POST/PUT** `/updateTopic.php`
+- **Required Fields:** `id` (integer)
+- **Optional Fields:** title, description, content, order_in_module, active
+- **Example:**
+  ```bash
+  curl -X POST http://chemmaster.com/API/updateTopic.php \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer abc123..." \
+    -d '{
+      "id": 1,
+      "title": "Updated Topic Title",
+      "content": "<p>Updated content</p>"
+    }'
+  ```
+
+##### Delete Topic
+- **POST** `/deleteTopic.php`
+- **Required Fields:** `id` (integer)
+- **Example:**
+  ```bash
+  curl -X POST http://chemmaster.com/API/deleteTopic.php \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer abc123..." \
+    -d '{"id": 1}'
+  ```
+
+#### **Activities Management**
+
+##### Create Activity
+- **POST** `/addActivity.php`
+- **Required Fields:**
+  - `topic_id` (integer)
+  - `title` (string)
+  - `type` (string): One of `quiz`, `fill-blank`, `drag-drop`, `match`, `word-soup`, `text-response`
+  - `activity_data` (object): Type-specific configuration
+- **Example (Quiz):**
+  ```bash
+  curl -X POST http://chemmaster.com/API/addActivity.php \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer abc123..." \
+    -d '{
+      "topic_id": 1,
+      "title": "Atomic Structure Quiz",
+      "type": "quiz",
+      "activity_data": {
+        "questions": [
+          {
+            "question": "What is the center of an atom called?",
+            "options": ["Nucleus", "Electron", "Proton"];
+            "correct_answer": 0
+          }
+        ]
+      }
+    }'
+  ```
+
+##### Update Activity
+- **POST/PUT** `/updateActivity.php`
+- **Required Fields:** `id` (integer)
+- **Optional Fields:** title, type, activity_data, active
+
+##### Delete Activity
+- **POST** `/deleteActivity.php`
+- **Required Fields:** `id` (integer)
+
+#### **File Management**
+
+##### Upload File
+- **POST** `/upload.php` (multipart form data)
+- **Form Field:** `file` (required)
+- **Allowed Types:** 
+  - Images: jpg, jpeg, png, gif, webp, svg
+  - Videos: mp4, webm
+  - Audio: mp3, wav, ogg
+  - Documents: pdf, docx, doc, xlsx, xls, pptx, ppt, txt, zip, rar
+- **Max Size:** 50MB
+- **Example:**
+  ```bash
+  curl -X POST http://chemmaster.com/API/upload.php \
+    -H "Authorization: Bearer abc123..." \
+    -F "file=@/path/to/image.png"
+  ```
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "message": "Archivo subido exitosamente",
+    "filename": "image_1708345123.png",
+    "path": "uploads/image_1708345123.png"
+  }
+  ```
+
+##### Delete File
+- **POST** `/deleteFile.php`
+- **Required Fields:** `filename` (string, from uploads folder)
+- **Example:**
+  ```bash
+  curl -X POST http://chemmaster.com/API/deleteFile.php \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer abc123..." \
+    -d '{"filename": "image_1708345123.png"}'
+  ```
+
+---
+
+### Error Handling
+
+All endpoints return consistent error responses:
+
+```json
+{
+  "success": false,
+  "message": "Descripción del error en español"
+}
+```
+
+**Common HTTP Status Codes:**
+- `200 OK`: Successful request
+- `400 Bad Request`: Missing or invalid parameters
+- `401 Unauthorized`: Invalid or missing Bearer token
+- `404 Not Found`: Resource does not exist
+- `500 Internal Server Error`: Database or server error
+
+---
 
 ### Using the API from Frontend
+
+The frontend has a pre-configured API client that handles authentication automatically:
 
 ```typescript
 import { API } from '../lib/api';
 
-// Public endpoint
+// Public endpoints - no token needed
 const modules = await API.getModules('10');
+const topics = await API.getTopics(moduleId);
+const allContent = await API.getAllContent();
 
-// Protected endpoint (auth handled automatically)
+// Protected endpoints - token automatically included from localStorage
 await API.addModule({
   title: 'New Module',
   slug: 'new-module',
   grade_level: '10',
-  // ... other fields
+  description: 'Module description',
+  icon: 'Atom',
+  color: 'from-blue-500 to-blue-600'
 });
+
+// Update
+await API.updateModule(1, {
+  title: 'Updated Title'
+});
+
+// Delete
+await API.deleteModule(1);
+
+// Topics
+await API.addTopic(moduleId, {
+  title: 'New Topic',
+  description: 'Topic description',
+  content: '<p>HTML content</p>'
+});
+
+// File operations
+const formData = new FormData();
+formData.append('file', fileInput.files[0]);
+const response = await API.uploadFile(formData);
+
+await API.deleteFile(filename);
 ```
 
-**Full API reference:** See `chemmaster-app/src/lib/api.ts`
+**Full implementation:** See [src/lib/api.ts](chemmaster-app/src/lib/api.ts)
+
+---
+
+### Rate Limiting & Best Practices
+
+- ✅ Reuse API responses where possible to reduce requests
+- ✅ Use `getAllContent.php` instead of multiple individual requests during initial load
+- ✅ Cache module/topic data in React Context for navigation
+- ✅ Batch file uploads when possible
+- ⚠️ Do not store sensitive data in localStorage except Bearer token
+- ⚠️ Token should be removed on logout
+
+---
+
+### CORS Configuration
+
+CORS headers are configured in `cors.php` to allow:
+- Origin: Configured domains (development & production)
+- Methods: GET, POST, PUT, DELETE, OPTIONS
+- Headers: Content-Type, Authorization
+
+Ensure the frontend origin is registered in `cors.php` to avoid CORS errors.
 
 ---
 
